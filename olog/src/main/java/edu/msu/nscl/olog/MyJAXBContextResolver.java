@@ -4,7 +4,7 @@
  * Subject to license terms and conditions.
  */
 
-package gov.bnl.channelfinder;
+package edu.msu.nscl.olog;
 
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.api.json.JSONJAXBContext;
@@ -17,14 +17,14 @@ import javax.xml.bind.JAXBContext;
 /**
  * Gets inserted into JAXB to configure JSON marshalling.
  *
- * @author Ralph Lange <Ralph.Lange@bessy.de>
+ * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 @Provider
 public class MyJAXBContextResolver implements ContextResolver<JAXBContext> {
 
     private JAXBContext context;
-    private List<Class<?>> types = Arrays.asList(XmlChannels.class,
-            XmlProperties.class, XmlTags.class);
+    private List<Class<?>> types = Arrays.asList(XmlLogs.class,
+            XmlLogbooks.class, XmlTags.class);
 
     public MyJAXBContextResolver() throws Exception {
         this.context = new JSONJAXBContext(

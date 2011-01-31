@@ -52,7 +52,7 @@ public class LogsResource {
     @Produces({"application/xml", "application/json"})
     public Response query() {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
             db.getConnection();
@@ -83,7 +83,7 @@ public class LogsResource {
     @Consumes({"application/xml", "application/json"})
     public Response add(XmlLogs data) throws IOException {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
@@ -119,7 +119,7 @@ public class LogsResource {
     @Produces({"application/xml", "application/json"})
     public Response read(@PathParam("logId") String id) {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlLog result = null;
         try {
@@ -158,7 +158,7 @@ public class LogsResource {
     @Consumes({"application/xml", "application/json"})
     public Response create(@PathParam("logId") String id, XmlLog data) {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
@@ -197,7 +197,7 @@ public class LogsResource {
     @Consumes({"application/xml", "application/json"})
     public Response update(@PathParam("logId") String id, XmlLog data) {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
@@ -235,7 +235,7 @@ public class LogsResource {
     public Response remove(@PathParam("logId") String id) {
         DbConnection db = DbConnection.getInstance();
         UserManager um = UserManager.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             db.getConnection();

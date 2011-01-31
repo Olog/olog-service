@@ -4,7 +4,7 @@
  * Subject to license terms and conditions.
  */
 
-package gov.bnl.channelfinder;
+package edu.msu.nscl.olog;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -14,14 +14,14 @@ import javax.xml.bind.annotation.XmlType;
 /**
  * Tag object that can be represented as XML/JSON in payload data.
  *
- * @author Ralph Lange <Ralph.Lange@bessy.de>
+ * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-@XmlType(propOrder = {"name","owner","xmlChannels"})
+@XmlType(propOrder = {"name","status","xmlLogs"})
 @XmlRootElement(name = "tag")
 public class XmlTag {
     private String name = null;
-    private String owner = null;
-    private XmlChannels channels = null;
+    private String status = null;
+    private XmlLogs logs = null;
 
     /**
      * Creates a new instance of XmlTag.
@@ -45,9 +45,9 @@ public class XmlTag {
      * @param name
      * @param owner
      */
-    public XmlTag(String name, String owner) {
+    public XmlTag(String name, String status) {
         this.name = name;
-        this.owner = owner;
+        this.status = status;
     }
 
     /**
@@ -70,41 +70,41 @@ public class XmlTag {
     }
 
     /**
-     * Getter for tag owner.
+     * Getter for tag status.
      *
-     * @return tag owner
+     * @return tag status
      */
     @XmlAttribute
-    public String getOwner() {
-        return owner;
+    public String getStatus() {
+        return status;
     }
 
     /**
-     * Setter for tag owner.
+     * Setter for tag status.
      *
-     * @param owner tag owner
+     * @param owner tag status
      */
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     /**
-     * Getter for tag's XmlChannels.
+     * Getter for tag's XmlLogs.
      *
-     * @return XmlChannels object
+     * @return XmlLogs object
      */
-    @XmlElement(name = "channels")
-    public XmlChannels getXmlChannels() {
-        return channels;
+    @XmlElement(name = "logs")
+    public XmlLogs getXmlLogs() {
+        return logs;
     }
 
     /**
-     * Setter for tag's XmlChannels.
+     * Setter for tag's XmlLogs.
      *
-     * @param channels XmlChannels object
+     * @param logs XmlLogs object
      */
-    public void setXmlChannels(XmlChannels channels) {
-        this.channels = channels;
+    public void setXmlLogs(XmlLogs logs) {
+        this.logs = logs;
     }
 
     /**
@@ -114,11 +114,11 @@ public class XmlTag {
      * @return string representation for log
      */
     public static String toLog(XmlTag data) {
-        if (data.channels == null) {
-            return data.getName() + "(" + data.getOwner() + ")";
+        if (data.logs == null) {
+            return data.getName() + "(" + data.getStatus() + ")";
         } else {
-            return data.getName() + "(" + data.getOwner() + ")"
-                    + XmlChannels.toLog(data.channels);
+            return data.getName() + "(" + data.getStatus() + ")"
+                    + XmlLogs.toLog(data.logs);
         }
     }
 }

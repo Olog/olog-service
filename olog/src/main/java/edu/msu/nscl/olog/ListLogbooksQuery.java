@@ -3,7 +3,7 @@
  * Copyright (c) 2010 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
-package gov.bnl.channelfinder;
+package edu.msu.nscl.olog;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,22 +14,22 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 
 /**
- * JDBC query to find properties/tags.
+ * JDBC query to find logbooks/tags.
  * 
- * @author Ralph Lange <Ralph.Lange@bessy.de>
+ * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-public class ListPropertiesQuery {
+public class ListLogbooksQuery {
     private String name;
 
-    private ListPropertiesQuery() {
+    private ListLogbooksQuery() {
     }
 
-    private ListPropertiesQuery(String name) {
+    private ListLogbooksQuery(String name) {
         this.name = name;
     }
 
     /**
-     * Creates and executes a JDBC based query returning properties or tags.
+     * Creates and executes a JDBC based query returning logbooks or tags.
      *
      * @param con connection to use
      * @return result set with columns named <tt>id</tt>, <tt>name</tt> or null if no result
@@ -39,7 +39,7 @@ public class ListPropertiesQuery {
         PreparedStatement ps;
         List<String> name_params = new ArrayList<String>();
 
-        StringBuilder query = new StringBuilder("SELECT id, name, owner FROM property ");
+        StringBuilder query = new StringBuilder("SELECT id, name, owner FROM logbook ");
 
         if (isTagQuery) {
             query.append("WHERE is_tag = TRUE");
@@ -57,53 +57,53 @@ public class ListPropertiesQuery {
             return ps.executeQuery();
         } catch (SQLException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception during property/tag list query", e);
+                    "SQL Exception during logbook/tag list query", e);
         }
     }
 
     /**
-     * Returns the list of properties in the database.
+     * Returns the list of logbooks in the database.
      *
-     * @return XmlProperties
+     * @return XmlLogbooks
      * @throws CFException wrapping an SQLException
      */
-    public static XmlProperties getProperties() throws CFException {
-        XmlProperties result = new XmlProperties();
-        ListPropertiesQuery q = new ListPropertiesQuery();
+    public static XmlLogbooks getLogbooks() throws CFException {
+        XmlLogbooks result = new XmlLogbooks();
+        ListLogbooksQuery q = new ListLogbooksQuery();
         try {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection(), false);
             if (rs != null) {
                 while (rs.next()) {
-                    result.addXmlProperty(new XmlProperty(rs.getString("name"), rs.getString("owner")));
+                    result.addXmlLogbook(new XmlLogbook(rs.getString("name"), rs.getString("owner")));
                 }
             }
             return result;
         } catch (SQLException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception scanning result of property list request", e);
+                    "SQL Exception scanning result of logbook list request", e);
         }
     }
 
     /**
-     * Finds a property in the database by name.
+     * Finds a logbook in the database by name.
      *
-     * @return XmlProperty
+     * @return XmlLogbook
      * @throws CFException wrapping an SQLException
      */
-    public static XmlProperty findProperty(String name) throws CFException {
-        XmlProperty result = null;
-        ListPropertiesQuery q = new ListPropertiesQuery(name);
+    public static XmlLogbook findLogbook(String name) throws CFException {
+        XmlLogbook result = null;
+        ListLogbooksQuery q = new ListLogbooksQuery(name);
         try {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection(), false);
             if (rs != null) {
                 while (rs.next()) {
-                    result = new XmlProperty(rs.getString("name"), rs.getString("owner"));
+                    result = new XmlLogbook(rs.getString("name"), rs.getString("owner"));
                 }
             }
             return result;
         } catch (SQLException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception scanning result of find property request", e);
+                    "SQL Exception scanning result of find logbook request", e);
         }
     }
 
@@ -115,12 +115,12 @@ public class ListPropertiesQuery {
      */
     public static XmlTags getTags() throws CFException {
         XmlTags result = new XmlTags();
-        ListPropertiesQuery q = new ListPropertiesQuery();
+        ListLogbooksQuery q = new ListLogbooksQuery();
         try {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection(), true);
             if (rs != null) {
                 while (rs.next()) {
-                    result.addXmlTag(new XmlTag(rs.getString("name"), rs.getString("owner")));
+                    result.addXmlTag(new XmlTag(rs.getString("name")));
                 }
             }
             return result;
@@ -138,12 +138,12 @@ public class ListPropertiesQuery {
      */
     public static XmlTag findTag(String name) throws CFException {
         XmlTag result = null;
-        ListPropertiesQuery q = new ListPropertiesQuery(name);
+        ListLogbooksQuery q = new ListLogbooksQuery(name);
         try {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection(), true);
             if (rs != null) {
                 while (rs.next()) {
-                    result = new XmlTag(rs.getString("name"), rs.getString("owner"));
+                    result = new XmlTag(rs.getString("name"));
                 }
             }
             return result;

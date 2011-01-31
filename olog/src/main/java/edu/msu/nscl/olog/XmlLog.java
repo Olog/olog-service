@@ -1,10 +1,10 @@
 /*
  * Copyright (c) 2010 Brookhaven National Laboratory
- * Copyright (c) 2010 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
+ * Copyright (c) 2010 Helmholtz-Zentrum Berlin fuer Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
 
-package gov.bnl.channelfinder;
+package edu.msu.nscl.olog;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
@@ -13,61 +13,61 @@ import javax.xml.bind.annotation.XmlAttribute;
 /**
  * Channel object that can be represented as XML/JSON in payload data.
  *
- * @author Ralph Lange <Ralph.Lange@bessy.de>
+ * @author berryman from Ralph Lange <Ralph.Lange@bessy.de>
  */
 
-@XmlRootElement(name = "channel")
-public class XmlChannel {
-    private String name;
+@XmlRootElement(name = "log")
+public class XmlLog {
+    private String subject;
     private String owner;
-    private XmlProperties properties = new XmlProperties();
+    private XmlLogbooks logbooks = new XmlLogbooks();
     private XmlTags tags = new XmlTags();
   
-    /** Creates a new instance of XmlChannel */
-    public XmlChannel() {
+    /** Creates a new instance of XmlLog */
+    public XmlLog() {
     }
 
     /**
-     * Creates a new instance of XmlChannel.
+     * Creates a new instance of XmlLog.
      *
-     * @param name channel name
+     * @param subject log subject
      */
-    public XmlChannel(String name) {
-        this.name = name;
+    public XmlLog(String subject) {
+        this.subject = subject;
     }
 
     /**
-     * Creates a new instance of XmlChannel.
+     * Creates a new instance of XmlLog.
      *
-     * @param name channel name
-     * @param owner owner name
+     * @param subject log subject
+     * @param owner log owner
      */
-    public XmlChannel(String name, String owner) {
-        this.name = name;
+    public XmlLog(String subject, String owner) {
+        this.subject = subject;
         this.owner = owner;
     }
 
     /**
-     * Getter for channel name.
+     * Getter for log subject.
      *
-     * @return name
+     * @return subject
      */
-    @XmlAttribute
-    public String getName() {
-        return name;
+    @XmlElement(name="subject")
+    public String getSubject() {
+        return subject;
     }
 
     /**
-     * Setter for channel name.
+     * Setter for log subject.
      *
-     * @param name the value to set
+     * @param subject the value to set
      */
-    public void setName(String name) {
-        this.name = name;
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 
     /**
-     * Getter for channel owner.
+     * Getter for log owner.
      *
      * @return owner
      */
@@ -77,7 +77,7 @@ public class XmlChannel {
     }
 
     /**
-     * Setter for channel owner.
+     * Setter for log owner.
      *
      * @param owner
      */
@@ -86,37 +86,37 @@ public class XmlChannel {
     }
 
     /**
-     * Getter for channel's XmlProperties.
+     * Getter for log's XmlLogbooks.
      *
-     * @return XmlProperties
+     * @return XmlLogbooks
      */
-    @XmlElement(name = "properties")
-    public XmlProperties getXmlProperties() {
-        return properties;
+    @XmlElement(name = "logbooks")
+    public XmlLogbooks getXmlLogbooks() {
+        return logbooks;
     }
 
     /**
-     * Setter for channel's XmlProperties.
+     * Setter for log's XmlLogbooks.
      *
-     * @param properties XmlProperties
+     * @param logbooks XmlLogbooks
      */
-    public void setXmlProperties(XmlProperties properties) {
-        this.properties = properties;
+    public void setXmlLogbooks(XmlLogbooks logbooks) {
+        this.logbooks = logbooks;
     }
 
     /**
-     * Adds an XmlProperty to the channel.
+     * Adds an XmlLogbook to the log.
      *
-     * @param property single XmlProperty
+     * @param logbook single XmlLogbook
      */
-    public void addXmlProperty(XmlProperty property) {
-        this.properties.addXmlProperty(property);
+    public void addXmlLogbook(XmlLogbook logbook) {
+        this.logbooks.addXmlLogbook(logbook);
     }
 
     /**
-     * Getter for the channel's XmlTags.
+     * Getter for the log's XmlTags.
      *
-     * @return XmlTags for this channel
+     * @return XmlTags for this log
      */
     @XmlElement(name = "tags")
     public XmlTags getXmlTags() {
@@ -124,7 +124,7 @@ public class XmlChannel {
     }
 
     /**
-     * Setter for the channel's XmlTags.
+     * Setter for the log's XmlTags.
      *
      * @param tags XmlTags
      */
@@ -144,12 +144,12 @@ public class XmlChannel {
     /**
      * Creates a compact string representation for the log.
      *
-     * @param data XmlChannel to create the string representation for
+     * @param data XmlLog to create the string representation for
      * @return string representation
      */
-    public static String toLog(XmlChannel data) {
-        return data.getName() + "(" + data.getOwner() + "):["
-                + XmlProperties.toLog(data.properties)
+    public static String toLog(XmlLog data) {
+        return data.getSubject() + "(" + data.getOwner() + "):["
+                + XmlLogbooks.toLog(data.logbooks)
                 + XmlTags.toLog(data.tags)
                 + "]";
     }

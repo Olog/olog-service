@@ -50,7 +50,7 @@ public class LogbooksResource {
     @Produces({"application/xml", "application/json"})
     public Response list() {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlLogbooks result = null;
         try {
@@ -82,7 +82,7 @@ public class LogbooksResource {
     @Consumes({"application/xml", "application/json"})
     public Response add(XmlLogbooks data) throws IOException {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
@@ -119,7 +119,7 @@ public class LogbooksResource {
     @Produces({"application/xml", "application/json"})
     public Response read(@PathParam("logbookName") String logbook) {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlLogbook result = null;
         try {
@@ -160,7 +160,7 @@ public class LogbooksResource {
     @Consumes({"application/xml", "application/json"})
     public Response create(@PathParam("logbookName") String logbook, XmlLogbook data) {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
@@ -201,7 +201,7 @@ public class LogbooksResource {
     @Consumes({"application/xml", "application/json"})
     public Response update(@PathParam("logbookName") String logbook, XmlLogbook data) {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
@@ -237,7 +237,7 @@ public class LogbooksResource {
     @Path("{logbookName}")
     public Response remove(@PathParam("logbookName") String logbook) {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
@@ -274,7 +274,7 @@ public class LogbooksResource {
     @Consumes({"application/xml", "application/json"})
     public Response addSingle(@PathParam("tagName") String logbook, @PathParam("logId") String id, XmlProperty data) {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
@@ -311,7 +311,7 @@ public class LogbooksResource {
     @Path("{logbookName}/{logId}")
     public Response removeSingle(@PathParam("logbookName") String logbook, @PathParam("logId") String id) {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {

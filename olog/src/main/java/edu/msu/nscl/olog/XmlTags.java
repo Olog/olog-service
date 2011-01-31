@@ -1,10 +1,10 @@
 /*
  * Copyright (c) 2010 Brookhaven National Laboratory
- * Copyright (c) 2010 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
+ * Copyright (c) 2010 Helmholtz-Zentrum Berlin fuer Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
 
-package gov.bnl.channelfinder;
+package edu.msu.nscl.olog;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlElement;
 /**
  * Channels (collection) object that can be represented as XML/JSON in payload data.
  *
- * @author Ralph Lange <Ralph.Lange@bessy.de>
+ * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 
 @XmlRootElement(name = "tags")

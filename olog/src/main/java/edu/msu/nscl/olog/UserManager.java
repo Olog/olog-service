@@ -4,7 +4,7 @@
  * Subject to license terms and conditions.
  */
 
-package gov.bnl.channelfinder;
+package edu.msu.nscl.olog;
 
 import java.security.Principal;
 import java.util.Collection;
@@ -25,7 +25,7 @@ import javax.naming.directory.SearchResult;
 /**
  * Owner (group) membership management: LDAP connection and binding.
  *
- * @author Ralph Lange <Ralph.Lange@bessy.de>
+ * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 public class UserManager {
     private static UserManager instance = new UserManager();
@@ -33,7 +33,8 @@ public class UserManager {
     private ThreadLocal<Boolean> hasAdminRole = new ThreadLocal<Boolean>();
     private ThreadLocal<Collection<String>> groups = new ThreadLocal<Collection<String>>();
     private ThreadLocal<DirContext> ctx = new ThreadLocal<DirContext>();
-    private static final String ldapResourceName = "channelfinderGroups";
+   //TODO: need to add this to glassfish part 1
+    // private static final String ldapResourceName = "OlogGroups";
 
     /**
      * LDAP field name for the member UID
@@ -65,6 +66,9 @@ public class UserManager {
         }
     }
 
+    /*
+     * TODO: this should be setup on glassfish part 2
+     */
     private DirContext getJndiContext() {
         DirContext dirctx = this.ctx.get();
         if (dirctx == null) {
@@ -80,8 +84,9 @@ public class UserManager {
                 //dirctx = (DirContext) initCtx.lookup(ldapResourceName);
                 this.ctx.set(dirctx);
             } catch (NamingException e ) {
-                throw new IllegalStateException("Cannot find JNDI LDAP resource '"
-                        + ldapResourceName + "'", e);
+                //throw new IllegalStateException("Cannot find JNDI LDAP resource '"
+                //        + ldapResourceName + "'", e);
+                throw new IllegalStateException("Cannot find JNDI LDAP resource ", e);
             }
         }
         return dirctx;

@@ -4,14 +4,14 @@
  * Subject to license terms and conditions.
  */
 
-package gov.bnl.channelfinder;
+package edu.msu.nscl.olog;
 
 import javax.ws.rs.core.Response;
 
 /**
- * ChannelFinder Exception that creates the matching HTTP Response.
+ * Olog Exception that creates the matching HTTP Response.
  *
- * @author Ralph Lange <Ralph.Lange@bessy.de>
+ * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 public class CFException extends Exception {
 
@@ -45,7 +45,7 @@ public class CFException extends Exception {
     private String responseMessage() {
         String msg = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"" +
                 " \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">" +
-                "<html><head><title>ChannelFinder - Error report</title></head>" +
+                "<html><head><title>Olog - Error report</title></head>" +
                 "<body><h1>HTTP Status " + this.status.getStatusCode() + " - " + this.status.getReasonPhrase() + "</h1><hr/>" +
                 "<p><b>type</b> Status report</p>" +
                 "<p><b>message</b></p>" +
@@ -53,7 +53,7 @@ public class CFException extends Exception {
         if (this.getCause() != null) {
             msg = msg + "<p><b>caused by:</b></p><p>" + this.getCause().getMessage() + "</p>";
         }
-        return msg + "<hr/><h3>ChannelFinder</h3></body></html>";
+        return msg + "<hr/><h3>Olog</h3></body></html>";
     }
 
     /**

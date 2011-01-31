@@ -50,7 +50,7 @@ public class TagsResource {
     @Produces({"application/xml", "application/json"})
     public Response list() {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlTags result = null;
         try {
@@ -82,16 +82,13 @@ public class TagsResource {
     @Consumes({"application/xml", "application/json"})
     public Response add(XmlTags data) throws IOException {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             cm.checkValidNameAndOwner(data);
             db.getConnection();
             db.beginTransaction();
-            if (!um.userHasAdminRole()) {
-                cm.checkUserBelongsToGroup(um.getUserName(), data);
-            }
             cm.createOrReplaceTags(data);
             db.commit();
             Response r = Response.noContent().build();
@@ -119,7 +116,7 @@ public class TagsResource {
     @Produces({"application/xml", "application/json"})
     public Response read(@PathParam("tagName") String tag) {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlTag result = null;
         try {
@@ -159,7 +156,7 @@ public class TagsResource {
     @Consumes({"application/xml", "application/json"})
     public Response create(@PathParam("tagName") String tag, XmlTag data) {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
@@ -167,9 +164,6 @@ public class TagsResource {
             cm.checkNameMatchesPayload(tag, data);
             db.getConnection();
             db.beginTransaction();
-            if (!um.userHasAdminRole()) {
-                cm.checkUserBelongsToGroup(um.getUserName(), data);
-            }
             cm.createOrReplaceTag(tag, data);
             db.commit();
             Response r = Response.noContent().build();
@@ -200,16 +194,12 @@ public class TagsResource {
     @Consumes({"application/xml", "application/json"})
     public Response update(@PathParam("tagName") String tag, XmlTag data) {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             db.getConnection();
             db.beginTransaction();
-            if (!um.userHasAdminRole()) {
-                cm.checkUserBelongsToGroupOfTag(um.getUserName(), tag);
-                cm.checkUserBelongsToGroup(um.getUserName(), data);
-            }
             cm.updateTag(tag, data);
             db.commit();
             Response r = Response.noContent().build();
@@ -236,15 +226,12 @@ public class TagsResource {
     @Path("{tagName}")
     public Response remove(@PathParam("tagName") String tag) {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             db.getConnection();
             db.beginTransaction();
-            if (!um.userHasAdminRole()) {
-                cm.checkUserBelongsToGroup(um.getUserName(), cm.findTagByName(tag));
-            }
             cm.removeExistingProperty(tag);
             db.commit();
             Response r = Response.ok().build();
@@ -273,16 +260,13 @@ public class TagsResource {
     @Consumes({"application/xml", "application/json"})
     public Response addSingle(@PathParam("tagName") String tag, @PathParam("logId") String id, XmlTag data) {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             cm.checkNameMatchesPayload(tag, data);
             db.getConnection();
             db.beginTransaction();
-            if (!um.userHasAdminRole()) {
-                cm.checkUserBelongsToGroup(um.getUserName(), data);
-            }
             cm.addSingleTag(tag, id);
             db.commit();
             Response r = Response.noContent().build();
@@ -310,15 +294,12 @@ public class TagsResource {
     @Path("{tagName}/{logId}")
     public Response removeSingle(@PathParam("tagName") String tag, @PathParam("logId") String id) {
         DbConnection db = DbConnection.getInstance();
-        LogManager cm = LogManager.getInstance();
+        OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             db.getConnection();
             db.beginTransaction();
-            if (!um.userHasAdminRole()) {
-                cm.checkUserBelongsToGroup(um.getUserName(), cm.findTagByName(tag));
-            }
             cm.removeSingleTag(tag, id);
             db.commit();
             Response r = Response.ok().build();

@@ -1,10 +1,10 @@
 /*
  * Copyright (c) 2010 Brookhaven National Laboratory
- * Copyright (c) 2010 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
+ * Copyright (c) 2010 Helmholtz-Zentrum Berlin fuer Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
 
-package gov.bnl.channelfinder;
+package edu.msu.nscl.olog;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,68 +12,68 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Channels (collection) object that can be represented as XML/JSON in payload data.
+ * Logs (collection) object that can be represented as XML/JSON in payload data.
  *
- * @author Ralph Lange <Ralph.Lange@bessy.de>
+ * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 
-@XmlRootElement(name = "properties")
-public class XmlProperties {
-    private Collection<XmlProperty> properties = new ArrayList<XmlProperty>();
+@XmlRootElement(name = "logbooks")
+public class XmlLogbooks {
+    private Collection<XmlLogbook> logbooks = new ArrayList<XmlLogbook>();
   
-    /** Creates a new instance of XmlProperties. */
-    public XmlProperties() {
+    /** Creates a new instance of XmlLogbooks. */
+    public XmlLogbooks() {
     }
 
-    /** Creates a new instance of XmlProperties with one initial property.
+    /** Creates a new instance of XmlLogbooks with one initial logbook.
      * @param c initial element
      */
-    public XmlProperties(XmlProperty p) {
-        properties.add(p);
+    public XmlLogbooks(XmlLogbook p) {
+        logbooks.add(p);
     }
 
     /**
-     * Returns a collection of XmlProperty.
+     * Returns a collection of XmlLogbook.
      *
-     * @return a collection of XmlProperty
+     * @return a collection of XmlLogbook
      */
-    @XmlElement(name = "property")
-    public Collection<XmlProperty> getProperties() {
-        return properties;
+    @XmlElement(name = "logbook")
+    public Collection<XmlLogbook> getLogbooks() {
+        return logbooks;
     }
 
     /**
-     * Sets the collection of properties.
+     * Sets the collection of logbooks.
      *
-     * @param items new property collection
+     * @param items new logbook collection
      */
-    public void setProperties(Collection<XmlProperty> items) {
-        this.properties = items;
+    public void setLogbooks(Collection<XmlLogbook> items) {
+        this.logbooks = items;
     }
 
     /**
-     * Adds a property to the property collection.
+     * Adds a property to the logbook collection.
      *
-     * @param item the XmlProperty to add
+     * @param item the XmlLogbook to add
      */
-    public void addXmlProperty(XmlProperty item) {
-        this.properties.add(item);
+    public void addXmlLogbook(XmlLogbook item) {
+        this.logbooks.add(item);
     }
 
     /**
      * Creates a compact string representation for the log.
      *
-     * @param data XmlChannel to create the string representation for
+     * @param data XmlLog to create the string representation for
      * @return string representation
      */
-    public static String toLog(XmlProperties data) {
-        if (data.getProperties().size() == 0) {
+    public static String toLog(XmlLogbooks data) {
+        if (data.getLogbooks().size() == 0) {
             return "[None]";
         } else {
             StringBuilder s = new StringBuilder();
             s.append("[");
-            for (XmlProperty p : data.getProperties()) {
-                s.append(XmlProperty.toLog(p) + ",");
+            for (XmlLogbook p : data.getLogbooks()) {
+                s.append(XmlLogbook.toLog(p) + ",");
             }
             s.delete(s.length()-1, s.length());
             s.append("]");
