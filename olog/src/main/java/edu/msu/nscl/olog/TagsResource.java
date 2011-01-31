@@ -232,7 +232,7 @@ public class TagsResource {
         try {
             db.getConnection();
             db.beginTransaction();
-            cm.removeExistingProperty(tag);
+            cm.removeExistingLogbook(tag);
             db.commit();
             Response r = Response.ok().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
@@ -251,14 +251,14 @@ public class TagsResource {
      * <tt>id</tt> (both path parameters).
      *
      * @param tag URI path parameter: tag name
-     * @param id URI path parameter: log to update <tt>tag</tt> to
+     * @param logId URI path parameter: log to update <tt>tag</tt> to
      * @param data tag data (ignored)
      * @return HTTP Response
      */
     @PUT
     @Path("{tagName}/{logId}")
     @Consumes({"application/xml", "application/json"})
-    public Response addSingle(@PathParam("tagName") String tag, @PathParam("logId") String id, XmlTag data) {
+    public Response addSingle(@PathParam("tagName") String tag, @PathParam("logId") int logId, XmlTag data) {
         DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
@@ -267,7 +267,7 @@ public class TagsResource {
             cm.checkNameMatchesPayload(tag, data);
             db.getConnection();
             db.beginTransaction();
-            cm.addSingleTag(tag, id);
+            cm.addSingleTag(tag, logId);
             db.commit();
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
@@ -287,12 +287,12 @@ public class TagsResource {
      * <tt>id</tt> (both path parameters).
      *
      * @param tag URI path parameter: tag name to remove
-     * @param id URI path parameter: log to remove <tt>tag</tt> from
+     * @param logId URI path parameter: log to remove <tt>tag</tt> from
      * @return HTTP Response
      */
     @DELETE
     @Path("{tagName}/{logId}")
-    public Response removeSingle(@PathParam("tagName") String tag, @PathParam("logId") String id) {
+    public Response removeSingle(@PathParam("tagName") String tag, @PathParam("logId") int logId) {
         DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
@@ -300,7 +300,7 @@ public class TagsResource {
         try {
             db.getConnection();
             db.beginTransaction();
-            cm.removeSingleTag(tag, id);
+            cm.removeSingleTag(tag, logId);
             db.commit();
             Response r = Response.ok().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());

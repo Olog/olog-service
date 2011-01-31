@@ -58,7 +58,6 @@ public class UpdateValuesQuery {
     private UpdateValuesQuery(String name, XmlTag data) {
         this.oldname = name;
         this.name = data.getName();
-        this.owner = data.getOwner();
         this.logs = data.getXmlLogs();
         this.isTagQuery = true;
     }
@@ -68,11 +67,11 @@ public class UpdateValuesQuery {
      *
      * @param name name of tag to add
      * @param owner owner for tag to add
-     * @param log log to add tag to
+     * @param logId id to add tag to
      */
-    private UpdateValuesQuery(String name, String log) {
+    private UpdateValuesQuery(String name, int logId) {
         this.name = name;
-        logs = new XmlLogs(new XmlLog(log));
+        logs = new XmlLogs(new XmlLog(logId));
         isTagQuery = true;
     }
 
@@ -90,7 +89,7 @@ public class UpdateValuesQuery {
         int i;
 
         // Get property id
-        Long pid = FindLogbookIdsQuery.getPropertyId(name);
+        Long pid = FindLogbookIdsQuery.getLogbookId(name);
 
         if (pid == null) {
             throw new CFException(Response.Status.NOT_FOUND,
@@ -128,7 +127,7 @@ public class UpdateValuesQuery {
         StringBuilder query = new StringBuilder("SELECT id, name FROM log WHERE ");
         for (XmlLog log : logs.getLogs()) {
             query.append("name = ? OR ");
-            params.add(log.getName());
+            params.add(log.getSubject());
         }
         query.setLength(query.length() - 3);
 
@@ -156,13 +155,13 @@ public class UpdateValuesQuery {
         }
 
         // Get values from payload
-        for (XmlLog log : logs.getLogs()) {
-            for (XmlLogbook logbook : log.getXmlLogbooks().getLogbooks()) {
-                if (name.equals(logbook.getName())) {
-                    values.put(log.getName(), logbook.getValue());
-                }
-            }
-        }
+//        for (XmlLog log : logs.getLogs()) {
+//            for (XmlLogbook logbook : log.getXmlLogbooks().getLogbooks()) {
+//                if (name.equals(logbook.getName())) {
+//                    values.put(log.getName(), logbook.getValue());
+//                }
+//            }
+//        }
 
         // Remove existing values for the specified logs
         query.setLength(0);
@@ -240,11 +239,11 @@ public class UpdateValuesQuery {
      * Updates the <tt>tag</tt> in the database, adding it to the single log <tt>chan</tt>.
      *
      * @param tag name of tag to add
-     * @param log name of log to add tag to
+     * @param logId id of log to add tag to
      * @throws CFException wrapping an SQLException
      */
-    public static void updateTag(String tag, String log) throws CFException {
-        UpdateValuesQuery q = new UpdateValuesQuery(tag, log);
+    public static void updateTag(String tag, int logId) throws CFException {
+        UpdateValuesQuery q = new UpdateValuesQuery(tag, logId);
         q.executeQuery(DbConnection.getInstance().getConnection());
     }
 }

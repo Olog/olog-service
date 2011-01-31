@@ -18,13 +18,25 @@ import javax.xml.bind.annotation.XmlAttribute;
 
 @XmlRootElement(name = "log")
 public class XmlLog {
-    private String subject;
+    private int id;
     private String owner;
+    private String level;
+    private String subject;
+    private String description;
     private XmlLogbooks logbooks = new XmlLogbooks();
     private XmlTags tags = new XmlTags();
   
     /** Creates a new instance of XmlLog */
     public XmlLog() {
+    }
+
+    /**
+     * Creates a new instance of XmlLog.
+     *
+     * @param subject log subject
+     */
+    public XmlLog(int logId) {
+        this.id = logId;
     }
 
     /**
@@ -48,22 +60,33 @@ public class XmlLog {
     }
 
     /**
-     * Getter for log subject.
+     * Creates a new instance of XmlLog.
      *
-     * @return subject
+     * @param id log id
+     * @param owner log owner
      */
-    @XmlElement(name="subject")
-    public String getSubject() {
-        return subject;
+    public XmlLog(int logId, String owner) {
+        this.id = logId;
+        this.owner = owner;
     }
 
     /**
-     * Setter for log subject.
+     * Getter for log id.
      *
-     * @param subject the value to set
+     * @return id
      */
-    public void setSubject(String subject) {
-        this.subject = subject;
+    @XmlAttribute
+    public int getId() {
+        return id;
+    }
+
+    /**
+     * Setter for log id.
+     *
+     * @param id
+     */
+    public void setId(int id) {
+        this.id = id;
     }
 
     /**
@@ -83,6 +106,63 @@ public class XmlLog {
      */
     public void setOwner(String owner) {
         this.owner = owner;
+    }
+
+    /**
+     * Getter for log level.
+     *
+     * @return level
+     */
+    @XmlAttribute
+    public String getLevel() {
+        return level;
+    }
+
+    /**
+     * Setter for log owner.
+     *
+     * @param level
+     */
+    public void setLevel(String level) {
+        this.level = level;
+    }
+
+    /**
+     * Getter for log subject.
+     *
+     * @return subject
+     */
+    @XmlElement(name="subject")
+    public String getSubject() {
+        return subject;
+    }
+
+    /**
+     * Setter for log subject.
+     *
+     * @param subject the value to set
+     */
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+       /**
+     * Getter for log description.
+     *
+     * @return description
+     */
+    @XmlElement(name="description")
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Setter for log description.
+     *
+     * @param description the value to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**

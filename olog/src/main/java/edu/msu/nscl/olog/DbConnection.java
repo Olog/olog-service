@@ -3,7 +3,7 @@
  * Copyright (c) 2010 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
-package gov.bnl.channelfinder;
+package edu.msu.nscl.olog;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -15,7 +15,7 @@ import javax.xml.ws.WebServiceException;
 /**
  * Database connection handling: connections and transactions.
  *
- * @author Ralph Lange <Ralph.Lange@bessy.de>
+ * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 public class DbConnection {
 
@@ -26,7 +26,7 @@ public class DbConnection {
             return new DbConnection();
         }
     };
-    private static final String dbResourceName = "jdbc/channelfinder";
+    private static final String dbResourceName = "jdbc/irmisDB-Elog";
     private Connection con;
     private DataSource ds;
 

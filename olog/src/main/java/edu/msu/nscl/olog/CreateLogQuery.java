@@ -3,7 +3,7 @@
  * Copyright (c) 2010 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
-package gov.bnl.channelfinder;
+package edu.msu.nscl.olog;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,18 +18,18 @@ import javax.ws.rs.core.Response;
 /**
  * JDBC query to create one channel.
  *
- * @author Ralph Lange <Ralph.Lange@bessy.de>
+ * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-public class CreateChannelQuery {
+public class CreateLogQuery {
 
-    private XmlChannel chan;
+    private XmlLog log;
 
-    private CreateChannelQuery(XmlChannel chan) {
-        this.chan = chan;
+    private CreateLogQuery(XmlLog log) {
+        this.log = log;
     }
 
     /**
-     * Executes a JDBC based query to add a channel and its properties/tags.
+     * Executes a JDBC based query to add a log and its logbooks/tags.
      *
      * @param con database connection to use
      * @throws CFException wrapping an SQLException
@@ -41,41 +41,40 @@ public class CreateChannelQuery {
         long id;
 
         // Insert channel
-        StringBuilder query = new StringBuilder("INSERT INTO channel (name, owner) VALUE (?, ?)");
+        StringBuilder query = new StringBuilder("INSERT INTO log (name, owner) VALUE (?, ?)");
         try {
             ps = con.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, chan.getName());
-            ps.setString(2, chan.getOwner());
+            ps.setString(1, log.getSubject());
+            ps.setString(2, log.getOwner());
             ps.execute();
             ResultSet rs = ps.getGeneratedKeys();
             rs.first();
             id = rs.getLong(1);
         } catch (SQLException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while adding channel '" + chan.getName() +"'", e);
+                    "SQL Exception while adding log '" + log.getSubject() +"'", e);
         }
 
-        // Fetch the property/tag ids
-        Map<String, Integer> pids = FindPropertyIdsQuery.getPropertyIdMap(chan);
+        // Fetch the logbook/tag ids
+        Map<String, Integer> pids = FindLogbookIdsQuery.getLogbookIdMap(log);
 
-        // Insert properties/tags
-        if (this.chan.getXmlProperties().getProperties().size() > 0
-                || this.chan.getXmlTags().getTags().size() > 0) {
+        // Insert logbook/tags
+        if (this.log.getXmlLogbooks().getLogbooks().size() > 0
+                || this.log.getXmlTags().getTags().size() > 0) {
             params.clear();
             query.setLength(0);
-            query.append("INSERT INTO value (channel_id, property_id, value) VALUES ");
-            for (XmlProperty prop : this.chan.getXmlProperties().getProperties()) {
-                if (pids.get(prop.getName()) == null) {
+            query.append("INSERT INTO value (log_id, logbook_id, value) VALUES ");
+            for (XmlLogbook logbook : this.log.getXmlLogbooks().getLogbooks()) {
+                if (pids.get(logbook.getName()) == null) {
                     throw new CFException(Response.Status.NOT_FOUND,
-                    "Property '" + prop.getName() + "' does not exist");
+                    "Logbook '" + logbook.getName() + "' does not exist");
                 }
                 query.append("(?,?,?),");
                 ArrayList<String> par = new ArrayList<String>();
-                par.add(prop.getName());
-                par.add(prop.getValue());
+                par.add(logbook.getName());
                 params.add(par);
             }
-            for (XmlTag tag : this.chan.getXmlTags().getTags()) {
+            for (XmlTag tag : this.log.getXmlTags().getTags()) {
                 if (pids.get(tag.getName()) == null) {
                     throw new CFException(Response.Status.NOT_FOUND,
                     "Tag '" + tag.getName() + "' does not exist");
@@ -101,19 +100,19 @@ public class CreateChannelQuery {
                 ps.executeUpdate();
             } catch (SQLException e) {
                 throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                        "SQL Exception while adding properties/tags for channel '" + chan.getName() + "'", e);
+                        "SQL Exception while adding logbooks/tags for log '" + log.getSubject() + "'", e);
             }
         }
     }
 
     /**
-     * Creates a channel and its properties/tags in the database.
+     * Creates a log and its logbooks/tags in the database.
      *
-     * @param chan XmlChannel object
+     * @param log XmlLog object
      * @throws CFException wrapping an SQLException
      */
-    public static void createChannel(XmlChannel chan) throws CFException {
-        CreateChannelQuery q = new CreateChannelQuery(chan);
+    public static void createLog(XmlLog log) throws CFException {
+        CreateLogQuery q = new CreateLogQuery(log);
         q.executeQuery(DbConnection.getInstance().getConnection());
     }
 }

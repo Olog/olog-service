@@ -16,14 +16,14 @@ import javax.ws.rs.core.Response;
  * 
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-public class OlogManager {
+public class OLogManager {
 
-    private static OlogManager instance = new OlogManager();
+    private static OLogManager instance = new OLogManager();
 
     /**
      * Create an instance of OlogManager
      */
-    private OlogManager() {
+    private OLogManager() {
     }
 
     /**
@@ -31,7 +31,7 @@ public class OlogManager {
      *
      * @return the instance of OlogManager
      */
-    public static OlogManager getInstance() {
+    public static OLogManager getInstance() {
         return instance;
     }
 
@@ -46,7 +46,7 @@ public class OlogManager {
         for (XmlLogbook s : src.getXmlLogbooks().getLogbooks()) {
             for (XmlLogbook d : dest.getXmlLogbooks().getLogbooks()) {
                 if (d.getName().equals(s.getName())) {
-                    d.setValue(s.getValue());
+ //TODO: here                   d.setValue(s.getValue());
                     continue src_logbooks;
                 }
             }
@@ -226,7 +226,7 @@ public class OlogManager {
      * @param logId log to delete it from
      * @throws CFException wrapping an SQLException
      */
-    public void removeSingleProperty(String logbook, int logId) throws CFException {
+    public void removeSingleLogbook(String logbook, int logId) throws CFException {
         DeleteLogbookQuery.deleteOneValue(logbook, logId);
     }
 
@@ -393,12 +393,13 @@ public class OlogManager {
      * @param data XmlLog data to check against
      * @throws CFException on name mismatch
      */
+    //TODO: fix this
     public void checkIdMatchesPayload(int logId, XmlLog data) throws CFException {
-        if (!logId.equals(data.getId())) {
-            throw new CFException(Response.Status.BAD_REQUEST,
-                    "Specified log id '" + logId
-                    + "' and payload log id '" + data.getId() + "' do not match");
-        }
+    //    if (!logId.equals(data.getId())) {
+    //        throw new CFException(Response.Status.BAD_REQUEST,
+    //                "Specified log id '" + logId
+     //               + "' and payload log id '" + data.getId() + "' do not match");
+     //   }
     }
 
     /**
@@ -408,7 +409,7 @@ public class OlogManager {
      * @throws CFException on error
      */
     public void checkValidIdAndOwner(XmlLog data) throws CFException {
-        if (data.getId() == null || data.getId().equals("")) {
+        if (data.getId() == 0) {
             throw new CFException(Response.Status.BAD_REQUEST,
                     "Invalid log id (null or empty string)");
         }
@@ -427,7 +428,7 @@ public class OlogManager {
     public void checkValidIdAndOwner(XmlLogs data) throws CFException {
         if (data == null || data.getLogs() == null) return;
         for (XmlLog c : data.getLogs()) {
-            checkValidNameAndOwner(c);
+            checkValidIdAndOwner(c);
         }
     }
 
@@ -527,7 +528,7 @@ public class OlogManager {
      * @throws CFException on name mismatch
      */
     public void checkUserBelongsToGroupOfLog(String user, int logId) throws CFException {
-        if (logId == null || logId.equals("")) return;
+        if (logId == 0) return;
         checkUserBelongsToGroup(user, FindLogsQuery.findLogById(logId));
     }
 
@@ -544,18 +545,6 @@ public class OlogManager {
         checkUserBelongsToGroup(user, ListLogbooksQuery.findLogbook(logbook));
     }
 
-    /**
-     * Check that <tt>user</tt> belongs to the owner group specified in the database for
-     * <tt>tag</tt>.
-     *
-     * @param user user name
-     * @param tag name of tag to check ownership for
-     * @throws CFException on name mismatch
-     */
-    public void checkUserBelongsToGroupOfTag(String user, String tag) throws CFException {
-        if (tag == null || tag.equals("")) return;
-        checkUserBelongsToGroup(user, ListLogbooksQuery.findTag(tag));
-    }
 
     /**
      * Check that <tt>user</tt> belongs to the owner group specified in the

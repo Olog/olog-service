@@ -3,7 +3,7 @@
  * Copyright (c) 2010 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
-package gov.bnl.channelfinder;
+package edu.msu.nscl.olog;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,24 +12,24 @@ import java.sql.SQLException;
 import javax.ws.rs.core.Response;
 
 /**
- * JDBC query to delete a property from one or all channel(s).
+ * JDBC query to delete a logbook from one or all log(s).
  *
- * @author Ralph Lange <Ralph.Lange@bessy.de>
+ * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-public class DeletePropertyQuery {
+public class DeleteLogbookQuery {
 
     private String name;
-    private String channel;
-    private boolean removeProperty = false;
+    private int logId;
+    private boolean removeLogbook = false;
 
-    private DeletePropertyQuery(String name, boolean removeProperty) {
+    private DeleteLogbookQuery(String name, boolean removeProperty) {
         this.name = name;
-        this.removeProperty = removeProperty;
+        this.removeLogbook = removeProperty;
     }
 
-    private DeletePropertyQuery(String name, String channel) {
+    private DeleteLogbookQuery(String name, int logId) {
         this.name = name;
-        this.channel = channel;
+        this.logId = logId;
     }
 
     /**
@@ -45,7 +45,7 @@ public class DeletePropertyQuery {
         String query;
 
         // Get property id
-        Long pid = FindPropertyIdsQuery.getPropertyId(name);
+        Long pid = FindLogbookIdsQuery.getLogbookId(name);
 
         if (pid == null) {
             if (ignoreNoExist) {
@@ -55,118 +55,118 @@ public class DeletePropertyQuery {
                         "Property/tag '" + name + "' does not exist");
             }
         }
-
-        if (channel != null) {
-            // Get channel id
+// TODO: Don't need this
+        if (logId != 0) {
+            // Get log id
             try {
-                query = "SELECT id FROM channel WHERE name = ?";
+                query = "SELECT id FROM log WHERE name = ?";
                 ps = con.prepareStatement(query);
-                ps.setString(1, channel);
+                ps.setInt(1, logId);
 
                 ResultSet rs = ps.executeQuery();
                 if (rs.first()) {
                     cid = rs.getLong(1);
                 } else {
                     throw new CFException(Response.Status.NOT_FOUND,
-                            "Channel '" + channel + "' does not exist");
+                            "Log '" + logId + "' does not exist");
                 }
             } catch (SQLException e) {
                 throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                         "SQL Exception while preparing deletion of property/tag '" + name
-                        + "' from channel '" + channel + "'", e);
+                        + "' from log '" + logId + "'", e);
             }
-            // Delete values for channel
+            // Delete values for log
             try {
-                query = "DELETE FROM value WHERE property_id = ? AND channel_id = ?";
+                query = "DELETE FROM value WHERE logbook_id = ? AND log_id = ?";
                 ps = con.prepareStatement(query);
                 ps.setLong(1, pid);
                 ps.setLong(2, cid);
                 int rows = ps.executeUpdate();
                 if (rows == 0 && !ignoreNoExist) {
                     throw new CFException(Response.Status.NOT_FOUND,
-                            "Property/tag '" + name + "' does not exist for channel '"
-                            + channel + "'");
+                            "Logbook/tag '" + name + "' does not exist for log '"
+                            + logId + "'");
                 }
             } catch (SQLException e) {
                 throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                        "SQL Exception while deleting property/tag '" + name +
-                        "' from channel '" + channel + "'", e);
+                        "SQL Exception while deleting logbook/tag '" + name +
+                        "' from log '" + logId + "'", e);
             }
 
         } else {
 
-            if (removeProperty) {
+            if (removeLogbook) {
                 try {
-                    query = "DELETE FROM property WHERE id = ?";
+                    query = "DELETE FROM logbook WHERE id = ?";
                     ps = con.prepareStatement(query);
                     ps.setLong(1, pid);
                     int rows = ps.executeUpdate();
                 } catch (SQLException e) {
                     throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                            "SQL Exception while deleting property/tag '" + name + "'", e);
+                            "SQL Exception while deleting logbook/tag '" + name + "'", e);
                 }
             } else {
                 try {
-                    query = "DELETE FROM value WHERE property_id = ?";
+                    query = "DELETE FROM value WHERE logbook_id = ?";
                     ps = con.prepareStatement(query);
                     ps.setLong(1, pid);
                     int rows = ps.executeUpdate();
                     if (rows == 0 && !ignoreNoExist) {
                         throw new CFException(Response.Status.NOT_FOUND,
-                                "Property/tag '" + name + "' does not exist");
+                                "Logbook/tag '" + name + "' does not exist");
                     }
                 } catch (SQLException e) {
                     throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                            "SQL Exception while deleting property/tag '" + name + "'", e);
+                            "SQL Exception while deleting logbook/tag '" + name + "'", e);
                 }
             }
         }
     }
 
     /**
-     * Creates a DeletePropertyQuery to completely remove a property/tag (from all
-     * channels and the property/tag itself).
+     * Creates a DeleteLogbookQuery to completely remove a logbook/tag (from all
+     * logs and the logbook/tag itself).
      *
-     * @param name property/tag name
+     * @param name logbook/tag name
      */
-    public static void removeProperty(String name) throws CFException {
-        DeletePropertyQuery q = new DeletePropertyQuery(name, true);
+    public static void removeLogbook(String name) throws CFException {
+        DeleteLogbookQuery q = new DeleteLogbookQuery(name, true);
         q.executeQuery(DbConnection.getInstance().getConnection(), true);
     }
 
     /**
-     * Creates a DeletePropertyQuery to completely remove a property/tag (from all
-     * channels and the property/tag itself).
+     * Creates a DeleteLogbookQuery to completely remove a logbook/tag (from all
+     * logs and the logbook/tag itself).
      *
-     * @param name property/tag name
+     * @param name logbook/tag name
      */
-    public static void removeExistingProperty(String name) throws CFException {
-        DeletePropertyQuery q = new DeletePropertyQuery(name, true);
+    public static void removeExistingLogbook(String name) throws CFException {
+        DeleteLogbookQuery q = new DeleteLogbookQuery(name, true);
         q.executeQuery(DbConnection.getInstance().getConnection(), false);
     }
 
     /**
-     * Creates a DeletePropertyQuery to remove all values for the specified property/tag
-     * (without removing the property/tag itself).
+     * Creates a DeleteLogbookQuery to remove all values for the specified logbook/tag
+     * (without removing the logbook/tag itself).
      *
-     * @param name property/tag name
+     * @param name logbook/tag name
      * @throws CFException wrapping an SQLException
      */
     public static void deleteAllValues(String name) throws CFException {
-        DeletePropertyQuery q = new DeletePropertyQuery(name, false);
+        DeleteLogbookQuery q = new DeleteLogbookQuery(name, false);
         q.executeQuery(DbConnection.getInstance().getConnection(), true);
     }
 
     /**
-     * Creates a DeletePropertyQuery to remove one value of the specified property/tag
-     * from the specified channel.
+     * Creates a DeleteLogbookQuery to remove one value of the specified logbook/tag
+     * from the specified log.
      *
-     * @param name property/tag name
-     * @param channel channel to delete <tt>name</tt> from
-     * @return new FindChannelsQuery instance
+     * @param name logbook/tag name
+     * @param logId log to delete <tt>name</tt> from
+     * @return new FindLogsQuery instance
      */
-    public static void deleteOneValue(String name, String channel) throws CFException {
-        DeletePropertyQuery q = new DeletePropertyQuery(name, channel);
+    public static void deleteOneValue(String name, int logId) throws CFException {
+        DeleteLogbookQuery q = new DeleteLogbookQuery(name, logId);
         q.executeQuery(DbConnection.getInstance().getConnection(), false);
     }
 }

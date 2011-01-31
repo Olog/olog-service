@@ -104,7 +104,7 @@ public class XmlLogbook {
      * @param data the XmlLogbook to log
      * @return string representation for log
      */
-    public static String toLog(XmlProperty data) {
+    public static String toLog(XmlLogbook data) {
          if (data.logs == null) {
             return data.getName() + "(" + data.getOwner() + ")";
         } else {

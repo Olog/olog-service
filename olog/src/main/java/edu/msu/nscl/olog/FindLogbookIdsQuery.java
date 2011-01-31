@@ -3,7 +3,7 @@
  * Copyright (c) 2010 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
-package gov.bnl.channelfinder;
+package edu.msu.nscl.olog;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,24 +16,24 @@ import java.util.Map;
 import javax.ws.rs.core.Response;
 
 /**
- * JDBC query to find database ids for properties/tags.
+ * JDBC query to find database ids for logbooks/tags.
  * 
- * @author Ralph Lange <Ralph.Lange@bessy.de>
+ * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-public class FindPropertyIdsQuery {
+public class FindLogbookIdsQuery {
 
     private List<String> names = new ArrayList();
 
-    private FindPropertyIdsQuery(XmlChannel data) {
-        for (XmlProperty prop : data.getXmlProperties().getProperties()) {
-            names.add(prop.getName().toLowerCase());
+    private FindLogbookIdsQuery(XmlLog data) {
+        for (XmlLogbook logbook : data.getXmlLogbooks().getLogbooks()) {
+            names.add(logbook.getName().toLowerCase());
         }
         for (XmlTag tag : data.getXmlTags().getTags()) {
             names.add(tag.getName().toLowerCase());
         }
     }
 
-    private FindPropertyIdsQuery(String name) {
+    private FindLogbookIdsQuery(String name) {
         names.add(name.toLowerCase());
     }
 
@@ -48,7 +48,7 @@ public class FindPropertyIdsQuery {
         PreparedStatement ps;
         List<String> name_params = new ArrayList<String>();
 
-        StringBuilder query = new StringBuilder("SELECT id, name FROM property");
+        StringBuilder query = new StringBuilder("SELECT id, name FROM logbook");
         for (String name : names) {
             if (!query.toString().endsWith(" OR")) {
                 query.append(" WHERE");
@@ -74,15 +74,15 @@ public class FindPropertyIdsQuery {
     }
 
     /**
-     * Find the property names and ids for a specified channel.
+     * Find the logbook names and ids for a specified log.
      *
-     * @param data the XmlChannel for which to generate the map
-     * @return map of property names and ids
+     * @param data the XmlLog for which to generate the map
+     * @return map of logbook names and ids
      * @throws CFException wrapping an SQLException
      */
-    public static Map<String, Integer> getPropertyIdMap(XmlChannel data) throws CFException {
+    public static Map<String, Integer> getLogbookIdMap(XmlLog data) throws CFException {
         Map<String, Integer> result = new HashMap<String, Integer>();
-        FindPropertyIdsQuery q = new FindPropertyIdsQuery(data);
+        FindLogbookIdsQuery q = new FindLogbookIdsQuery(data);
         try {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
             if (rs != null) {
@@ -98,14 +98,14 @@ public class FindPropertyIdsQuery {
     }
 
     /**
-     * Find the id of a single tag or property.
+     * Find the id of a single tag or logbook.
      *
      * @param name the name to find
      * @return id
      * @throws CFException wrapping an SQLException
      */
-    public static Long getPropertyId(String name) throws CFException {
-        FindPropertyIdsQuery q = new FindPropertyIdsQuery(name);
+    public static Long getLogbookId(String name) throws CFException {
+        FindLogbookIdsQuery q = new FindLogbookIdsQuery(name);
         try {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
             if (rs != null && rs.first()) {

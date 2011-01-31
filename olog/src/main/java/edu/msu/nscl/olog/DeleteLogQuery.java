@@ -3,7 +3,7 @@
  * Copyright (c) 2010 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
-package gov.bnl.channelfinder;
+package edu.msu.nscl.olog;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,18 +14,18 @@ import javax.ws.rs.core.Response;
 /**
  * JDBC query to delete one channel.
  *
- * @author Ralph Lange <Ralph.Lange@bessy.de>
+ * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-public class DeleteChannelQuery {
+public class DeleteLogQuery {
 
-    private String name;
+    private int logId;
 
-    private DeleteChannelQuery(String name) {
-        this.name = name;
+    private DeleteLogQuery(int logId) {
+        this.logId = logId;
     }
 
     /**
-     * Creates and executes a JDBC based query for deleting one channel.
+     * Creates and executes a JDBC based query for deleting one log.
      *
      * @param con db connection to use
      * @param ignoreNoExist flag: true = do not generate an error if channel does not exist
@@ -35,40 +35,40 @@ public class DeleteChannelQuery {
         String query;
         PreparedStatement ps;
         try {
-            query = "DELETE FROM channel WHERE name = ?";
+            query = "DELETE FROM log WHERE name = ?";
             ps = con.prepareStatement(query);
-            ps.setString(1, name);
+            ps.setInt(1, logId);
             int rows = ps.executeUpdate();
             if (rows == 0 && !ignoreNoExist) {
                 throw new CFException(Response.Status.NOT_FOUND,
-                        "Channel '" + name + "' does not exist");
+                        "Channel '" + logId + "' does not exist");
             }
         } catch (SQLException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while deleting channel '" + name + "'", e);
+                    "SQL Exception while deleting log '" + logId + "'", e);
         }
     }
 
     /**
-     * Deletes a channel and its properties/tags from the database, failing if the
-     * channel does not exist.
+     * Deletes a log and its logbooks/tags from the database, failing if the
+     * log does not exist.
      *
-     * @param chan XmlChannel object
+     * @param logId Log id
      * @throws CFException on fail or wrapping an SQLException
      */
-    public static void deleteChannelFailNoexist(String name) throws CFException {
-        DeleteChannelQuery q = new DeleteChannelQuery(name);
+    public static void deleteLogFailNoexist(int logId) throws CFException {
+        DeleteLogQuery q = new DeleteLogQuery(logId);
         q.executeQuery(DbConnection.getInstance().getConnection(), false);
     }
 
     /**
-     * Deletes a channel and its properties/tags from the database.
+     * Deletes a log and its logbooks/tags from the database.
      *
-     * @param chan XmlChannel object
+     * @param logId Log id
      * @throws CFException wrapping an SQLException
      */
-    public static void deleteChannelIgnoreNoexist(String name) throws CFException {
-        DeleteChannelQuery q = new DeleteChannelQuery(name);
+    public static void deleteLogIgnoreNoexist(int logId) throws CFException {
+        DeleteLogQuery q = new DeleteLogQuery(logId);
         q.executeQuery(DbConnection.getInstance().getConnection(), true);
     }
 }

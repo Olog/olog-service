@@ -5,10 +5,10 @@
     <version>1.0.1-SNAPSHOT</version>
     <name>Olog Directory Service</name>
     <description>Olog is a directory server, implemented as a REST style web service.</description>
-    <url>http://channelfinder.sourceforge.net/ChannelFinder/</url>
+    <url>http://olog.sourceforge.net/Olog/</url>
     <developers>
         <developer>
-            <name>Ralph Lange</name>
+            <name>Eric Berryman taken from Ralph Lange</name>
             <organization>BNL / NSLS-II, Helmholtz-Zentrum Berlin / BESSY II</organization>
             <roles>
                 <role>Project Manager</role>
@@ -17,17 +17,17 @@
         </developer>
     </developers>
     <scm>
-        <connection>scm:hg:http://channelfinder.hg.sourceforge.net:8000/hgroot/channelfinder/ChannelFinder</connection>
-        <developerConnection>scm:hg:ssh://user@channelfinder.hg.sourceforge.net/hgroot/channelfinder/ChannelFinder</developerConnection>
-        <url>http://channelfinder.hg.sourceforge.net/hgweb/channelfinder/ChannelFinder/</url>
+        <connection>scm:hg:http://olog.hg.sourceforge.net:8000/hgroot/olog/Olog</connection>
+        <developerConnection>scm:hg:ssh://user@olog.hg.sourceforge.net/hgroot/olog/Olog</developerConnection>
+        <url>http://olog.hg.sourceforge.net/hgweb/olog/Olog/</url>
     </scm>
     <issueManagement>
         <system>trac</system>
-        <url>http://sourceforge.net/apps/trac/channelfinder/</url>
+        <url>http://sourceforge.net/apps/trac/olog/</url>
     </issueManagement>
     <ciManagement>
         <system>Hudson</system>
-        <url>https://irmis-dev.bnl.gov/hudson/view/ChannelFinder/</url>
+        <url>https://irmis-dev.bnl.gov/hudson/view/Olog/</url>
     </ciManagement>
     <repositories>
         <repository>
@@ -88,7 +88,7 @@
                 </configuration>
             </plugin>
         </plugins>
-        <finalName>ChannelFinder</finalName>
+        <finalName>Olog</finalName>
     </build>
     <properties>
         <netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>

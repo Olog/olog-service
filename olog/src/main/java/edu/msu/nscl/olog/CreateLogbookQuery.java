@@ -3,7 +3,7 @@
  * Copyright (c) 2010 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
-package gov.bnl.channelfinder;
+package edu.msu.nscl.olog;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,9 +15,9 @@ import javax.ws.rs.core.Response;
 /**
  * JDBC query to create a property/tag.
  *
- * @author Ralph Lange <Ralph.Lange@bessy.de>
+ * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-public class CreatePropertyQuery {
+public class CreateLogbookQuery {
 
     private String name;
     private String owner;
@@ -27,18 +27,18 @@ public class CreatePropertyQuery {
         if (isTagQuery) {
             return "tag";
         } else {
-            return "property";
+            return "logbook";
         }
     }
 
-    private CreatePropertyQuery(String name, String owner, boolean isTagQuery) {
+    private CreateLogbookQuery(String name, String owner, boolean isTagQuery) {
         this.name = name;
         this.owner = owner;
         this.isTagQuery = isTagQuery;
     }
 
     /**
-     * Executes a JDBC based query to add properties/tags.
+     * Executes a JDBC based query to add Logbooks/tags.
      *
      * @param con database connection to use
      * @throws CFException wrapping an SQLException
@@ -48,7 +48,7 @@ public class CreatePropertyQuery {
         PreparedStatement ps;
 
         // Insert property
-        String query = "INSERT INTO property (name, owner, is_tag) VALUE (?, ?, ?)";
+        String query = "INSERT INTO logbook (name, owner, is_tag) VALUE (?, ?, ?)";
         try {
             ps = con.prepareStatement(query);
             ps.setString(1, name);
@@ -62,14 +62,14 @@ public class CreatePropertyQuery {
     }
 
     /**
-     * Creates a property in the database.
+     * Creates a logbook in the database.
      *
-     * @param name name of property
-     * @param owner owner of property
+     * @param name name of logbook
+     * @param owner owner of logbook
      * @throws CFException wrapping an SQLException
      */
-    public static void createProperty(String name, String owner) throws CFException {
-        CreatePropertyQuery q = new CreatePropertyQuery(name, owner, false);
+    public static void createLogbook(String name, String owner) throws CFException {
+        CreateLogbookQuery q = new CreateLogbookQuery(name, owner, false);
         q.executeQuery(DbConnection.getInstance().getConnection());
     }
 
@@ -80,8 +80,8 @@ public class CreatePropertyQuery {
      * @param owner owner of tag
      * @throws CFException wrapping an SQLException
      */
-    public static void createTag(String name, String owner) throws CFException {
-        CreatePropertyQuery q = new CreatePropertyQuery(name, owner, true);
+    public static void createTag(String name) throws CFException {
+        CreateLogbookQuery q = new CreateLogbookQuery(name, null, true);
         q.executeQuery(DbConnection.getInstance().getConnection());
     }
 }

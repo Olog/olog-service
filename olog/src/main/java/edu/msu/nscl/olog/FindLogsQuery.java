@@ -50,7 +50,7 @@ public class FindLogsQuery {
 
     /**
      * Creates a new instance of FindLogsQuery, sorting the query parameters.
-     * Property matches and tag string matches go to the first inner query,
+     * Logbook matches and tag string matches go to the first inner query,
      * tag pattern matches are queried separately,
      * name matches go to the outer query.
      * Logbook and tag names are converted to lowercase before being matched.
@@ -84,6 +84,10 @@ public class FindLogsQuery {
         } else {
             addTagMatches(Collections.singleton(name));
         }
+    }
+
+    private FindLogsQuery(SearchType searchType, int LOG) {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     /**
@@ -171,7 +175,12 @@ public class FindLogsQuery {
      * @throws CFException wrapping an SQLException
      */
     private ResultSet executeQuery(Connection con) throws CFException {
-        StringBuilder query = new StringBuilder("SELECT * FROM logbook_value WHERE 1=1");
+        StringBuilder query = new StringBuilder("SELECT log.*, t.*, level.name "+
+                                    "FROM logs_logbooks lt, `logs` log, logbooks t, levels level "+
+                                    "WHERE lt.logbook_id = t.id "+
+                                    "AND log.id = lt.log_id "+
+                                    "AND log.level_id = level.id "+
+                                    "GROUP BY lt.id");
         List<Long> id_params = new ArrayList<Long>();       // parameter lists for the outer query
         List<String> name_params = new ArrayList<String>();
         Set<Long> result = new HashSet<Long>();
@@ -219,7 +228,7 @@ public class FindLogsQuery {
             query.replace(query.length() - 4, query.length(), ")");
         }
 
-        query.append(" ORDER BY log, logbook");
+        query.append(" ORDER BY modified DESC");
 
         try {
             PreparedStatement ps = con.prepareStatement(query.toString());
@@ -234,7 +243,7 @@ public class FindLogsQuery {
             return ps.executeQuery();
         } catch (SQLException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception in logs query", e);
+                    "SQL Exception in logs query "+query.toString(), e);
         }
     }
 
@@ -284,12 +293,12 @@ public class FindLogsQuery {
      *
      */
     private static void addLogbook(XmlLog c, ResultSet rs) throws SQLException {
-        if (rs.getString("logbook") != null) {
+        if (rs.getString("t.name") != null) {
             if (rs.getBoolean("is_tag")) {
-                c.addXmlTag(new XmlTag(rs.getString("logbook")));
+                c.addXmlTag(new XmlTag(rs.getString("t.name")));
             } else {
-                c.addXmlLogbook(new XmlLogbook(rs.getString("logbook"),
-                        rs.getString("powner")));
+                c.addXmlLogbook(new XmlLogbook(rs.getString("t.name"),
+                        rs.getString("t.owner")));
             }
         }
     }
@@ -307,12 +316,15 @@ public class FindLogsQuery {
         try {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
 
-            String lastlog = "";
+            int lastlog = 0;
             if (rs != null) {
                 while (rs.next()) {
-                    String thislog = rs.getString("log");
-                    if (!thislog.equals(lastlog) || rs.isFirst()) {
-                        xmlLog = new XmlLog(thislog, rs.getString("cowner"));
+                    int thislog = rs.getInt("log.id");
+                    if (thislog != (lastlog) || rs.isFirst()) {
+                        xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
+                        xmlLog.setSubject(rs.getString("subject"));
+                        xmlLog.setDescription(rs.getString("description"));
+                        xmlLog.setLevel(rs.getString("level.name"));
                         xmlLogs.addXmlLog(xmlLog);
                         lastlog = thislog;
                     }
