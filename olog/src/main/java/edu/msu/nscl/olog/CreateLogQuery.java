@@ -40,7 +40,7 @@ public class CreateLogQuery {
         int i;
         long id;
 
-        // Insert channel
+        // Insert log
         StringBuilder query = new StringBuilder("INSERT INTO log (name, owner) VALUE (?, ?)");
         try {
             ps = con.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);

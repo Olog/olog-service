@@ -60,7 +60,7 @@ public class FindLogsQuery {
     private FindLogsQuery(MultivaluedMap<String, String> matches) {
         for (Map.Entry<String, List<String>> match : matches.entrySet()) {
             String key = match.getKey().toLowerCase();
-            if (key.equals("~name")) {
+            if (key.equals("~subject")) {
                 log_matches.addAll(match.getValue());
             } else if (key.equals("~tag")) {
                 addTagMatches(match.getValue());
@@ -96,29 +96,35 @@ public class FindLogsQuery {
      * @param con connection to use
      * @return a set of log ids that match
      */
+    //TODO:  need to add search params like olog; logs between dates, search all fields, files, etc.
     private Set<Long> getIdsFromLogbookAndTagMatch(Connection con) throws CFException {
-        StringBuilder query = new StringBuilder("SELECT p0.log_id FROM logbook_value p0 WHERE");
+        StringBuilder query = new StringBuilder("SELECT log.*, t.*, level.name "+
+                                    "FROM logs_logbooks lt, `logs` log, logbooks t, levels level "+
+                                    "WHERE lt.logbook_id = t.id "+
+                                    "AND log.id = lt.log_id "+
+                                    "AND log.level_id = level.id "+
+                                    "AND");
         Set<Long> ids = new HashSet<Long>();           // set of matching log ids
         List<String> params = new ArrayList<String>(); // parameter list for this query
 
         for (Map.Entry<String, Collection<String>> match : value_matches.asMap().entrySet()) {
-            StringBuilder valueList = new StringBuilder("p0.value LIKE");
+            StringBuilder valueList = new StringBuilder("log.subject LIKE");
             params.add(match.getKey().toLowerCase());
             for (String value : match.getValue()) {
-                valueList.append(" ? OR p0.value LIKE");
+                valueList.append(" ? OR log.subject LIKE");
                 params.add(convertFileGlobToSQLPattern(value));
             }
-            query.append(" (LOWER(p0.logbook) = ? AND ("
+            query.append(" (LOWER(t.name) = ? AND ("
                     + valueList.substring(0, valueList.length() - 17) + ")) OR");
         }
 
         for (String tag : tag_matches) {
             params.add(convertFileGlobToSQLPattern(tag).toLowerCase());
-            query.append(" LOWER(p0.logbook) LIKE ? OR");
+            query.append(" LOWER(t.name) LIKE ? OR");
         }
 
         query.replace(query.length() - 2, query.length(),
-                "GROUP BY p0.log_id HAVING COUNT(p0.log_id) = ?");
+                "GROUP BY log.id HAVING COUNT(log.id) = ?");
 
         try {
             PreparedStatement ps = con.prepareStatement(query.toString());
@@ -134,7 +140,7 @@ public class FindLogsQuery {
             }
         } catch (SQLException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while getting log ids in logbook match query", e);
+                    "SQL Exception while getting log ids in logbook match query: "+ query.toString(), e);
         }
         return ids;
     }
@@ -180,7 +186,7 @@ public class FindLogsQuery {
                                     "WHERE lt.logbook_id = t.id "+
                                     "AND log.id = lt.log_id "+
                                     "AND log.level_id = level.id "+
-                                    "GROUP BY lt.id");
+                                    "");
         List<Long> id_params = new ArrayList<Long>();       // parameter lists for the outer query
         List<String> name_params = new ArrayList<String>();
         Set<Long> result = new HashSet<Long>();
@@ -211,7 +217,7 @@ public class FindLogsQuery {
         }
 
         if (!result.isEmpty()) {
-            query.append(" AND log_id IN (");
+            query.append(" AND log.id IN (");
             for (long i : result) {
                 query.append("?,");
                 id_params.add(i);
@@ -228,7 +234,7 @@ public class FindLogsQuery {
             query.replace(query.length() - 4, query.length(), ")");
         }
 
-        query.append(" ORDER BY modified DESC");
+        query.append(" GROUP BY lt.id ORDER BY modified DESC");
 
         try {
             PreparedStatement ps = con.prepareStatement(query.toString());
@@ -351,13 +357,16 @@ public class FindLogsQuery {
         try {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
 
-            String lastlog = "";
+            int lastlog = 0;
             if (rs != null) {
                 xmlLogs = new XmlLogs();
                 while (rs.next()) {
-                    String thislog = rs.getString("log");
-                    if (!thislog.equals(lastlog) || rs.isFirst()) {
-                        xmlLog = new XmlLog(thislog, rs.getString("cowner"));
+                    int thislog = rs.getInt("log.id");
+                    if (thislog != lastlog || rs.isFirst()) {
+                        xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
+                        xmlLog.setSubject(rs.getString("subject"));
+                        xmlLog.setDescription(rs.getString("description"));
+                        xmlLog.setLevel(rs.getString("level.name"));
                         xmlLogs.addXmlLog(xmlLog);
                         lastlog = thislog;
                     }
@@ -385,9 +394,12 @@ public class FindLogsQuery {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
             if (rs != null) {
                 while (rs.next()) {
-                    String thislog = rs.getString("log");
+                    String thislog = rs.getString("log.id");
                     if (rs.isFirst()) {
-                        xmlLog = new XmlLog(thislog, rs.getString("cowner"));
+                        xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
+                        xmlLog.setSubject(rs.getString("subject"));
+                        xmlLog.setDescription(rs.getString("description"));
+                        xmlLog.setLevel(rs.getString("level.name"));
                     }
                     addLogbook(xmlLog, rs);
                 }

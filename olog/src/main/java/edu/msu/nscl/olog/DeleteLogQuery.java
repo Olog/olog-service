@@ -35,13 +35,13 @@ public class DeleteLogQuery {
         String query;
         PreparedStatement ps;
         try {
-            query = "DELETE FROM log WHERE name = ?";
+            query = "UPDATE logs, statuses SET logs.status_id = statuses.id WHERE logs.id = ? AND statuses.name = 'delete';";
             ps = con.prepareStatement(query);
             ps.setInt(1, logId);
             int rows = ps.executeUpdate();
             if (rows == 0 && !ignoreNoExist) {
                 throw new CFException(Response.Status.NOT_FOUND,
-                        "Channel '" + logId + "' does not exist");
+                        "Log '" + logId + "' does not exist");
             }
         } catch (SQLException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
