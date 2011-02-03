@@ -69,7 +69,7 @@ public class UpdateValuesQuery {
      * @param owner owner for tag to add
      * @param logId id to add tag to
      */
-    private UpdateValuesQuery(String name, int logId) {
+    private UpdateValuesQuery(String name,Long logId) {
         this.name = name;
         logs = new XmlLogs(new XmlLog(logId));
         isTagQuery = true;
@@ -242,7 +242,7 @@ public class UpdateValuesQuery {
      * @param logId id of log to add tag to
      * @throws CFException wrapping an SQLException
      */
-    public static void updateTag(String tag, int logId) throws CFException {
+    public static void updateTag(String tag,Long logId) throws CFException {
         UpdateValuesQuery q = new UpdateValuesQuery(tag, logId);
         q.executeQuery(DbConnection.getInstance().getConnection());
     }

@@ -272,7 +272,7 @@ public class LogbooksResource {
     @PUT
     @Path("{tagName}/{logId}")
     @Consumes({"application/xml", "application/json"})
-    public Response addSingle(@PathParam("tagName") String logbook, @PathParam("logId") int id, XmlLogbook data) {
+    public Response addSingle(@PathParam("tagName") String logbook, @PathParam("logId") Long logId, XmlLogbook data) {
         DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
@@ -284,7 +284,7 @@ public class LogbooksResource {
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
-            cm.addSingleLogbook(logbook, id, data);
+            cm.addSingleLogbook(logbook, logId, data);
             db.commit();
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
@@ -309,7 +309,7 @@ public class LogbooksResource {
      */
     @DELETE
     @Path("{logbookName}/{logId}")
-    public Response removeSingle(@PathParam("logbookName") String logbook, @PathParam("logId") int id) {
+    public Response removeSingle(@PathParam("logbookName") String logbook, @PathParam("logId") Long logId) {
         DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
@@ -320,7 +320,7 @@ public class LogbooksResource {
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), cm.findLogbookByName(logbook));
             }
-            cm.removeSingleLogbook(logbook, id);
+            cm.removeSingleLogbook(logbook, logId);
             db.commit();
             Response r = Response.ok().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());

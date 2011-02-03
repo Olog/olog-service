@@ -19,7 +19,7 @@ import javax.ws.rs.core.Response;
 public class DeleteLogbookQuery {
 
     private String name;
-    private int logId;
+    private Long logId;
     private boolean removeLogbook = false;
 
     private DeleteLogbookQuery(String name, boolean removeProperty) {
@@ -27,7 +27,7 @@ public class DeleteLogbookQuery {
         this.removeLogbook = removeProperty;
     }
 
-    private DeleteLogbookQuery(String name, int logId) {
+    private DeleteLogbookQuery(String name,Long logId) {
         this.name = name;
         this.logId = logId;
     }
@@ -61,7 +61,7 @@ public class DeleteLogbookQuery {
             try {
                 query = "SELECT id FROM log WHERE name = ?";
                 ps = con.prepareStatement(query);
-                ps.setInt(1, logId);
+                ps.setLong(1, logId);
 
                 ResultSet rs = ps.executeQuery();
                 if (rs.first()) {
@@ -165,7 +165,7 @@ public class DeleteLogbookQuery {
      * @param logId log to delete <tt>name</tt> from
      * @return new FindLogsQuery instance
      */
-    public static void deleteOneValue(String name, int logId) throws CFException {
+    public static void deleteOneValue(String name,Long logId) throws CFException {
         DeleteLogbookQuery q = new DeleteLogbookQuery(name, logId);
         q.executeQuery(DbConnection.getInstance().getConnection(), false);
     }

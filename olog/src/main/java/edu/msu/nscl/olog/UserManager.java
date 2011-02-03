@@ -34,7 +34,7 @@ public class UserManager {
     private ThreadLocal<Collection<String>> groups = new ThreadLocal<Collection<String>>();
     private ThreadLocal<DirContext> ctx = new ThreadLocal<DirContext>();
    //TODO: need to add this to glassfish part 1
-    // private static final String ldapResourceName = "OlogGroups";
+    private static final String ldapResourceName = "channelfinderGroups";
 
     /**
      * LDAP field name for the member UID
@@ -84,9 +84,9 @@ public class UserManager {
                 //dirctx = (DirContext) initCtx.lookup(ldapResourceName);
                 this.ctx.set(dirctx);
             } catch (NamingException e ) {
-                //throw new IllegalStateException("Cannot find JNDI LDAP resource '"
-                //        + ldapResourceName + "'", e);
-                throw new IllegalStateException("Cannot find JNDI LDAP resource ", e);
+                throw new IllegalStateException("Cannot find JNDI LDAP resource '"
+                        + ldapResourceName + "'", e);
+                //throw new IllegalStateException("Cannot find JNDI LDAP resource ", e);
             }
         }
         return dirctx;

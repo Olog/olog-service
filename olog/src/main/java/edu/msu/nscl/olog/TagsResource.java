@@ -258,7 +258,7 @@ public class TagsResource {
     @PUT
     @Path("{tagName}/{logId}")
     @Consumes({"application/xml", "application/json"})
-    public Response addSingle(@PathParam("tagName") String tag, @PathParam("logId") int logId, XmlTag data) {
+    public Response addSingle(@PathParam("tagName") String tag, @PathParam("logId")Long logId, XmlTag data) {
         DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
@@ -292,7 +292,7 @@ public class TagsResource {
      */
     @DELETE
     @Path("{tagName}/{logId}")
-    public Response removeSingle(@PathParam("tagName") String tag, @PathParam("logId") int logId) {
+    public Response removeSingle(@PathParam("tagName") String tag, @PathParam("logId")Long logId) {
         DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();

@@ -19,11 +19,11 @@
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
     <security-constraint>
-        <display-name>Add or Modify Channels</display-name>
+        <display-name>Add or Modify Logs</display-name>
         <web-resource-collection>
-            <web-resource-name>create / update / delete channel(s)</web-resource-name>
+            <web-resource-name>create / update / delete log(s)</web-resource-name>
             <description/>
-            <url-pattern>/resources/channels/*</url-pattern>
+            <url-pattern>/resources/logs/*</url-pattern>
             <http-method>PUT</http-method>
             <http-method>POST</http-method>
             <http-method>DELETE</http-method>
@@ -39,11 +39,11 @@
         </user-data-constraint>
     </security-constraint>
     <security-constraint>
-        <display-name>Add or Modify Properties</display-name>
+        <display-name>Add or Modify Logbooks</display-name>
         <web-resource-collection>
-            <web-resource-name>create / update / delete properties</web-resource-name>
+            <web-resource-name>create / update / delete logbooks</web-resource-name>
             <description/>
-            <url-pattern>/resources/properties/*</url-pattern>
+            <url-pattern>/resources/logbooks/*</url-pattern>
             <http-method>PUT</http-method>
             <http-method>POST</http-method>
             <http-method>DELETE</http-method>

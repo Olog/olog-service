@@ -9,6 +9,7 @@ package edu.msu.nscl.olog;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlAttribute;
+import java.util.Date;
 
 /**
  * Channel object that can be represented as XML/JSON in payload data.
@@ -18,9 +19,12 @@ import javax.xml.bind.annotation.XmlAttribute;
 
 @XmlRootElement(name = "log")
 public class XmlLog {
-    private int id;
+    private Long id;
+    private int version;
     private String owner;
     private String level;
+    private Date createdDate;
+    private Date modifiedDate;
     private String subject;
     private String description;
     private XmlLogbooks logbooks = new XmlLogbooks();
@@ -35,7 +39,7 @@ public class XmlLog {
      *
      * @param subject log subject
      */
-    public XmlLog(int logId) {
+    public XmlLog(Long logId) {
         this.id = logId;
     }
 
@@ -65,7 +69,7 @@ public class XmlLog {
      * @param id log id
      * @param owner log owner
      */
-    public XmlLog(int logId, String owner) {
+    public XmlLog(Long logId, String owner) {
         this.id = logId;
         this.owner = owner;
     }
@@ -76,7 +80,7 @@ public class XmlLog {
      * @return id
      */
     @XmlAttribute
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
@@ -85,8 +89,27 @@ public class XmlLog {
      *
      * @param id
      */
-    public void setId(int id) {
-        this.id = id;
+    public void setId(Long logId) {
+        this.id = logId;
+    }
+
+    /**
+     * Getter for log version id.
+     *
+     * @return versionId
+     */
+    @XmlAttribute
+    public int getVersion() {
+        return version;
+    }
+
+    /**
+     * Setter for log version id.
+     *
+     * @param versionId
+     */
+    public void setVersion(int version) {
+        this.version = version;
     }
 
     /**
@@ -125,6 +148,44 @@ public class XmlLog {
      */
     public void setLevel(String level) {
         this.level = level;
+    }
+
+    /**
+     * Getter for log modified date.
+     *
+     * @return created date
+     */
+    @XmlAttribute
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    /**
+     * Setter for log created date.
+     *
+     * @param created date
+     */
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    /**
+     * Getter for log modified date.
+     *
+     * @return modified date
+     */
+    @XmlAttribute
+    public Date getModifiedDate() {
+        return modifiedDate;
+    }
+
+    /**
+     * Setter for log modified date.
+     *
+     * @param modified date
+     */
+    public void setModifiedDate(Date modifiedDate) {
+        this.modifiedDate = modifiedDate;
     }
 
     /**

@@ -18,9 +18,9 @@ import javax.ws.rs.core.Response;
  */
 public class DeleteLogQuery {
 
-    private int logId;
+    private Long logId;
 
-    private DeleteLogQuery(int logId) {
+    private DeleteLogQuery(Long logId) {
         this.logId = logId;
     }
 
@@ -35,9 +35,9 @@ public class DeleteLogQuery {
         String query;
         PreparedStatement ps;
         try {
-            query = "UPDATE logs, statuses SET logs.status_id = statuses.id WHERE logs.id = ? AND statuses.name = 'delete';";
+            query = "UPDATE logs, statuses SET logs.status_id = statuses.id WHERE (logs.id = ? OR parent_id = ?) AND statuses.name = 'Inactive';";
             ps = con.prepareStatement(query);
-            ps.setInt(1, logId);
+            ps.setLong(1, logId);
             int rows = ps.executeUpdate();
             if (rows == 0 && !ignoreNoExist) {
                 throw new CFException(Response.Status.NOT_FOUND,
@@ -56,7 +56,7 @@ public class DeleteLogQuery {
      * @param logId Log id
      * @throws CFException on fail or wrapping an SQLException
      */
-    public static void deleteLogFailNoexist(int logId) throws CFException {
+    public static void deleteLogFailNoexist(Long logId) throws CFException {
         DeleteLogQuery q = new DeleteLogQuery(logId);
         q.executeQuery(DbConnection.getInstance().getConnection(), false);
     }
@@ -67,7 +67,7 @@ public class DeleteLogQuery {
      * @param logId Log id
      * @throws CFException wrapping an SQLException
      */
-    public static void deleteLogIgnoreNoexist(int logId) throws CFException {
+    public static void deleteLogIgnoreNoexist(Long logId) throws CFException {
         DeleteLogQuery q = new DeleteLogQuery(logId);
         q.executeQuery(DbConnection.getInstance().getConnection(), true);
     }

@@ -35,6 +35,7 @@ public class FindLogsQuery {
     };
     private Multimap<String, String> value_matches = ArrayListMultimap.create();
     private List<String> log_matches = new ArrayList();
+    private List<Long> logId_matches = new ArrayList();
     private List<String> tag_matches = new ArrayList();
     private List<String> tag_patterns = new ArrayList();
 
@@ -86,8 +87,10 @@ public class FindLogsQuery {
         }
     }
 
-    private FindLogsQuery(SearchType searchType, int LOG) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    private FindLogsQuery(SearchType type, Long logId) {
+        if (type == SearchType.LOG) {
+            logId_matches.add(logId);
+        }
     }
 
     /**
@@ -98,12 +101,18 @@ public class FindLogsQuery {
      */
     //TODO:  need to add search params like olog; logs between dates, search all fields, files, etc.
     private Set<Long> getIdsFromLogbookAndTagMatch(Connection con) throws CFException {
-        StringBuilder query = new StringBuilder("SELECT log.*, t.*, level.name "+
-                                    "FROM logs_logbooks lt, `logs` log, logbooks t, levels level "+
-                                    "WHERE lt.logbook_id = t.id "+
-                                    "AND log.id = lt.log_id "+
-                                    "AND log.level_id = level.id "+
-                                    "AND");
+        StringBuilder query = new StringBuilder("SELECT log.*, t.*, level.name, "+
+                                                "(SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, "+
+                                                "(SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children "+
+                                                "FROM `logs` as log "+
+                                                "LEFT JOIN `logs` as parent ON log.id = parent.parent_id "+
+                                                "LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id "+
+                                                "LEFT JOIN logbooks as t ON lt.logbook_id = t.id "+
+                                                "LEFT JOIN levels as level ON log.level_id = level.id "+
+                                                "LEFT JOIN statuses as status ON log.status_id = status.id "+
+                                                "WHERE (parent.parent_id IS NULL and log.parent_id IS NULL "+
+                                                "OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) "+
+                                                "AND status.name = 'Active' AND ");
         Set<Long> ids = new HashSet<Long>();           // set of matching log ids
         List<String> params = new ArrayList<String>(); // parameter list for this query
 
@@ -124,7 +133,7 @@ public class FindLogsQuery {
         }
 
         query.replace(query.length() - 2, query.length(),
-                "GROUP BY log.id HAVING COUNT(log.id) = ?");
+                " GROUP BY log.id HAVING COUNT(log.id) = ? ORDER BY ifnull(parent_created,log.created) DESC");
 
         try {
             PreparedStatement ps = con.prepareStatement(query.toString());
@@ -181,12 +190,18 @@ public class FindLogsQuery {
      * @throws CFException wrapping an SQLException
      */
     private ResultSet executeQuery(Connection con) throws CFException {
-        StringBuilder query = new StringBuilder("SELECT log.*, t.*, level.name "+
-                                    "FROM logs_logbooks lt, `logs` log, logbooks t, levels level "+
-                                    "WHERE lt.logbook_id = t.id "+
-                                    "AND log.id = lt.log_id "+
-                                    "AND log.level_id = level.id "+
-                                    "");
+        StringBuilder query = new StringBuilder("SELECT log.*, t.*, level.name, "+
+                                                "(SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, "+
+                                                "(SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children "+
+                                                "FROM `logs` as log "+
+                                                "LEFT JOIN `logs` as parent ON log.id = parent.parent_id "+
+                                                "LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id "+
+                                                "LEFT JOIN logbooks as t ON lt.logbook_id = t.id "+
+                                                "LEFT JOIN levels as level ON log.level_id = level.id "+
+                                                "LEFT JOIN statuses as status ON log.status_id = status.id "+
+                                                "WHERE (parent.parent_id IS NULL and log.parent_id IS NULL "+
+                                                "OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) "+
+                                                "AND status.name = 'Active' ");
         List<Long> id_params = new ArrayList<Long>();       // parameter lists for the outer query
         List<String> name_params = new ArrayList<String>();
         Set<Long> result = new HashSet<Long>();
@@ -215,7 +230,15 @@ public class FindLogsQuery {
                 }
             }
         }
-
+        if (!logId_matches.isEmpty()) {
+            query.append(" AND log.id IN (");
+            for (long i : logId_matches) {
+                query.append("?,");
+                id_params.add(i);
+            }
+            query.replace(query.length() - 1, query.length(), ")");
+        }
+// TODO: what if parent_id is put in?
         if (!result.isEmpty()) {
             query.append(" AND log.id IN (");
             for (long i : result) {
@@ -234,7 +257,7 @@ public class FindLogsQuery {
             query.replace(query.length() - 4, query.length(), ")");
         }
 
-        query.append(" GROUP BY lt.id ORDER BY modified DESC");
+        query.append(" GROUP BY lt.id ORDER BY ifnull(parent_created,log.created) DESC");
 
         try {
             PreparedStatement ps = con.prepareStatement(query.toString());
@@ -322,12 +345,20 @@ public class FindLogsQuery {
         try {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
 
-            int lastlog = 0;
+            Long lastlog = 0L;
             if (rs != null) {
                 while (rs.next()) {
-                    int thislog = rs.getInt("log.id");
+                    Long thislog = rs.getLong("log.id");
                     if (thislog != (lastlog) || rs.isFirst()) {
-                        xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
+                        if (rs.getLong("log.parent_id")==0L || rs.getLong("log.id")==rs.getLong("log.parent_id")) {
+                            xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
+                            xmlLog.setCreatedDate(rs.getTimestamp("log.created"));
+                        } else {
+                            xmlLog = new XmlLog(rs.getLong("log.parent_id"), rs.getString("log.owner"));
+                            xmlLog.setVersion(rs.getInt("children"));
+                            xmlLog.setCreatedDate(rs.getTimestamp("parent_created"));
+                            xmlLog.setModifiedDate(rs.getTimestamp("log.created"));
+                        }
                         xmlLog.setSubject(rs.getString("subject"));
                         xmlLog.setDescription(rs.getString("description"));
                         xmlLog.setLevel(rs.getString("level.name"));
@@ -357,13 +388,21 @@ public class FindLogsQuery {
         try {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
 
-            int lastlog = 0;
+            Long lastlog = 0L;
             if (rs != null) {
                 xmlLogs = new XmlLogs();
                 while (rs.next()) {
-                    int thislog = rs.getInt("log.id");
+                    Long thislog = rs.getLong("log.id");
                     if (thislog != lastlog || rs.isFirst()) {
-                        xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
+                        if (rs.getLong("log.parent_id")==0L || rs.getLong("log.id")==rs.getLong("log.parent_id")) {
+                            xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
+                            xmlLog.setCreatedDate(rs.getTimestamp("log.created"));
+                        } else {
+                            xmlLog = new XmlLog(rs.getLong("log.parent_id"), rs.getString("log.owner"));
+                            xmlLog.setVersion(rs.getInt("children"));
+                            xmlLog.setCreatedDate(rs.getTimestamp("parent_created"));
+                            xmlLog.setModifiedDate(rs.getTimestamp("log.created"));
+                        }
                         xmlLog.setSubject(rs.getString("subject"));
                         xmlLog.setDescription(rs.getString("description"));
                         xmlLog.setLevel(rs.getString("level.name"));
@@ -387,16 +426,24 @@ public class FindLogsQuery {
      * @return XmlLog with found log and its logbooks
      * @throws CFException on SQLException
      */
-    public static XmlLog findLogById(int logId) throws CFException {
+    public static XmlLog findLogById(Long logId) throws CFException {
         FindLogsQuery q = new FindLogsQuery(SearchType.LOG, logId);
         XmlLog xmlLog = null;
         try {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
             if (rs != null) {
                 while (rs.next()) {
-                    String thislog = rs.getString("log.id");
+                    Long thislog = rs.getLong("log.id");
                     if (rs.isFirst()) {
-                        xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
+                        if (rs.getLong("log.parent_id")==0 || rs.getLong("log.id")==rs.getLong("log.parent_id")) {
+                            xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
+                            xmlLog.setCreatedDate(rs.getTimestamp("log.created"));
+                        } else {
+                            xmlLog = new XmlLog(rs.getLong("log.parent_id"), rs.getString("log.owner"));
+                            xmlLog.setVersion(rs.getInt("children"));
+                            xmlLog.setCreatedDate(rs.getTimestamp("parent_created"));
+                            xmlLog.setModifiedDate(rs.getTimestamp("log.created"));
+                        }
                         xmlLog.setSubject(rs.getString("subject"));
                         xmlLog.setDescription(rs.getString("description"));
                         xmlLog.setLevel(rs.getString("level.name"));

@@ -70,7 +70,7 @@ public class OLogManager {
      * @return XmlLog with found log and its logbooks
      * @throws CFException on SQLException
      */
-    public XmlLog findLogById(int logId) throws CFException {
+    public XmlLog findLogById(Long logId) throws CFException {
         return FindLogsQuery.findLogById(logId);
     }
 
@@ -103,7 +103,7 @@ public class OLogManager {
      * @param logId log to delete
      * @throws CFException wrapping an SQLException
      */
-    public void removeLog(int logId) throws CFException {
+    public void removeLog(Long logId) throws CFException {
         DeleteLogQuery.deleteLogIgnoreNoexist(logId);
     }
 
@@ -113,7 +113,7 @@ public class OLogManager {
      * @param logId log to delete
      * @throws CFException wrapping an SQLException
      */
-    public void removeExistingLog(int logId) throws CFException {
+    public void removeExistingLog(Long logId) throws CFException {
         DeleteLogQuery.deleteLogFailNoexist(logId);
     }
 
@@ -194,7 +194,7 @@ public class OLogManager {
      * @param data XmlLogbook
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public void addSingleLogbook(String logbook, int logId, XmlLogbook data) throws CFException {
+    public void addSingleLogbook(String logbook,Long logId, XmlLogbook data) throws CFException {
         UpdateValuesQuery.updateLogbook(logbook, data);
     }
 
@@ -226,7 +226,7 @@ public class OLogManager {
      * @param logId log to delete it from
      * @throws CFException wrapping an SQLException
      */
-    public void removeSingleLogbook(String logbook, int logId) throws CFException {
+    public void removeSingleLogbook(String logbook,Long logId) throws CFException {
         DeleteLogbookQuery.deleteOneValue(logbook, logId);
     }
 
@@ -304,7 +304,7 @@ public class OLogManager {
      * @param logId
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public void addSingleTag(String tag, int logId) throws CFException {
+    public void addSingleTag(String tag,Long logId) throws CFException {
         UpdateValuesQuery.updateTag(tag, logId);
     }
 
@@ -325,7 +325,7 @@ public class OLogManager {
      * @param logId log to delete it from
      * @throws CFException wrapping an SQLException
      */
-    public void removeSingleTag(String tag, int logId) throws CFException {
+    public void removeSingleTag(String tag,Long logId) throws CFException {
         DeleteLogbookQuery.deleteOneValue(tag, logId);
     }
 
@@ -338,7 +338,7 @@ public class OLogManager {
      * @param data XmlLog data
      * @throws CFException on ownership or name mismatch, or wrapping an SQLException
      */
-    public void createOrReplaceLog(int logId, XmlLog data) throws CFException {
+    public void createOrReplaceLog(Long logId, XmlLog data) throws CFException {
         DeleteLogQuery.deleteLogIgnoreNoexist(logId);
         CreateLogQuery.createLog(data);
     }
@@ -373,7 +373,7 @@ public class OLogManager {
      * @param data XmlLog data containing logbooks and tags
      * @throws CFException on name or owner mismatch, or wrapping an SQLException
      */
-    public void updateLog(int logId, XmlLog data) throws CFException {
+    public void updateLog(Long logId, XmlLog data) throws CFException {
         XmlLog dest = findLogById(logId);
         if (dest == null) {
             throw new CFException(Response.Status.NOT_FOUND,
@@ -394,7 +394,7 @@ public class OLogManager {
      * @throws CFException on name mismatch
      */
     //TODO: fix this
-    public void checkIdMatchesPayload(int logId, XmlLog data) throws CFException {
+    public void checkIdMatchesPayload(Long logId, XmlLog data) throws CFException {
     //    if (!logId.equals(data.getId())) {
     //        throw new CFException(Response.Status.BAD_REQUEST,
     //                "Specified log id '" + logId
@@ -527,7 +527,7 @@ public class OLogManager {
      * @param chan name of log to check ownership for
      * @throws CFException on name mismatch
      */
-    public void checkUserBelongsToGroupOfLog(String user, int logId) throws CFException {
+    public void checkUserBelongsToGroupOfLog(String user,Long logId) throws CFException {
         if (logId == 0) return;
         checkUserBelongsToGroup(user, FindLogsQuery.findLogById(logId));
     }
