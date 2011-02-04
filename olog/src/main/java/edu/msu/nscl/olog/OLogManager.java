@@ -5,6 +5,8 @@
  */
 package edu.msu.nscl.olog;
 
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.util.Collection;
 import java.util.Collections;
@@ -338,7 +340,7 @@ public class OLogManager {
      * @param data XmlLog data
      * @throws CFException on ownership or name mismatch, or wrapping an SQLException
      */
-    public void createOrReplaceLog(Long logId, XmlLog data) throws CFException {
+    public void createOrReplaceLog(Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         DeleteLogQuery.deleteLogIgnoreNoexist(logId);
         CreateLogQuery.createLog(data);
     }
@@ -349,7 +351,7 @@ public class OLogManager {
      * @param data XmlLogs data
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public void createOrReplaceLogs(XmlLogs data) throws CFException {
+    public void createOrReplaceLogs(XmlLogs data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         for (XmlLog log : data.getLogs()) {
             removeLog(log.getId());
             createOneLog(log);
@@ -362,7 +364,7 @@ public class OLogManager {
      * @param data XmlLog data
      * @throws CFException on ownership or name mismatch, or wrapping an SQLException
      */
-    private void createOneLog(XmlLog data) throws CFException {
+    private void createOneLog(XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         CreateLogQuery.createLog(data);
     }
 
@@ -373,7 +375,7 @@ public class OLogManager {
      * @param data XmlLog data containing logbooks and tags
      * @throws CFException on name or owner mismatch, or wrapping an SQLException
      */
-    public void updateLog(Long logId, XmlLog data) throws CFException {
+    public void updateLog(Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         XmlLog dest = findLogById(logId);
         if (dest == null) {
             throw new CFException(Response.Status.NOT_FOUND,

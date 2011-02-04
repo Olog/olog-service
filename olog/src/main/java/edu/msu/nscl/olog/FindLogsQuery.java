@@ -231,21 +231,30 @@ public class FindLogsQuery {
             }
         }
         if (!logId_matches.isEmpty()) {
-            query.append(" AND log.id IN (");
+            query.append(" AND (log.id IN (");
             for (long i : logId_matches) {
                 query.append("?,");
                 id_params.add(i);
             }
-            query.replace(query.length() - 1, query.length(), ")");
+            query.replace(query.length() - 1, query.length(), ") OR log.parent_id IN (");
+            for (long i : logId_matches) {
+                query.append("?,");
+                id_params.add(i);
+            }
+            query.replace(query.length() - 1, query.length(), ")) ");
         }
-// TODO: what if parent_id is put in?
         if (!result.isEmpty()) {
-            query.append(" AND log.id IN (");
+            query.append(" AND (log.id IN (");
             for (long i : result) {
                 query.append("?,");
                 id_params.add(i);
             }
-            query.replace(query.length() - 1, query.length(), ")");
+            query.replace(query.length() - 1, query.length(), ") OR log.parent_id IN (");
+            for (long i : result) {
+                query.append("?,");
+                id_params.add(i);
+            }
+            query.replace(query.length() - 1, query.length(), ")) ");
         }
 
         if (!log_matches.isEmpty()) {

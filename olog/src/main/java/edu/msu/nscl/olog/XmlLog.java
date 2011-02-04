@@ -22,7 +22,10 @@ public class XmlLog {
     private Long id;
     private int version;
     private String owner;
+    private String source;
     private String level;
+    private String md5Entry;
+    private String md5Recent;
     private Date createdDate;
     private Date modifiedDate;
     private String subject;
@@ -186,6 +189,25 @@ public class XmlLog {
      */
     public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
+    }
+
+    /**
+     * Getter for log source IP.
+     *
+     * @return source IP
+     */
+    @XmlAttribute
+    public String getSource() {
+        return source;
+    }
+
+    /**
+     * Setter for log source IP.
+     *
+     * @param source IP
+     */
+    public void setSource(String source) {
+        this.source = source;
     }
 
     /**

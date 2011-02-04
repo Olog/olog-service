@@ -48,7 +48,7 @@ public class FindLogbookIdsQuery {
         PreparedStatement ps;
         List<String> name_params = new ArrayList<String>();
 
-        StringBuilder query = new StringBuilder("SELECT id, name FROM logbook");
+        StringBuilder query = new StringBuilder("SELECT id, name FROM logbooks");
         for (String name : names) {
             if (!query.toString().endsWith(" OR")) {
                 query.append(" WHERE");

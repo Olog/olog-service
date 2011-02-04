@@ -5,12 +5,16 @@
  */
 package edu.msu.nscl.olog;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.Response;
@@ -34,18 +38,23 @@ public class CreateLogQuery {
      * @param con database connection to use
      * @throws CFException wrapping an SQLException
      */
-    private void executeQuery(Connection con) throws CFException {
+    private void executeQuery(Connection con) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         List<List<String>> params = new ArrayList<List<String>>();
         PreparedStatement ps;
         int i;
         long id;
 
         // Insert log
-        StringBuilder query = new StringBuilder("INSERT INTO log (name, owner) VALUE (?, ?)");
+        StringBuilder query = new StringBuilder("INSERT INTO logs "+
+                "(source, owner, level_id, status_id, subject, description, md5entry, md5recent, parent_id) "+
+                "VALUE (?, ?, (SELECT id from levels where name = ?), (SELECT id from statuses where name = 'Active'), ?, ?, '', '', null)");
         try {
             ps = con.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, log.getSubject());
+            ps.setString(1, "::1");
             ps.setString(2, log.getOwner());
+            ps.setString(3, log.getLevel());
+            ps.setString(4, log.getSubject());
+            ps.setString(5, log.getDescription());
             ps.execute();
             ResultSet rs = ps.getGeneratedKeys();
             rs.first();
@@ -54,7 +63,22 @@ public class CreateLogQuery {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "SQL Exception while adding log '" + log.getSubject() +"'", e);
         }
-
+        query = new StringBuilder("UPDATE logs SET md5entry=?, md5recent=?, parent_id=? where id=?");
+        try {
+            ps = con.prepareStatement(query.toString());
+            ps.setString(1, getmd5Entry(con));
+            ps.setString(2, getmd5Recent(con));
+            if(logIdExists(con)){
+                ps.setLong(3, log.getId());
+            } else {
+                ps.setNull(3, java.sql.Types.NULL);
+            }
+            ps.setLong(4, id);
+            ps.execute();
+        } catch (SQLException e) {
+            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "SQL Exception while adding log '" + log.getSubject() +"'", e);
+        }
         // Fetch the logbook/tag ids
         Map<String, Integer> pids = FindLogbookIdsQuery.getLogbookIdMap(log);
 
@@ -63,7 +87,7 @@ public class CreateLogQuery {
                 || this.log.getXmlTags().getTags().size() > 0) {
             params.clear();
             query.setLength(0);
-            query.append("INSERT INTO value (log_id, logbook_id, value) VALUES ");
+            query.append("INSERT INTO logs_logbooks (log_id, logbook_id, status) VALUES ");
             for (XmlLogbook logbook : this.log.getXmlLogbooks().getLogbooks()) {
                 if (pids.get(logbook.getName()) == null) {
                     throw new CFException(Response.Status.NOT_FOUND,
@@ -72,6 +96,7 @@ public class CreateLogQuery {
                 query.append("(?,?,?),");
                 ArrayList<String> par = new ArrayList<String>();
                 par.add(logbook.getName());
+                par.add(null);
                 params.add(par);
             }
             for (XmlTag tag : this.log.getXmlTags().getTags()) {
@@ -111,8 +136,96 @@ public class CreateLogQuery {
      * @param log XmlLog object
      * @throws CFException wrapping an SQLException
      */
-    public static void createLog(XmlLog log) throws CFException {
+    public static void createLog(XmlLog log) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         CreateLogQuery q = new CreateLogQuery(log);
         q.executeQuery(DbConnection.getInstance().getConnection());
+    }
+
+    /**
+     * Check if log already exist
+     *
+     * @return TRUE if log exists
+     */
+    private boolean logIdExists(Connection con) throws CFException {
+        String query = "SELECT id " +
+                       "FROM logs " +
+                       "WHERE id = ?";
+        try {
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setLong(1, log.getId());
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()){
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "SQL Exception while checking if log id exists", e);
+        }
+    }
+
+    /**
+     * Compute md5 for 10 most recent log entries from this log id
+     *
+     * Empty created timestamps are NOT allowed.
+     *
+     * @return md5Recent String of the last 10 md5Entries
+     */
+    private String getmd5Recent(Connection con) throws CFException {
+        String md5Recent = "";
+        String query = "SELECT id, md5entry " +
+                       "FROM logs " +
+                       "WHERE id < ? " +
+                       "ORDER BY id DESC " +
+                       "LIMIT 10";
+
+        try {
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setLong(1, log.getId());
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                md5Recent += rs.getString(1)+" "+rs.getString(2)+"\n";
+            }
+        } catch (SQLException e) {
+            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "SQL Exception while getting recent md5 entries: "+query, e);
+        }
+        return md5Recent;
+    }
+
+    /**
+     * Calculate the md5 for the XmlLog object
+     *
+     * @return md5Entry String MD5 encoded XmlLog Object
+     * @todo Move this to LogEnt as a private function
+     */
+     private String getmd5Entry(Connection con) throws UnsupportedEncodingException, NoSuchAlgorithmException, CFException {
+        String entry;
+        String explodeRecent = "";
+        List<String> explodeRecentArray = new ArrayList<String>();
+        explodeRecentArray = Arrays.asList(getmd5Recent(con).split("\n"));
+
+        for (String line : explodeRecentArray) {
+            if ( (line == null ? "" == null : line.equals("")) || (line == null ? "\n" == null : line.equals("\n")) ) continue;
+            explodeRecent += "md5_recent:" + line + "\n";
+        }
+
+        entry = "id:"           + log.getId()           + "\n" +
+                "level:"        + log.getLevel()        + "\n" +
+                "subject:"      + log.getSubject()      + "\n" +
+                "description:"  + log.getDescription()  + "\n" +
+                "created:"      + log.getCreatedDate()  + "\n" +
+                "modified"      + log.getModifiedDate() + "\n" +
+                "source:"       + log.getSource()       + "\n" +
+                "owner:"        + log.getOwner()        + "\n" +
+                explodeRecent;
+
+        byte[] bytesOfMessage = entry.getBytes("UTF-8");
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        byte[] md5Entry = md.digest(bytesOfMessage);
+        String md5EntryString = new String(md5Entry, "UTF8");
+
+        return md5EntryString;
     }
 }

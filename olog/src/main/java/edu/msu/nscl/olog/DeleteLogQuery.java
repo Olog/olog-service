@@ -38,6 +38,7 @@ public class DeleteLogQuery {
             query = "UPDATE logs, statuses SET logs.status_id = statuses.id WHERE (logs.id = ? OR parent_id = ?) AND statuses.name = 'Inactive';";
             ps = con.prepareStatement(query);
             ps.setLong(1, logId);
+            ps.setLong(2, logId);
             int rows = ps.executeUpdate();
             if (rows == 0 && !ignoreNoExist) {
                 throw new CFException(Response.Status.NOT_FOUND,
