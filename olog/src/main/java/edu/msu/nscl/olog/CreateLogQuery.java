@@ -6,6 +6,7 @@
 package edu.msu.nscl.olog;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
@@ -50,7 +51,7 @@ public class CreateLogQuery {
                 "VALUE (?, ?, (SELECT id from levels where name = ?), (SELECT id from statuses where name = 'Active'), ?, ?, '', '', null)");
         try {
             ps = con.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, "::1");
+            ps.setString(1, log.getSource());
             ps.setString(2, log.getOwner());
             ps.setString(3, log.getLevel());
             ps.setString(4, log.getSubject());
@@ -66,11 +67,12 @@ public class CreateLogQuery {
         query = new StringBuilder("UPDATE logs SET md5entry=?, md5recent=?, parent_id=? where id=?");
         try {
             ps = con.prepareStatement(query.toString());
-            ps.setString(1, getmd5Entry(con));
-            ps.setString(2, getmd5Recent(con));
+            ps.setString(1, getmd5Entry(id, con));
+            ps.setString(2, getmd5Recent(id, con));
             if(logIdExists(con)){
                 ps.setLong(3, log.getId());
             } else {
+                log.setId(id);
                 ps.setNull(3, java.sql.Types.NULL);
             }
             ps.setLong(4, id);
@@ -150,6 +152,8 @@ public class CreateLogQuery {
         String query = "SELECT id " +
                        "FROM logs " +
                        "WHERE id = ?";
+        if(log.getId() == null)
+            return false;
         try {
             PreparedStatement ps = con.prepareStatement(query);
             ps.setLong(1, log.getId());
@@ -172,7 +176,7 @@ public class CreateLogQuery {
      *
      * @return md5Recent String of the last 10 md5Entries
      */
-    private String getmd5Recent(Connection con) throws CFException {
+    private String getmd5Recent(Long logId, Connection con) throws CFException {
         String md5Recent = "";
         String query = "SELECT id, md5entry " +
                        "FROM logs " +
@@ -182,7 +186,7 @@ public class CreateLogQuery {
 
         try {
             PreparedStatement ps = con.prepareStatement(query);
-            ps.setLong(1, log.getId());
+            ps.setLong(1, logId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 md5Recent += rs.getString(1)+" "+rs.getString(2)+"\n";
@@ -200,18 +204,18 @@ public class CreateLogQuery {
      * @return md5Entry String MD5 encoded XmlLog Object
      * @todo Move this to LogEnt as a private function
      */
-     private String getmd5Entry(Connection con) throws UnsupportedEncodingException, NoSuchAlgorithmException, CFException {
+     private String getmd5Entry(Long logId, Connection con) throws UnsupportedEncodingException, NoSuchAlgorithmException, CFException {
         String entry;
         String explodeRecent = "";
         List<String> explodeRecentArray = new ArrayList<String>();
-        explodeRecentArray = Arrays.asList(getmd5Recent(con).split("\n"));
+        explodeRecentArray = Arrays.asList(getmd5Recent(logId, con).split("\n"));
 
         for (String line : explodeRecentArray) {
             if ( (line == null ? "" == null : line.equals("")) || (line == null ? "\n" == null : line.equals("\n")) ) continue;
             explodeRecent += "md5_recent:" + line + "\n";
         }
 
-        entry = "id:"           + log.getId()           + "\n" +
+        entry = "id:"           + logId                 + "\n" +
                 "level:"        + log.getLevel()        + "\n" +
                 "subject:"      + log.getSubject()      + "\n" +
                 "description:"  + log.getDescription()  + "\n" +
@@ -224,7 +228,8 @@ public class CreateLogQuery {
         byte[] bytesOfMessage = entry.getBytes("UTF-8");
         MessageDigest md = MessageDigest.getInstance("MD5");
         byte[] md5Entry = md.digest(bytesOfMessage);
-        String md5EntryString = new String(md5Entry, "UTF8");
+        BigInteger md5Number = new BigInteger(1, md5Entry);
+        String md5EntryString = md5Number.toString(16);
 
         return md5EntryString;
     }

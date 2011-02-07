@@ -10,6 +10,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
@@ -44,11 +45,17 @@ public class OLogManager {
      * @param src source log
      */
     public static void mergeXmlLogs(XmlLog dest, XmlLog src) {
+        if(src.getSubject() != null)
+            dest.setSubject(src.getSubject());
+        if(src.getDescription() !=null )
+            dest.setDescription(src.getDescription());
+        if(src.getLevel() != null)
+            dest.setLevel(src.getLevel());
         src_logbooks:
         for (XmlLogbook s : src.getXmlLogbooks().getLogbooks()) {
             for (XmlLogbook d : dest.getXmlLogbooks().getLogbooks()) {
                 if (d.getName().equals(s.getName())) {
- //TODO: here                   d.setValue(s.getValue());
+ //TODO: here                   d.setStatus(s.getStatus());
                     continue src_logbooks;
                 }
             }
@@ -340,7 +347,8 @@ public class OLogManager {
      * @param data XmlLog data
      * @throws CFException on ownership or name mismatch, or wrapping an SQLException
      */
-    public void createOrReplaceLog(Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public void createOrReplaceLog(List<String> hostAddress, Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        data.setSource(hostAddress.toString().trim());
         DeleteLogQuery.deleteLogIgnoreNoexist(logId);
         CreateLogQuery.createLog(data);
     }
@@ -351,8 +359,9 @@ public class OLogManager {
      * @param data XmlLogs data
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public void createOrReplaceLogs(XmlLogs data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public void createOrReplaceLogs(List<String> hostAddress, XmlLogs data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         for (XmlLog log : data.getLogs()) {
+            log.setSource(hostAddress.toString().trim());
             removeLog(log.getId());
             createOneLog(log);
         }
@@ -375,7 +384,7 @@ public class OLogManager {
      * @param data XmlLog data containing logbooks and tags
      * @throws CFException on name or owner mismatch, or wrapping an SQLException
      */
-    public void updateLog(Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public void updateLog(List<String> hostAddress, Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         XmlLog dest = findLogById(logId);
         if (dest == null) {
             throw new CFException(Response.Status.NOT_FOUND,
@@ -385,7 +394,7 @@ public class OLogManager {
         dest.setId(data.getId());
         dest.setOwner(data.getOwner());
         mergeXmlLogs(dest, data);
-        createOrReplaceLog(logId, dest);
+        createOrReplaceLog(hostAddress, logId, dest);
     }
 
     /**
@@ -405,15 +414,15 @@ public class OLogManager {
     }
 
     /**
-     * Check the log in <tt>data</tt> for valid id/owner data.
+     * Check the log in <tt>data</tt> for valid subject/owner data.
      *
      * @param data XmlLog data to check
      * @throws CFException on error
      */
-    public void checkValidIdAndOwner(XmlLog data) throws CFException {
-        if (data.getId() == 0) {
+    public void checkValidSubjectAndOwner(XmlLog data) throws CFException {
+        if (data.getSubject() == null || data.getSubject().isEmpty()) {
             throw new CFException(Response.Status.BAD_REQUEST,
-                    "Invalid log id (null or empty string)");
+                    "Invalid log subject (null or empty string)");
         }
         if (data.getOwner() == null || data.getOwner().equals("")) {
             throw new CFException(Response.Status.BAD_REQUEST,
@@ -422,15 +431,15 @@ public class OLogManager {
     }
 
     /**
-     * Check all logs in <tt>data</tt> for valid id/owner data.
+     * Check all logs in <tt>data</tt> for valid subject/owner data.
      *
      * @param data XmlLogs data to check
      * @throws CFException on error
      */
-    public void checkValidIdAndOwner(XmlLogs data) throws CFException {
+    public void checkValidSubjectAndOwner(XmlLogs data) throws CFException {
         if (data == null || data.getLogs() == null) return;
         for (XmlLog c : data.getLogs()) {
-            checkValidIdAndOwner(c);
+            checkValidSubjectAndOwner(c);
         }
     }
 

@@ -7,6 +7,9 @@
 package edu.msu.nscl.olog;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
@@ -20,6 +23,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.HttpHeaders;
 
 /**
  * Top level Jersey HTTP methods for the .../logs URL
@@ -81,19 +85,20 @@ public class LogsResource {
      */
     @POST
     @Consumes({"application/xml", "application/json"})
-    public Response add(XmlLogs data) throws IOException {
+    public Response add(@Context HttpHeaders headers,XmlLogs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException {
         DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
+        List<String> hostAddress = headers.getRequestHeader("HOST");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
-            cm.checkValidIdAndOwner(data);
+            cm.checkValidSubjectAndOwner(data);
             db.getConnection();
             db.beginTransaction();
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
-            cm.createOrReplaceLogs(data);
+            cm.createOrReplaceLogs(hostAddress,data);
             db.commit();
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
@@ -156,20 +161,21 @@ public class LogsResource {
     @PUT
     @Path("{logId}")
     @Consumes({"application/xml", "application/json"})
-    public Response create(@PathParam("logId") Long logId, XmlLog data) {
+    public Response create(@Context HttpHeaders headers, @PathParam("logId") Long logId, XmlLog data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
+        List<String> hostAddress = headers.getRequestHeader("HOST");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
-            cm.checkValidIdAndOwner(data);
+            cm.checkValidSubjectAndOwner(data);
             cm.checkIdMatchesPayload(logId, data);
             db.getConnection();
             db.beginTransaction();
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
-            cm.createOrReplaceLog(logId, data);
+            cm.createOrReplaceLog(hostAddress, logId, data);
             db.commit();
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
@@ -195,20 +201,21 @@ public class LogsResource {
     @POST
     @Path("{logId}")
     @Consumes({"application/xml", "application/json"})
-    public Response update(@PathParam("logId") Long logId, XmlLog data) {
+    public Response update(@Context HttpHeaders headers, @PathParam("logId") Long logId, XmlLog data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
+        List<String> hostAddress = headers.getRequestHeader("HOST");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
-            cm.checkValidIdAndOwner(data);
+            cm.checkValidSubjectAndOwner(data);
             db.getConnection();
             db.beginTransaction();
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroupOfLog(um.getUserName(), logId);
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
-            cm.updateLog(logId, data);
+            cm.updateLog(hostAddress, logId, data);
             db.commit();
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()

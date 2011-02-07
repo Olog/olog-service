@@ -34,6 +34,9 @@ public class DeleteLogQuery {
     private void executeQuery(Connection con, boolean ignoreNoExist) throws CFException {
         String query;
         PreparedStatement ps;
+        if (logId == null) {
+            return;
+        }
         try {
             query = "UPDATE logs, statuses SET logs.status_id = statuses.id WHERE (logs.id = ? OR parent_id = ?) AND statuses.name = 'Inactive';";
             ps = con.prepareStatement(query);
