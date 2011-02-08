@@ -45,9 +45,9 @@ public class DeleteLogbookQuery {
         String query;
 
         // Get property id
-        Long pid = FindLogbookIdsQuery.getLogbookId(name);
+        Long lid = FindLogbookIdsQuery.getLogbookId(name);
 
-        if (pid == null) {
+        if (lid == null) {
             if (ignoreNoExist) {
                 return;
             } else {
@@ -55,11 +55,10 @@ public class DeleteLogbookQuery {
                         "Property/tag '" + name + "' does not exist");
             }
         }
-// TODO: Don't need this
-        if (logId != 0) {
-            // Get log id
+
+        if (logId != null) {
             try {
-                query = "SELECT id FROM log WHERE name = ?";
+                query = "SELECT id FROM logs WHERE id = ?";
                 ps = con.prepareStatement(query);
                 ps.setLong(1, logId);
 
@@ -77,9 +76,9 @@ public class DeleteLogbookQuery {
             }
             // Delete values for log
             try {
-                query = "DELETE FROM value WHERE logbook_id = ? AND log_id = ?";
+                query = "DELETE FROM logs_logbooks WHERE logbook_id = ? AND log_id = ?";
                 ps = con.prepareStatement(query);
-                ps.setLong(1, pid);
+                ps.setLong(1, lid);
                 ps.setLong(2, cid);
                 int rows = ps.executeUpdate();
                 if (rows == 0 && !ignoreNoExist) {
@@ -97,9 +96,9 @@ public class DeleteLogbookQuery {
 
             if (removeLogbook) {
                 try {
-                    query = "DELETE FROM logbook WHERE id = ?";
+                    query = "DELETE FROM logbooks WHERE id = ?";
                     ps = con.prepareStatement(query);
-                    ps.setLong(1, pid);
+                    ps.setLong(1, lid);
                     int rows = ps.executeUpdate();
                 } catch (SQLException e) {
                     throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
@@ -107,9 +106,9 @@ public class DeleteLogbookQuery {
                 }
             } else {
                 try {
-                    query = "DELETE FROM value WHERE logbook_id = ?";
+                    query = "DELETE FROM logs_logbooks WHERE logbook_id = ?";
                     ps = con.prepareStatement(query);
-                    ps.setLong(1, pid);
+                    ps.setLong(1, lid);
                     int rows = ps.executeUpdate();
                     if (rows == 0 && !ignoreNoExist) {
                         throw new CFException(Response.Status.NOT_FOUND,
@@ -163,7 +162,6 @@ public class DeleteLogbookQuery {
      *
      * @param name logbook/tag name
      * @param logId log to delete <tt>name</tt> from
-     * @return new FindLogsQuery instance
      */
     public static void deleteOneValue(String name,Long logId) throws CFException {
         DeleteLogbookQuery q = new DeleteLogbookQuery(name, logId);

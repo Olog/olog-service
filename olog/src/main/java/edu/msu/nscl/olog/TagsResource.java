@@ -42,7 +42,6 @@ public class TagsResource {
     /**
      * GET method for retrieving the list of tags in the database.
      *
-     * @param name URI path parameter: tag name to search for
      * @return list of logs with their logbooks and tags that match
      */
 

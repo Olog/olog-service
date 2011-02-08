@@ -26,16 +26,16 @@ public class XmlLogs {
     }
 
     /** Creates a new instance of XmlLogs with one initial log.
-     * @param c initial element
+     * @param log XmlLog initial element
      */
-    public XmlLogs(XmlLog c) {
-        logs.add(c);
+    public XmlLogs(XmlLog log) {
+        logs.add(log);
     }
 
     /**
      * Returns a collection of XmlLog.
      *
-     * @return a collection of XmlLog
+     * @return logs a collection of XmlLog
      */
     @XmlElement(name = "log")
     public Collection<XmlLog> getLogs() {

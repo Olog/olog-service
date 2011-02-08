@@ -86,7 +86,7 @@ public class OLogManager {
     /**
      * Return logs found by matching tags against a collection of name patterns.
      *
-     * @param matches collection of name patterns to match
+     * @param name matches collection of name patterns to match
      * @return XmlLogs container with all found logs and their properties
      * @throws CFException wrapping an SQLException
      */
@@ -359,12 +359,14 @@ public class OLogManager {
      * @param data XmlLogs data
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public void createOrReplaceLogs(List<String> hostAddress, XmlLogs data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public XmlLogs createOrReplaceLogs(List<String> hostAddress, XmlLogs data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        XmlLogs xmlLogs = new XmlLogs();
         for (XmlLog log : data.getLogs()) {
             log.setSource(hostAddress.toString().trim());
             removeLog(log.getId());
-            createOneLog(log);
+            xmlLogs.addXmlLog(createOneLog(log));
         }
+        return xmlLogs;
     }
 
     /**
@@ -373,8 +375,8 @@ public class OLogManager {
      * @param data XmlLog data
      * @throws CFException on ownership or name mismatch, or wrapping an SQLException
      */
-    private void createOneLog(XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        CreateLogQuery.createLog(data);
+    private XmlLog createOneLog(XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        return CreateLogQuery.createLog(data);
     }
 
     /**
@@ -535,7 +537,7 @@ public class OLogManager {
      * log <tt>logId</tt>.
      *
      * @param user user name
-     * @param chan name of log to check ownership for
+     * @param logId name of log to check ownership for
      * @throws CFException on name mismatch
      */
     public void checkUserBelongsToGroupOfLog(String user,Long logId) throws CFException {

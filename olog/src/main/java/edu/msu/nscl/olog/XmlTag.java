@@ -43,7 +43,7 @@ public class XmlTag {
      * Creates a new instance of XmlTag.
      *
      * @param name
-     * @param owner
+     * @param status
      */
     public XmlTag(String name, String status) {
         this.name = name;
@@ -53,7 +53,7 @@ public class XmlTag {
     /**
      * Getter for tag name.
      *
-     * @return tag name
+     * @return name tag name
      */
     @XmlAttribute
     public String getName() {
@@ -72,7 +72,7 @@ public class XmlTag {
     /**
      * Getter for tag status.
      *
-     * @return tag status
+     * @return status tag status
      */
     @XmlAttribute
     public String getStatus() {
@@ -82,7 +82,7 @@ public class XmlTag {
     /**
      * Setter for tag status.
      *
-     * @param owner tag status
+     * @param status tag status
      */
     public void setStatus(String status) {
         this.status = status;
@@ -91,7 +91,7 @@ public class XmlTag {
     /**
      * Getter for tag's XmlLogs.
      *
-     * @return XmlLogs object
+     * @return logs XmlLogs object
      */
     @XmlElement(name = "logs")
     public XmlLogs getXmlLogs() {

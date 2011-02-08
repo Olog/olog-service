@@ -48,7 +48,7 @@ public class CreateLogbookQuery {
         PreparedStatement ps;
 
         // Insert property
-        String query = "INSERT INTO logbook (name, owner, is_tag) VALUE (?, ?, ?)";
+        String query = "INSERT INTO logbooks (name, owner, is_tag) VALUE (?, ?, ?)";
         try {
             ps = con.prepareStatement(query);
             ps.setString(1, name);
@@ -77,7 +77,6 @@ public class CreateLogbookQuery {
      * Creates a tag in the database.
      *
      * @param name name of tag
-     * @param owner owner of tag
      * @throws CFException wrapping an SQLException
      */
     public static void createTag(String name) throws CFException {

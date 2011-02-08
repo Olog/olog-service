@@ -387,7 +387,7 @@ public class FindLogsQuery {
     /**
      * Returns logs found by matching logbook/tag and/or log names.
      *
-     * @param query query to be used for matching
+     * @param name query to be used for matching
      * @return XmlLogs container with all found logs and their logbooks/tags
      */
     public static XmlLogs findLogsByLogbookName(String name) throws CFException {

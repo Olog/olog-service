@@ -85,6 +85,7 @@ public class LogsResource {
      */
     @POST
     @Consumes({"application/xml", "application/json"})
+    @Produces({"application/xml", "application/json"})
     public Response add(@Context HttpHeaders headers,XmlLogs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException {
         DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
@@ -98,9 +99,9 @@ public class LogsResource {
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
-            cm.createOrReplaceLogs(hostAddress,data);
+            XmlLogs result = cm.createOrReplaceLogs(hostAddress,data);
             db.commit();
-            Response r = Response.noContent().build();
+            Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLogs.toLog(data));
             return r;
@@ -116,7 +117,7 @@ public class LogsResource {
     /**
      * GET method for retrieving an instance of Log identified by <tt>id</tt>.
      *
-     * @param id log id
+     * @param logId log id
      * @return HTTP Response
      */
     @GET
@@ -154,7 +155,7 @@ public class LogsResource {
      * The <b>complete</b> set of logbooks/tags for the log must be supplied,
      * which will replace the existing set of logbooks/tags.
      *
-     * @param id id of log to edit
+     * @param logId id of log to edit
      * @param data new data (logbooks/tags) for log <tt>id</tt>
      * @return HTTP response
      */
@@ -194,7 +195,7 @@ public class LogsResource {
      * POST method for merging logbooks and tags of the Log identified by the
      * payload into an existing log.
      *
-     * @param id id of channel to add
+     * @param logId id of channel to add
      * @param data new XmlLog data (logbooks/tags) to be merged into log <tt>id</tt>
      * @return HTTP response
      */
@@ -234,7 +235,7 @@ public class LogsResource {
      * DELETE method for deleting a log instance identified by
      * path parameter <tt>id</tt>.
      *
-     * @param id log to remove
+     * @param logId log to remove
      * @return HTTP Response
      */
     @DELETE

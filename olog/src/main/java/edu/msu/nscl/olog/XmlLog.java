@@ -12,9 +12,9 @@ import javax.xml.bind.annotation.XmlAttribute;
 import java.util.Date;
 
 /**
- * Channel object that can be represented as XML/JSON in payload data.
+ * Log object that can be represented as XML/JSON in payload data.
  *
- * @author berryman from Ralph Lange <Ralph.Lange@bessy.de>
+ * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 
 @XmlRootElement(name = "log")
@@ -40,7 +40,7 @@ public class XmlLog {
     /**
      * Creates a new instance of XmlLog.
      *
-     * @param subject log subject
+     * @param logId Log id
      */
     public XmlLog(Long logId) {
         this.id = logId;
@@ -72,8 +72,8 @@ public class XmlLog {
      * @param id log id
      * @param owner log owner
      */
-    public XmlLog(Long logId, String owner) {
-        this.id = logId;
+    public XmlLog(Long id, String owner) {
+        this.id = id;
         this.owner = owner;
     }
 
@@ -92,14 +92,14 @@ public class XmlLog {
      *
      * @param id
      */
-    public void setId(Long logId) {
-        this.id = logId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     /**
      * Getter for log version id.
      *
-     * @return versionId
+     * @return version
      */
     @XmlAttribute
     public int getVersion() {
@@ -109,7 +109,7 @@ public class XmlLog {
     /**
      * Setter for log version id.
      *
-     * @param versionId
+     * @param version
      */
     public void setVersion(int version) {
         this.version = version;
@@ -145,7 +145,7 @@ public class XmlLog {
     }
 
     /**
-     * Setter for log owner.
+     * Setter for log level.
      *
      * @param level
      */
@@ -154,9 +154,9 @@ public class XmlLog {
     }
 
     /**
-     * Getter for log modified date.
+     * Getter for log created date.
      *
-     * @return created date
+     * @return createdDate
      */
     @XmlAttribute
     public Date getCreatedDate() {
@@ -166,7 +166,7 @@ public class XmlLog {
     /**
      * Setter for log created date.
      *
-     * @param created date
+     * @param createdDate
      */
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
@@ -175,7 +175,7 @@ public class XmlLog {
     /**
      * Getter for log modified date.
      *
-     * @return modified date
+     * @return modifiedDate
      */
     @XmlAttribute
     public Date getModifiedDate() {
@@ -185,7 +185,7 @@ public class XmlLog {
     /**
      * Setter for log modified date.
      *
-     * @param modified date
+     * @param modifiedDate
      */
     public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
@@ -251,7 +251,7 @@ public class XmlLog {
     /**
      * Getter for log's XmlLogbooks.
      *
-     * @return XmlLogbooks
+     * @return logbooks XmlLogbooks
      */
     @XmlElement(name = "logbooks")
     public XmlLogbooks getXmlLogbooks() {
@@ -279,7 +279,7 @@ public class XmlLog {
     /**
      * Getter for the log's XmlTags.
      *
-     * @return XmlTags for this log
+     * @return tags XmlTags for this log
      */
     @XmlElement(name = "tags")
     public XmlTags getXmlTags() {
@@ -298,7 +298,7 @@ public class XmlLog {
     /**
      * Adds an XmlTag to the collection.
      *
-     * @param tag
+     * @param tag XmlTag
      */
     public void addXmlTag(XmlTag tag) {
         this.tags.addXmlTag(tag);

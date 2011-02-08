@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Logs (collection) object that can be represented as XML/JSON in payload data.
+ * Tags (collection) object that can be represented as XML/JSON in payload data.
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
@@ -26,10 +26,10 @@ public class XmlTags {
     }
 
     /** Creates a new instance of XmlTags with one initial tag.
-     * @param c initial element
+     * @param tag initial element
      */
-    public XmlTags(XmlTag t) {
-        tags.add(t);
+    public XmlTags(XmlTag tag) {
+        tags.add(tag);
     }
 
     /**

@@ -42,7 +42,6 @@ public class LogbooksResource {
     /**
      * GET method for retrieving the list of logbooks in the database.
      *
-     * @param name URI path parameter: tag name to search for
      * @return list of logs with their logbooks and tags that match
      */
 
@@ -111,7 +110,7 @@ public class LogbooksResource {
      * GET method for retrieving the logbook with the
      * path parameter <tt>logbookName</tt> and its logs.
      *
-     * @param prop URI path parameter: logbook name to search for
+     * @param logbook URI path parameter: logbook name to search for
      * @return list of logs with their logbooks and tags that match
      */
     @GET
@@ -265,14 +264,14 @@ public class LogbooksResource {
      * <tt>id</tt> (both path parameters).
      *
      * @param logbook URI path parameter: logbook name
-     * @param id URI path parameter: log to addSingle <tt>logbook</tt> to
+     * @param logId URI path parameter: log to addSingle <tt>logbook</tt> to
      * @param data tag data (specifying tag ownership)
      * @return HTTP Response
      */
     @PUT
-    @Path("{tagName}/{logId}")
+    @Path("{logbookName}/{logId}")
     @Consumes({"application/xml", "application/json"})
-    public Response addSingle(@PathParam("tagName") String logbook, @PathParam("logId") Long logId, XmlLogbook data) {
+    public Response addSingle(@PathParam("logbookName") String logbook, @PathParam("logId") Long logId, XmlLogbook data) {
         DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
@@ -304,7 +303,7 @@ public class LogbooksResource {
      * <tt>id</tt> (both path parameters).
      *
      * @param logbook URI path parameter: logbook name to remove
-     * @param id URI path parameter: log to remove <tt>logbook</tt> from
+     * @param logId URI path parameter: log to remove <tt>logbook</tt> from
      * @return HTTP Response
      */
     @DELETE

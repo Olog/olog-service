@@ -39,7 +39,7 @@ public class ListLogbooksQuery {
         PreparedStatement ps;
         List<String> name_params = new ArrayList<String>();
 
-        StringBuilder query = new StringBuilder("SELECT id, name, owner FROM logbook ");
+        StringBuilder query = new StringBuilder("SELECT id, name, owner FROM logbooks ");
 
         if (isTagQuery) {
             query.append("WHERE is_tag = TRUE");

@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 /**
- * Property object that can be represented as XML/JSON in payload data.
+ * Logbook object that can be represented as XML/JSON in payload data.
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
@@ -44,7 +44,7 @@ public class XmlLogbook {
     /**
      * Getter for logbook name.
      *
-     * @return logbook name
+     * @return name logbook name
      */
     @XmlAttribute
     public String getName() {
@@ -63,7 +63,7 @@ public class XmlLogbook {
     /**
      * Getter for logbook owner.
      *
-     * @return logbook owner
+     * @return owner logbook owner
      */
     @XmlAttribute
     public String getOwner() {
@@ -82,7 +82,7 @@ public class XmlLogbook {
     /**
      * Getter for logbook's XmlLogs.
      *
-     * @return XmlLogs object
+     * @return logs XmlLogs object
      */
     @XmlElement(name = "logs")
     public XmlLogs getXmlLogs() {

@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Logs (collection) object that can be represented as XML/JSON in payload data.
+ * Logbooks (collection) object that can be represented as XML/JSON in payload data.
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
@@ -26,16 +26,16 @@ public class XmlLogbooks {
     }
 
     /** Creates a new instance of XmlLogbooks with one initial logbook.
-     * @param c initial element
+     * @param logbook initial element
      */
-    public XmlLogbooks(XmlLogbook p) {
-        logbooks.add(p);
+    public XmlLogbooks(XmlLogbook logbook) {
+        logbooks.add(logbook);
     }
 
     /**
      * Returns a collection of XmlLogbook.
      *
-     * @return a collection of XmlLogbook
+     * @return logbooks a collection of XmlLogbook
      */
     @XmlElement(name = "logbook")
     public Collection<XmlLogbook> getLogbooks() {

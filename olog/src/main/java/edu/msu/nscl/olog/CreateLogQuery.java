@@ -39,7 +39,7 @@ public class CreateLogQuery {
      * @param con database connection to use
      * @throws CFException wrapping an SQLException
      */
-    private void executeQuery(Connection con) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    private XmlLog executeQuery(Connection con) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         List<List<String>> params = new ArrayList<List<String>>();
         PreparedStatement ps;
         int i;
@@ -130,6 +130,7 @@ public class CreateLogQuery {
                         "SQL Exception while adding logbooks/tags for log '" + log.getSubject() + "'", e);
             }
         }
+        return log;
     }
 
     /**
@@ -138,9 +139,9 @@ public class CreateLogQuery {
      * @param log XmlLog object
      * @throws CFException wrapping an SQLException
      */
-    public static void createLog(XmlLog log) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public static XmlLog createLog(XmlLog log) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         CreateLogQuery q = new CreateLogQuery(log);
-        q.executeQuery(DbConnection.getInstance().getConnection());
+        return q.executeQuery(DbConnection.getInstance().getConnection());
     }
 
     /**
