@@ -283,14 +283,16 @@ public class OLogManager {
      * to the logs specified in the XmlTag payload <tt>data</tt>, creating it
      * if necessary.
      *
+     * @TODO Right now, this is only a create tag; not create/replace.
+     *       To Delete, and recreate log key ids every time is too expensive
      * @param tag tag to add
      * @param data XmlTag container with all logs to add tag to
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
     public void createOrReplaceTag(String tag, XmlTag data) throws CFException {
-        DeleteLogbookQuery.removeLogbook(tag);
+        //DeleteLogbookQuery.removeLogbook(tag);
         CreateLogbookQuery.createTag(data.getName());
-        UpdateValuesQuery.updateTag(data.getName(), data);
+        //UpdateValuesQuery.updateTag(data.getName(), data);
     }
 
     /**

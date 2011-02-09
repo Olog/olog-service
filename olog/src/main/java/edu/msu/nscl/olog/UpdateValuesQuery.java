@@ -106,7 +106,7 @@ public class UpdateValuesQuery {
             dbowner = p.getOwner();
         }
         if ((oldname != null && !oldname.equals(name)) || (owner != null && !dbowner.equals(owner))) {
-            String q = "UPDATE logbook SET name = ?, owner = ? WHERE id = ?";
+            String q = "UPDATE logbooks SET name = ?, owner = ? WHERE id = ?";
             try {
                 ps = con.prepareStatement(q.toString());
                 ps.setString(1, name);
@@ -124,34 +124,34 @@ public class UpdateValuesQuery {
         if (logs == null) return;
 
         // Get Log ids
-        StringBuilder query = new StringBuilder("SELECT id, name FROM log WHERE ");
+        StringBuilder query = new StringBuilder("SELECT id, name FROM logs WHERE ");
         for (XmlLog log : logs.getLogs()) {
-            query.append("name = ? OR ");
-            params.add(log.getSubject());
-        }
-        query.setLength(query.length() - 3);
-
-        try {
-            ps = con.prepareStatement(query.toString());
-            i = 1;
-            for (String p : params) {
-                ps.setString(i++, p);
-            }
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
+//            query.append("name = ? OR ");
+//            params.add(log.getId());
+//        }
+//        query.setLength(query.length() - 3);
+//
+//        try {
+//            ps = con.prepareStatement(query.toString());
+//            i = 1;
+//            for (String p : params) {
+//                ps.setString(i++, p);
+//            }
+//
+//            ResultSet rs = ps.executeQuery();
+//            while (rs.next()) {
                 // Add key to map of matching log ids
-                ids.put(rs.getString("name"), rs.getLong("id"));
+                ids.put(null, log.getId());
             }
-        } catch (SQLException e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while retrieving log ids for insertion of "
-                    + getType() + " '" + name + "'", e);
-        }
+        //} catch (SQLException e) {
+        //    throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+        //            "SQL Exception while retrieving log ids for insertion of "
+        //            + getType() + " '" + name + "'", e);
+        //}
 
         if (ids.isEmpty()) {
             throw new CFException(Response.Status.NOT_FOUND,
-                    "Channels specified in " + getType() + " update do not exist");
+                    "Logs specified in " + getType() + " update do not exist");
         }
 
         // Get values from payload
@@ -166,7 +166,7 @@ public class UpdateValuesQuery {
         // Remove existing values for the specified logs
         query.setLength(0);
         params.clear();
-        query.append("DELETE FROM value WHERE logbook_id = ? AND log_id IN (");
+        query.append("DELETE FROM logs_logbooks WHERE logbook_id = ? AND log_id IN (");
         for (Long id : ids.values()) {
             query.append("?, ");
         }
@@ -189,7 +189,7 @@ public class UpdateValuesQuery {
         // Add new values
         query.setLength(0);
         params.clear();
-        query.append("INSERT INTO value (log_id, logbook_id, value) VALUES ");
+        query.append("INSERT INTO logs_logbooks (log_id, logbook_id, status) VALUES ");
         for (Long id : ids.values()) {
             query.append("(?,?,?),");
         }

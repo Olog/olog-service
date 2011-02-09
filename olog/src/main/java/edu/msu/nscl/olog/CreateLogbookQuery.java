@@ -56,8 +56,18 @@ public class CreateLogbookQuery {
             ps.setBoolean(3, isTagQuery);
             ps.execute();
         } catch (SQLException e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while adding " + getType() + " '" + name +"'", e);
+            try {
+                query = "UPDATE logbooks SET name=?,owner=?,is_tag=? WHERE name=?";
+                ps = con.prepareStatement(query);
+                ps.setString(1, name);
+                ps.setString(2, owner);
+                ps.setBoolean(3, isTagQuery);
+                ps.setString(4, name);
+                ps.execute();
+            } catch (SQLException e2) {
+                throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "SQL Exception while adding " + getType() + " '" + name +"'"+e, e2);
+            }
         }
     }
 

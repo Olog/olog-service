@@ -22,9 +22,9 @@ public class DeleteLogbookQuery {
     private Long logId;
     private boolean removeLogbook = false;
 
-    private DeleteLogbookQuery(String name, boolean removeProperty) {
+    private DeleteLogbookQuery(String name, boolean removeLogbook) {
         this.name = name;
-        this.removeLogbook = removeProperty;
+        this.removeLogbook = removeLogbook;
     }
 
     private DeleteLogbookQuery(String name,Long logId) {
@@ -52,7 +52,7 @@ public class DeleteLogbookQuery {
                 return;
             } else {
                 throw new CFException(Response.Status.NOT_FOUND,
-                        "Property/tag '" + name + "' does not exist");
+                        "Logbook/tag '" + name + "' does not exist");
             }
         }
 
