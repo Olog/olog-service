@@ -39,16 +39,17 @@ public class ListLogbooksQuery {
         PreparedStatement ps;
         List<String> name_params = new ArrayList<String>();
 
-        StringBuilder query = new StringBuilder("SELECT id, name, owner FROM logbooks ");
+        StringBuilder query = new StringBuilder("SELECT l.id, l.name, owner FROM logbooks l, statuses s ");
 
         if (isTagQuery) {
-            query.append("WHERE is_tag = TRUE");
+            query.append("WHERE l.is_tag = TRUE");
         } else {
-            query.append("WHERE is_tag = FALSE");
+            query.append("WHERE l.is_tag = FALSE");
         }
         if (name != null) {
-            query.append(" AND name = ?");
+            query.append(" AND l.name = ?");
         }
+        query.append(" AND l.status_id = s.id AND s.name = 'Active'");
         try {
             ps = con.prepareStatement(query.toString());
             if (name != null) {

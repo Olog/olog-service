@@ -55,7 +55,7 @@ public class OLogManager {
         for (XmlLogbook s : src.getXmlLogbooks().getLogbooks()) {
             for (XmlLogbook d : dest.getXmlLogbooks().getLogbooks()) {
                 if (d.getName().equals(s.getName())) {
- //TODO: here                   d.setStatus(s.getStatus());
+ //TODO: here                   d.setState(s.getState());
                     continue src_logbooks;
                 }
             }
@@ -252,7 +252,7 @@ public class OLogManager {
      * Return single tag found by name.
      *
      * @param name name to look for
-     * @return XmlTag with found tag and its logs/status
+     * @return XmlTag with found tag and its logs/state
      * @throws CFException on SQLException
      */
     public XmlTag findTagByName(String name) throws CFException {
@@ -267,7 +267,7 @@ public class OLogManager {
     }
 
     /**
-     * Add the tag identified by <tt>tag</tt> and <tt>status</tt> to the logs
+     * Add the tag identified by <tt>tag</tt> and <tt>state</tt> to the logs
      * specified in the XmlLogs <tt>data</tt>.
      *
      * @param tag tag to add
@@ -290,9 +290,9 @@ public class OLogManager {
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
     public void createOrReplaceTag(String tag, XmlTag data) throws CFException {
-        //DeleteLogbookQuery.removeLogbook(tag);
+        DeleteLogbookQuery.removeLogbook(tag);
         CreateLogbookQuery.createTag(data.getName());
-        //UpdateValuesQuery.updateTag(data.getName(), data);
+        UpdateValuesQuery.updateTag(data.getName(), data);
     }
 
     /**

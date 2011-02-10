@@ -7,7 +7,6 @@ package edu.msu.nscl.olog;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.ws.rs.core.Response;
 
@@ -44,7 +43,7 @@ public class DeleteLogbookQuery {
         PreparedStatement ps;
         String query;
 
-        // Get property id
+        // Get logbook id
         Long lid = FindLogbookIdsQuery.getLogbookId(name);
 
         if (lid == null) {
@@ -57,29 +56,18 @@ public class DeleteLogbookQuery {
         }
 
         if (logId != null) {
-            try {
-                query = "SELECT id FROM logs WHERE id = ?";
-                ps = con.prepareStatement(query);
-                ps.setLong(1, logId);
-
-                ResultSet rs = ps.executeQuery();
-                if (rs.first()) {
-                    cid = rs.getLong(1);
-                } else {
-                    throw new CFException(Response.Status.NOT_FOUND,
-                            "Log '" + logId + "' does not exist");
-                }
-            } catch (SQLException e) {
-                throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                        "SQL Exception while preparing deletion of property/tag '" + name
-                        + "' from log '" + logId + "'", e);
-            }
             // Delete values for log
             try {
-                query = "DELETE FROM logs_logbooks WHERE logbook_id = ? AND log_id = ?";
+                query = "UPDATE logs_logbooks ll, statuses s, logs l "+
+                        "SET ll.status_id = s.id "+
+                        "WHERE s.name = 'Inactive' "+
+                        "AND ll.logbook_id = ? "+
+                        "AND ll.log_id = l.id "+
+                        "AND (l.id = ? OR l.parent_id = ?)";
                 ps = con.prepareStatement(query);
                 ps.setLong(1, lid);
-                ps.setLong(2, cid);
+                ps.setLong(2, logId);
+                ps.setLong(3, logId);
                 int rows = ps.executeUpdate();
                 if (rows == 0 && !ignoreNoExist) {
                     throw new CFException(Response.Status.NOT_FOUND,
@@ -96,17 +84,23 @@ public class DeleteLogbookQuery {
 
             if (removeLogbook) {
                 try {
-                    query = "DELETE FROM logbooks WHERE id = ?";
+                    query = "UPDATE logbooks l, statuses s "+
+                            "SET l.status_id = s.id "+
+                            "WHERE s.name = 'Inactive' "+
+                            "AND l.id = ?";
                     ps = con.prepareStatement(query);
                     ps.setLong(1, lid);
-                    int rows = ps.executeUpdate();
+                    ps.executeUpdate();
                 } catch (SQLException e) {
                     throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                             "SQL Exception while deleting logbook/tag '" + name + "'", e);
                 }
             } else {
                 try {
-                    query = "DELETE FROM logs_logbooks WHERE logbook_id = ?";
+                    query = "UPDATE logs_logbooks ll, statuses s "+
+                            "SET ll.status_id = s.id "+
+                            "WHERE s.name='Inactive' "+
+                            "AND logbook_id = ?";
                     ps = con.prepareStatement(query);
                     ps.setLong(1, lid);
                     int rows = ps.executeUpdate();

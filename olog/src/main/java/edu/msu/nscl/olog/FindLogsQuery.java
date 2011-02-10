@@ -48,6 +48,15 @@ public class FindLogsQuery {
             }
         }
     }
+    private void addLogbookMatches(Collection<String> matches) {
+        for (String m : matches) {
+            if (m.contains("?") || m.contains("*")) {
+                tag_patterns.add(m);
+            } else {
+                tag_matches.add(m);
+            }
+        }
+    }
 
     /**
      * Creates a new instance of FindLogsQuery, sorting the query parameters.
@@ -65,8 +74,9 @@ public class FindLogsQuery {
                 log_matches.addAll(match.getValue());
             } else if (key.equals("~tag")) {
                 addTagMatches(match.getValue());
-            } else {
-                value_matches.putAll(key, match.getValue());
+            } else if (key.equals("~logbook")){
+                addLogbookMatches(match.getValue());
+                //value_matches.putAll(key, match.getValue());
             }
         }
     }
@@ -110,22 +120,26 @@ public class FindLogsQuery {
                                                 "LEFT JOIN logbooks as t ON lt.logbook_id = t.id "+
                                                 "LEFT JOIN levels as level ON log.level_id = level.id "+
                                                 "LEFT JOIN statuses as status ON log.status_id = status.id "+
+                                                "LEFT JOIN statuses as ltstatus ON lt.status_id = status.id "+
+                                                "LEFT JOIN statuses as tstatus ON t.status_id = status.id "+
                                                 "WHERE (parent.parent_id IS NULL and log.parent_id IS NULL "+
                                                 "OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) "+
-                                                "AND status.name = 'Active' AND ");
+                                                "AND status.name = 'Active' "+
+                                                "AND ltstatus.name = 'Active' "+
+                                                "AND tstatus.name = 'Active' AND");
         Set<Long> ids = new HashSet<Long>();           // set of matching log ids
         List<String> params = new ArrayList<String>(); // parameter list for this query
 
-        for (Map.Entry<String, Collection<String>> match : value_matches.asMap().entrySet()) {
-            StringBuilder valueList = new StringBuilder("log.subject LIKE");
-            params.add(match.getKey().toLowerCase());
-            for (String value : match.getValue()) {
-                valueList.append(" ? OR log.subject LIKE");
-                params.add(convertFileGlobToSQLPattern(value));
-            }
-            query.append(" (LOWER(t.name) = ? AND ("
-                    + valueList.substring(0, valueList.length() - 17) + ")) OR");
-        }
+        //for (Map.Entry<String, Collection<String>> match : value_matches.asMap().entrySet()) {
+            //StringBuilder valueList = new StringBuilder("log.subject LIKE");
+            //params.add(match.getKey().toLowerCase());
+            //for (String value : match.getValue()) {
+               // valueList.append(" ? OR log.subject LIKE");
+               // params.add(convertFileGlobToSQLPattern(value));
+            //}
+            //query.append(" (LOWER(t.name) = ? AND ("
+            //        + valueList.substring(0, valueList.length() - 17) + ")) OR");
+        //}
 
         for (String tag : tag_matches) {
             params.add(convertFileGlobToSQLPattern(tag).toLowerCase());
@@ -161,9 +175,22 @@ public class FindLogsQuery {
      * @return a set of log ids that match
      */
     private Set<Long> getIdsFromTagMatch(Connection con, String match) throws CFException {
-        String query = "SELECT p0.log_id FROM logbook_value p0"
-                + " WHERE LOWER(p0.logbook) LIKE ?"
-                + " GROUP BY p0.log_id";
+        String query = "SELECT log.id "+
+                       "(SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, "+
+                       "FROM `logs` as log "+
+                       "LEFT JOIN `logs` as parent ON log.id = parent.parent_id "+
+                       "LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id "+
+                       "LEFT JOIN logbooks as t ON lt.logbook_id = t.id "+
+                       "LEFT JOIN statuses as status ON log.status_id = status.id "+
+                       "LEFT JOIN statuses as ltstatus ON lt.status_id = status.id "+
+                       "LEFT JOIN statuses as tstatus ON t.status_id = status.id "+
+                       "WHERE (parent.parent_id IS NULL and log.parent_id IS NULL "+
+                       "OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) "+
+                       "AND t.name = ? "+
+                       "AND status.name = 'Active' "+
+                       "AND ltstatus.name = 'Active' "+
+                       "AND tstatus.name = 'Active' "+
+                       "GROUP BY log.id ORDER BY ifnull(parent_created,log.created) DESC";
         Set<Long> ids = new HashSet<Long>();
 
         try {
@@ -199,9 +226,13 @@ public class FindLogsQuery {
                                                 "LEFT JOIN logbooks as t ON lt.logbook_id = t.id "+
                                                 "LEFT JOIN levels as level ON log.level_id = level.id "+
                                                 "LEFT JOIN statuses as status ON log.status_id = status.id "+
+                                                "LEFT JOIN statuses as ltstatus ON lt.status_id = status.id "+
+                                                "LEFT JOIN statuses as tstatus ON t.status_id = status.id "+
                                                 "WHERE (parent.parent_id IS NULL and log.parent_id IS NULL "+
                                                 "OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) "+
-                                                "AND status.name = 'Active' ");
+                                                "AND status.name = 'Active' "+
+                                                "AND ltstatus.name = 'Active' "+
+                                                "AND tstatus.name = 'Active' ");
         List<Long> id_params = new ArrayList<Long>();       // parameter lists for the outer query
         List<String> name_params = new ArrayList<String>();
         Set<Long> result = new HashSet<Long>();

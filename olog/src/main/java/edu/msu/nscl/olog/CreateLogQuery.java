@@ -85,11 +85,16 @@ public class CreateLogQuery {
         Map<String, Integer> pids = FindLogbookIdsQuery.getLogbookIdMap(log);
 
         // Insert logbook/tags
+        // Fail if there isn't at least one logbook
+        if (this.log.getXmlLogbooks().getLogbooks().isEmpty()) {
+            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "Must add to at least one logbook '" + log.getSubject() +"'");
+        }
         if (this.log.getXmlLogbooks().getLogbooks().size() > 0
                 || this.log.getXmlTags().getTags().size() > 0) {
             params.clear();
             query.setLength(0);
-            query.append("INSERT INTO logs_logbooks (log_id, logbook_id, status) VALUES ");
+            query.append("INSERT INTO logs_logbooks (log_id, logbook_id, state) VALUES ");
             for (XmlLogbook logbook : this.log.getXmlLogbooks().getLogbooks()) {
                 if (pids.get(logbook.getName()) == null) {
                     throw new CFException(Response.Status.NOT_FOUND,

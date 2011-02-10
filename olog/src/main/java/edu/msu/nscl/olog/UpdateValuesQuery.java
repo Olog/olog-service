@@ -189,7 +189,7 @@ public class UpdateValuesQuery {
         // Add new values
         query.setLength(0);
         params.clear();
-        query.append("INSERT INTO logs_logbooks (log_id, logbook_id, status) VALUES ");
+        query.append("INSERT INTO logs_logbooks (log_id, logbook_id, state) VALUES ");
         for (Long id : ids.values()) {
             query.append("(?,?,?),");
         }

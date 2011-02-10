@@ -16,11 +16,11 @@ import javax.xml.bind.annotation.XmlType;
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-@XmlType(propOrder = {"name","status","xmlLogs"})
+@XmlType(propOrder = {"name","state","xmlLogs"})
 @XmlRootElement(name = "tag")
 public class XmlTag {
     private String name = null;
-    private String status = null;
+    private String state = null;
     private XmlLogs logs = null;
 
     /**
@@ -43,11 +43,11 @@ public class XmlTag {
      * Creates a new instance of XmlTag.
      *
      * @param name
-     * @param status
+     * @param state
      */
-    public XmlTag(String name, String status) {
+    public XmlTag(String name, String state) {
         this.name = name;
-        this.status = status;
+        this.state = state;
     }
 
     /**
@@ -70,22 +70,22 @@ public class XmlTag {
     }
 
     /**
-     * Getter for tag status.
+     * Getter for tag state.
      *
-     * @return status tag status
+     * @return state tag state
      */
     @XmlAttribute
-    public String getStatus() {
-        return status;
+    public String getState() {
+        return state;
     }
 
     /**
-     * Setter for tag status.
+     * Setter for tag state.
      *
-     * @param status tag status
+     * @param state tag state
      */
-    public void setStatus(String status) {
-        this.status = status;
+    public void setState(String state) {
+        this.state = state;
     }
 
     /**
@@ -115,9 +115,9 @@ public class XmlTag {
      */
     public static String toLog(XmlTag data) {
         if (data.logs == null) {
-            return data.getName() + "(" + data.getStatus() + ")";
+            return data.getName() + "(" + data.getState() + ")";
         } else {
-            return data.getName() + "(" + data.getStatus() + ")"
+            return data.getName() + "(" + data.getState() + ")"
                     + XmlLogs.toLog(data.logs);
         }
     }

@@ -57,7 +57,9 @@ public class CreateLogbookQuery {
             ps.execute();
         } catch (SQLException e) {
             try {
-                query = "UPDATE logbooks SET name=?,owner=?,is_tag=? WHERE name=?";
+                query = "UPDATE logbooks l, statuses s "+
+                        "SET l.name = ?, l.owner = ?, l.is_tag = ?, l.status_id = s.id "+
+                        "WHERE l.name = ? AND s.name = 'Active'";
                 ps = con.prepareStatement(query);
                 ps.setString(1, name);
                 ps.setString(2, owner);
