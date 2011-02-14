@@ -13,7 +13,7 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 
 /**
- * JDBC query to create a property/tag.
+ * JDBC query to create a logbook/tag.
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
@@ -47,7 +47,7 @@ public class CreateLogbookQuery {
         List<List<String>> params = new ArrayList<List<String>>();
         PreparedStatement ps;
 
-        // Insert property
+        // Insert logbook
         String query = "INSERT INTO logbooks (name, owner, is_tag) VALUE (?, ?, ?)";
         try {
             ps = con.prepareStatement(query);

@@ -35,7 +35,7 @@ public class DeleteLogbookQuery {
      * Creates and executes the JDBC based query.
      *
      * @param con connection to use
-     * @param ignoreNoExist flag: true = do not generate an error if property/tag does not exist
+     * @param ignoreNoExist flag: true = do not generate an error if logbook/tag does not exist
      * @throws CFException wrapping an SQLException
      */
     private void executeQuery(Connection con, boolean ignoreNoExist) throws CFException {

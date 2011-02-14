@@ -21,7 +21,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * Top level Jersey HTTP methods for the .../properties URL
+ * Top level Jersey HTTP methods for the .../logbooks URL
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
@@ -59,7 +59,7 @@ public class LogbooksResource {
             db.commit();
             Response r = Response.ok(result).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
-                    + "|returns " + result.getLogbooks().size() + " properties");
+                    + "|returns " + result.getLogbooks().size() + " logbooks");
             return r;
         } catch (CFException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"

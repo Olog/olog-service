@@ -86,11 +86,11 @@
         <realm-name>channelfinder</realm-name>
     </login-config>
     <security-role>
-        <description>May add or modify channels</description>
+        <description>May add or modify logs</description>
         <role-name>ChannelMod</role-name>
     </security-role>
     <security-role>
-        <description>May add or modify properties</description>
+        <description>May add or modify logbooks</description>
         <role-name>PropertyMod</role-name>
     </security-role>
     <security-role>

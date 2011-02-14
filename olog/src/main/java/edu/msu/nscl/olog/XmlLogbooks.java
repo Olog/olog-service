@@ -52,7 +52,7 @@ public class XmlLogbooks {
     }
 
     /**
-     * Adds a property to the logbook collection.
+     * Adds a logbook to the logbook collection.
      *
      * @param item the XmlLogbook to add
      */

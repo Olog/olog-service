@@ -69,7 +69,7 @@ public class FindLogbookIdsQuery {
             return ps.executeQuery();
         } catch (SQLException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception during property id query", e);
+                    "SQL Exception during logbook id query", e);
         }
     }
 
@@ -93,7 +93,7 @@ public class FindLogbookIdsQuery {
             return result;
         } catch (SQLException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception scanning result of property id request", e);
+                    "SQL Exception scanning result of logbook id request", e);
         }
     }
 
@@ -115,7 +115,7 @@ public class FindLogbookIdsQuery {
             }
         } catch (SQLException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception scanning result of single property id request", e);
+                    "SQL Exception scanning result of single logbook id request", e);
         }
     }
 }

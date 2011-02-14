@@ -48,15 +48,6 @@ public class FindLogsQuery {
             }
         }
     }
-    private void addLogbookMatches(Collection<String> matches) {
-        for (String m : matches) {
-            if (m.contains("?") || m.contains("*")) {
-                tag_patterns.add(m);
-            } else {
-                tag_matches.add(m);
-            }
-        }
-    }
 
     /**
      * Creates a new instance of FindLogsQuery, sorting the query parameters.
@@ -75,7 +66,7 @@ public class FindLogsQuery {
             } else if (key.equals("~tag")) {
                 addTagMatches(match.getValue());
             } else if (key.equals("~logbook")){
-                addLogbookMatches(match.getValue());
+                addTagMatches(match.getValue());
                 //value_matches.putAll(key, match.getValue());
             }
         }
@@ -147,7 +138,7 @@ public class FindLogsQuery {
         }
 
         query.replace(query.length() - 2, query.length(),
-                " GROUP BY log.id HAVING COUNT(log.id) = ? ORDER BY ifnull(parent_created,log.created) DESC");
+                " GROUP BY lt.id HAVING COUNT(log.id) = ? ORDER BY lt.log_id DESC, ifnull(parent_created,log.created) DESC");
 
         try {
             PreparedStatement ps = con.prepareStatement(query.toString());
@@ -190,7 +181,7 @@ public class FindLogsQuery {
                        "AND status.name = 'Active' "+
                        "AND ltstatus.name = 'Active' "+
                        "AND tstatus.name = 'Active' "+
-                       "GROUP BY log.id ORDER BY ifnull(parent_created,log.created) DESC";
+                       "GROUP BY lt.id ORDER BY lt.log_id, ifnull(parent_created,log.created) DESC";
         Set<Long> ids = new HashSet<Long>();
 
         try {
@@ -291,13 +282,13 @@ public class FindLogsQuery {
         if (!log_matches.isEmpty()) {
             query.append(" AND (");
             for (String value : log_matches) {
-                query.append("log LIKE ? OR ");
+                query.append("log.subject LIKE ? OR ");
                 name_params.add(convertFileGlobToSQLPattern(value));
             }
             query.replace(query.length() - 4, query.length(), ")");
         }
 
-        query.append(" GROUP BY lt.id ORDER BY ifnull(parent_created,log.created) DESC");
+        query.append(" GROUP BY lt.id ORDER BY lt.log_id DESC, ifnull(parent_created,log.created) DESC");
 
         try {
             PreparedStatement ps = con.prepareStatement(query.toString());

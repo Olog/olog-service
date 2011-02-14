@@ -87,7 +87,7 @@ public class OLogManager {
      * Return logs found by matching tags against a collection of name patterns.
      *
      * @param name matches collection of name patterns to match
-     * @return XmlLogs container with all found logs and their properties
+     * @return XmlLogs container with all found logs and their logbooks
      * @throws CFException wrapping an SQLException
      */
     public XmlLogs findLogsByLogbookName(String name) throws CFException {

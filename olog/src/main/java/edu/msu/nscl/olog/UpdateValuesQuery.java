@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.Response;
+import java.util.logging.Logger;
 
 /**
  * JDBC query to add a logbook to log(s).
@@ -29,6 +30,7 @@ public class UpdateValuesQuery {
     private String owner;
     private String dbname;
     private String dbowner;
+    private Logger audit = Logger.getLogger(this.getClass().getPackage().getName() + ".audit");
 
     private String getType() {
         if (isTagQuery) {
@@ -41,7 +43,7 @@ public class UpdateValuesQuery {
     /**
      * Creates a new instance of UpdateValuesQuery.
      *
-     * @param data property data (containing logs to add logbook to)
+     * @param data logbook data (containing logs to add logbook to)
      */
     private UpdateValuesQuery(String name, XmlLogbook data) {
         this.oldname = name;
@@ -83,12 +85,13 @@ public class UpdateValuesQuery {
      */
     public void executeQuery(Connection con) throws CFException {
         List<String> params = new ArrayList<String>();
-        Map<String, Long> ids = new HashMap<String, Long>();
+        Map<Long, String> ids = new HashMap<Long, String>();
+        Map<Long, String> newestVersionIds = new HashMap<Long, String>();
         Map<String, String> values = new HashMap<String, String>();
         PreparedStatement ps;
         int i;
 
-        // Get property id
+        // Get logbook id
         Long pid = FindLogbookIdsQuery.getLogbookId(name);
 
         if (pid == null) {
@@ -121,34 +124,46 @@ public class UpdateValuesQuery {
             }
         }
 
-        if (logs == null) return;
+        if (logs==null) return;
+        if (logs.getLogs().isEmpty()) return;
+        if (logs.getLogs().iterator().next().getSubject()==null) return;
 
         // Get Log ids
-        StringBuilder query = new StringBuilder("SELECT id, name FROM logs WHERE ");
-        for (XmlLog log : logs.getLogs()) {
-//            query.append("name = ? OR ");
-//            params.add(log.getId());
-//        }
-//        query.setLength(query.length() - 3);
-//
-//        try {
-//            ps = con.prepareStatement(query.toString());
-//            i = 1;
-//            for (String p : params) {
-//                ps.setString(i++, p);
-//            }
-//
-//            ResultSet rs = ps.executeQuery();
-//            while (rs.next()) {
-                // Add key to map of matching log ids
-                ids.put(null, log.getId());
-            }
-        //} catch (SQLException e) {
-        //    throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-        //            "SQL Exception while retrieving log ids for insertion of "
-        //            + getType() + " '" + name + "'", e);
-        //}
+        StringBuilder query = new StringBuilder("SELECT log.id FROM `logs` as log "+
+                                                "LEFT JOIN `logs` as parent ON log.id = parent.parent_id "+
+                                                "WHERE (parent.parent_id IS NULL and log.parent_id IS NULL "+
+                                                "OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) "+
+                                                "AND log.parent_id IN (");
 
+        for (XmlLog log : logs.getLogs()) {
+            if(log.getVersion() > 0 ){
+                newestVersionIds.put(log.getId(), null);
+                query.append("?, ");
+            } else {
+                ids.put(log.getId(), null);
+            }
+        }
+        query.replace(query.length() - 2, query.length(), ")");
+
+        if(!newestVersionIds.isEmpty()) {
+
+            try {
+                ps = con.prepareStatement(query.toString());
+                i = 1;
+                for (Long id : newestVersionIds.keySet()) {
+                    ps.setLong(i++, id);
+                }
+
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    ids.put(rs.getLong(1), null);
+                }
+            } catch (SQLException e) {
+                throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                        "SQL Exception while retrieving log ids for insertion of "
+                           + getType() + " '" + name + "' "+newestVersionIds.toString()+query.toString(), e);
+            }
+        }
         if (ids.isEmpty()) {
             throw new CFException(Response.Status.NOT_FOUND,
                     "Logs specified in " + getType() + " update do not exist");
@@ -166,8 +181,10 @@ public class UpdateValuesQuery {
         // Remove existing values for the specified logs
         query.setLength(0);
         params.clear();
-        query.append("DELETE FROM logs_logbooks WHERE logbook_id = ? AND log_id IN (");
-        for (Long id : ids.values()) {
+        query.append("UPDATE logs_logbooks ll, statuses s "+
+                     "SET ll.status_id=s.id "+
+                     "WHERE s.name='Inactive' AND ll.logbook_id = ? AND ll.log_id NOT IN (");
+        for (Long id : ids.keySet()) {
             query.append("?, ");
         }
         query.replace(query.length() - 2, query.length(), ")");
@@ -176,33 +193,32 @@ public class UpdateValuesQuery {
             ps = con.prepareStatement(query.toString());
             ps.setLong(1, pid);
             i = 2;
-            for (Long id : ids.values()) {
+            for (Long id : ids.keySet()) {
                 ps.setLong(i++, id);
             }
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "SQL Exception while deleting values for " + getType() + " '"
-                    + name + "' (before reinsert)", e);
+                    + name + "' (before reinsert) "+query.toString(), e);
         }
-
         // Add new values
         query.setLength(0);
         params.clear();
         query.append("INSERT INTO logs_logbooks (log_id, logbook_id, state) VALUES ");
-        for (Long id : ids.values()) {
+        for (Long id : ids.keySet()) {
             query.append("(?,?,?),");
         }
         try {
             ps = con.prepareStatement(query.substring(0, query.length() - 1));
             i = 1;
-            for (String log : ids.keySet()) {
-                ps.setLong(i++, ids.get(log));
+            for (Long log : ids.keySet()) {
+                ps.setLong(i++, log);
                 ps.setLong(i++, pid);
-                if (values.get(log) == null) {
+                if (ids.get(log) == null) {
                     ps.setNull(i++, java.sql.Types.NULL);
                 } else {
-                    ps.setString(i++, values.get(log));
+                    ps.setString(i++, ids.get(log));
                 }
             }
             ps.executeUpdate();
