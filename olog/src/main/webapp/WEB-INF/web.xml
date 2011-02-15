@@ -5,6 +5,120 @@
         <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
+    <servlet>
+        <servlet-name>ContentRepository</servlet-name>
+        <servlet-class>org.apache.jackrabbit.servlet.jackrabbit.JackrabbitRepositoryServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <!-- ====================================================================== -->
+    <!-- R E P O S I T O R Y   S E R V L E T                                    -->
+    <!-- ====================================================================== -->
+    <servlet>
+        <servlet-name>Repository</servlet-name>
+        <servlet-class>org.apache.jackrabbit.j2ee.RepositoryAccessServlet</servlet-class>
+
+        <init-param>
+            <param-name>bootstrap-config</param-name>
+            <param-value>jackrabbit/bootstrap.properties</param-value>
+        </init-param>
+        <!--
+        <init-param>
+          <param-name>repository.context.attribute.name</param-name>
+          <param-value>javax.jcr.Repository</param-value>
+          <description>
+            If this is set, the RepositoryAccessServlet expects a Repository in the ServletContext
+            attribute having this name. This allows servlets of this module to be used with repositories
+            intialized by the jackrabbit-jcr-servlet module utilities.
+          </description>
+        </init-param>
+         -->
+        <!--
+        <init-param>
+            <param-name>repository-name</param-name>
+            <param-value>jackrabbit.repository</param-value>
+            <description>Repository Name that is used to retrieve it via JNDI</description>
+        </init-param>
+        -->
+        <!--
+            JNDI environment variables for creating the initial context
+            (all init parameters starting with java.naming.* will be added to the initial context environment).
+        -->
+        <!--
+        <init-param>
+            <param-name>java.naming.provider.url</param-name>
+            <param-value>http://www.apache.org/jackrabbit</param-value>
+        </init-param>
+        <init-param>
+            <param-name>java.naming.factory.initial</param-name>
+            <param-value>org.apache.jackrabbit.core.jndi.provider.DummyInitialContextFactory</param-value>
+        </init-param>
+        -->
+        <!--
+            RMI url, if RMI remoting is needed
+        -->
+        <!--
+        <init-param>
+            <param-name>rmi-uri</param-name>
+            <param-value>///jackrabbit.repository</param-value>
+            <description>The URI for the RMI connection.</description>
+        </init-param>
+        -->
+
+        <load-on-startup>3</load-on-startup>
+    </servlet>
+    <!-- ====================================================================== -->
+    <!-- W E B D A V  S E R V L E T                                              -->
+    <!-- ====================================================================== -->
+    <servlet>
+        <servlet-name>Webdav</servlet-name>
+        <servlet-class>org.apache.jackrabbit.j2ee.SimpleWebdavServlet</servlet-class>
+
+        <init-param>
+            <param-name>resource-path-prefix</param-name>
+            <param-value>/repository</param-value>
+        </init-param>
+        <!--
+         <init-param>
+             <param-name>missing-auth-mapping</param-name>
+             <param-value>anonymous:anonymous</param-value>
+             <description>
+                 Defines how a missing authorization header should be handled.
+                 1) If this init-param is missing, a 401 response is generated.
+                    This is suiteable for clients (eg. webdav clients) for which
+                    sending a proper authorization header is not possible if the
+                    server never sent a 401.
+                 2) If this init-param is present with an empty value,
+                    null-credentials are returned, thus forcing an null login
+                    on the repository.
+                 3) If this init-param is present with the value 'guestcredentials'
+                    java.jcr.GuestCredentials are used to login to the repository.
+                 4) If this init-param has a 'user:password' value, the respective
+                    simple credentials are generated.
+             </description>
+         </init-param>
+         -->
+        <!--
+            Optional parameter to define the value of the 'WWW-Authenticate' header
+        -->
+        <init-param>
+            <param-name>authenticate-header</param-name>
+            <param-value>Basic realm="channelfinder"</param-value>
+        </init-param>
+        <!--
+            Parameter used to configure behaviour of webdav resources such as:
+            - destinction between collections and non-collections
+            - resource filtering
+        -->
+        <init-param>
+            <param-name>resource-config</param-name>
+            <param-value>/WEB-INF/config.xml</param-value>
+        </init-param>
+        <load-on-startup>4</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Webdav</servlet-name>
+        <url-pattern>/repository/*</url-pattern>
+    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>ServletAdaptor</servlet-name>
         <url-pattern>/resources/*</url-pattern>
