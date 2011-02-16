@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010 Brookhaven National Laboratory
- * Copyright (c) 2010 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
- * Subject to license terms and conditions.
+ * Copyright (c) 2010-2011 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
+ * All rights reserved. Use is subject to license terms and conditions.
  */
 
 package edu.msu.nscl.olog;
@@ -9,16 +9,13 @@ package edu.msu.nscl.olog;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Hashtable;
 import javax.annotation.Resource;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
@@ -33,18 +30,17 @@ public class UserManager {
     private ThreadLocal<Boolean> hasAdminRole = new ThreadLocal<Boolean>();
     private ThreadLocal<Collection<String>> groups = new ThreadLocal<Collection<String>>();
     private ThreadLocal<DirContext> ctx = new ThreadLocal<DirContext>();
-   //TODO: need to add this to glassfish part 1
-    private static final String ldapResourceName = "channelfinderGroups";
+    private static final String ldapResourceName = "OlogGroups";
 
     /**
      * LDAP field name for the member UID
      */
-    @Resource(name="ldapGroupMemberField") protected String memberUidField = "member";
+    @Resource(name="ldapGroupMemberField") protected String memberUidField = "memberUid";
 
     /**
      * LDAP field name for the group name in group entries
      */
-    @Resource(name="ldapGroupTargetField") protected String groupTargetField = "sAMAccountName";
+    @Resource(name="ldapGroupTargetField") protected String groupTargetField = "cn";
 
     private UserManager() {
     }
@@ -66,27 +62,16 @@ public class UserManager {
         }
     }
 
-    /*
-     * TODO: this should be setup on glassfish part 2
-     */
     private DirContext getJndiContext() {
         DirContext dirctx = this.ctx.get();
         if (dirctx == null) {
             try {
-                Hashtable env = new Hashtable();
-                env.put(Context.INITIAL_CONTEXT_FACTORY,
-                    "com.sun.jndi.ldap.LdapCtxFactory");
-                env.put(Context.PROVIDER_URL, "ldaps://intranet.nscl.msu.edu:636/ou=NSCL%20Users,dc=intranet,dc=nscl,dc=msu,dc=edu");
-                env.put(Context.SECURITY_PRINCIPAL, "cn=svc_cf-user,OU=Service Accounts,DC=intranet,DC=nscl,DC=msu,DC=edu");
-                env.put(Context.SECURITY_CREDENTIALS, "U?e4cA5X");
-                env.put(Context.SECURITY_PROTOCOL, "ssl");
-                dirctx = new InitialDirContext(env);
-                //dirctx = (DirContext) initCtx.lookup(ldapResourceName);
+                Context initCtx = new InitialContext();
+                dirctx = (DirContext) initCtx.lookup(ldapResourceName);
                 this.ctx.set(dirctx);
             } catch (NamingException e ) {
                 throw new IllegalStateException("Cannot find JNDI LDAP resource '"
                         + ldapResourceName + "'", e);
-                //throw new IllegalStateException("Cannot find JNDI LDAP resource ", e);
             }
         }
         return dirctx;
@@ -101,33 +86,15 @@ public class UserManager {
      * @param isAdmin flag: true = user has Admin role
      */
     public void setUser(Principal user, boolean isAdmin) {
-        String Dn = null;
         this.user.set(user);
         this.hasAdminRole.set(isAdmin);
         clearGroups();
         DirContext dirctx = getJndiContext();
-               try {
-            SearchControls ctrls = new SearchControls();
-            ctrls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-
-            String searchfilter = "(sAMAccountName=" + this.user.get().getName() + ")";
-            NamingEnumeration<SearchResult> result = dirctx.search("", searchfilter, ctrls);
-
-
-            Attributes attDn = result.next().getAttributes();
-            if (attDn.get("distinguishedName") != null) {
-                Dn = (String)attDn.get("distinguishedName").get();
-            }
-
-        } catch (Exception e) {
-                throw new IllegalStateException("Error while retrieving dn information for user '"
-                        + this.user.get().getName() + "'", e);
-        }
         try {
             SearchControls ctrls = new SearchControls();
             ctrls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
-            String searchfilter = "(" + memberUidField + "="+Dn+")";
+            String searchfilter = "(" + memberUidField + "=" + this.user.get().getName() + ")";
             NamingEnumeration<SearchResult> result = dirctx.search("", searchfilter, ctrls);
 
             while (result.hasMore()) {

@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import javax.ws.rs.core.Response;
 
 /**
- * JDBC query to delete one channel.
+ * JDBC query to delete one log.
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
@@ -28,7 +28,7 @@ public class DeleteLogQuery {
      * Creates and executes a JDBC based query for deleting one log.
      *
      * @param con db connection to use
-     * @param ignoreNoExist flag: true = do not generate an error if channel does not exist
+     * @param ignoreNoExist flag: true = do not generate an error if log does not exist
      * @throws CFException wrapping an SQLException
      */
     private void executeQuery(Connection con, boolean ignoreNoExist) throws CFException {

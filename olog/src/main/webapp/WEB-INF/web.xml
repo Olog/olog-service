@@ -5,10 +5,85 @@
         <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
+    <listener>
+        <!-- Releases all Derby resources when the webapp is undeployed.  -->
+        <!-- See https://issues.apache.org/jira/browse/JCR-1301           -->
+        <listener-class>
+            org.apache.jackrabbit.j2ee.DerbyShutdown
+        </listener-class>
+    </listener>
+
+    <!-- ====================================================================== -->
+    <!-- R E P O S I T O R Y   S T A R T U P  S E R V L E T                     -->
+    <!-- ====================================================================== -->
     <servlet>
-        <servlet-name>ContentRepository</servlet-name>
-        <servlet-class>org.apache.jackrabbit.servlet.jackrabbit.JackrabbitRepositoryServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
+        <servlet-name>RepositoryStartup</servlet-name>
+        <servlet-class>org.apache.jackrabbit.j2ee.RepositoryStartupServlet</servlet-class>
+
+        <init-param>
+            <param-name>bootstrap-config</param-name>
+            <param-value>/WEB-INF/bootstrap.properties</param-value>
+        </init-param>
+        <init-param>
+            <param-name>repository-config</param-name>
+            <param-value>/WEB-INF/repository.xml</param-value>
+        </init-param>
+        <init-param>
+            <param-name>repository-home</param-name>
+            <param-value>jackrabbit</param-value>
+        </init-param>
+        <init-param>
+            <param-name>olog-repository</param-name>
+            <param-value>jackrabbit.repository</param-value>
+        </init-param>
+
+        <!--
+            the following 3 parameters deal with registering the repository to
+            a RMI registry. if all parameters are omitted, the repository will
+            not be registered.
+        -->
+        <!--
+        <init-param>
+            <param-name>rmi-port</param-name>
+            <param-value>0</param-value>
+            <description>
+                The RMI port for registering the repository in the RMI Registry.
+                If equals 0, the default port is used.
+            </description>
+        </init-param>
+        <init-param>
+            <param-name>rmi-host</param-name>
+            <param-value>localhost</param-value>
+            <description>
+                The RMI host for registering the repository in the RMI Registry.
+                If equals "" or missing, the default host is used.
+            </description>
+        </init-param>
+        <init-param>
+            <param-name>rmi-uri</param-name>
+            <param-value></param-value>
+            <description>
+                The RMI uri for registering the repository in the RMI Registry.
+                If missing, the uri is composed using the other rmi parameters
+                and will have the format: //{rmi-host}:{rmi-port}/{repository-name}
+            </description>
+        </init-param>
+        -->
+        <!--
+            JNDI environment variables for creating the initial context
+            (all init parameters starting with java.naming.* will be added to the initial context environment).
+        -->
+        <!--
+        <init-param>
+            <param-name>java.naming.provider.url</param-name>
+            <param-value>http://www.apache.org/jackrabbit</param-value>
+        </init-param>
+        <init-param>
+            <param-name>java.naming.factory.initial</param-name>
+            <param-value>org.apache.jackrabbit.core.jndi.provider.DummyInitialContextFactory</param-value>
+        </init-param>
+        -->
+        <load-on-startup>2</load-on-startup>
     </servlet>
     <!-- ====================================================================== -->
     <!-- R E P O S I T O R Y   S E R V L E T                                    -->
@@ -16,29 +91,18 @@
     <servlet>
         <servlet-name>Repository</servlet-name>
         <servlet-class>org.apache.jackrabbit.j2ee.RepositoryAccessServlet</servlet-class>
-
         <init-param>
             <param-name>bootstrap-config</param-name>
             <param-value>jackrabbit/bootstrap.properties</param-value>
         </init-param>
-        <!--
         <init-param>
           <param-name>repository.context.attribute.name</param-name>
           <param-value>javax.jcr.Repository</param-value>
-          <description>
-            If this is set, the RepositoryAccessServlet expects a Repository in the ServletContext
-            attribute having this name. This allows servlets of this module to be used with repositories
-            intialized by the jackrabbit-jcr-servlet module utilities.
-          </description>
         </init-param>
-         -->
-        <!--
         <init-param>
             <param-name>repository-name</param-name>
             <param-value>jackrabbit.repository</param-value>
-            <description>Repository Name that is used to retrieve it via JNDI</description>
         </init-param>
-        -->
         <!--
             JNDI environment variables for creating the initial context
             (all init parameters starting with java.naming.* will be added to the initial context environment).
@@ -56,13 +120,11 @@
         <!--
             RMI url, if RMI remoting is needed
         -->
-        <!--
+
         <init-param>
             <param-name>rmi-uri</param-name>
             <param-value>///jackrabbit.repository</param-value>
-            <description>The URI for the RMI connection.</description>
         </init-param>
-        -->
 
         <load-on-startup>3</load-on-startup>
     </servlet>
@@ -102,7 +164,7 @@
         -->
         <init-param>
             <param-name>authenticate-header</param-name>
-            <param-value>Basic realm="channelfinder"</param-value>
+            <param-value>Basic realm="olog"</param-value>
         </init-param>
         <!--
             Parameter used to configure behaviour of webdav resources such as:
@@ -115,6 +177,13 @@
         </init-param>
         <load-on-startup>4</load-on-startup>
     </servlet>
+    <!-- ====================================================================== -->
+    <!-- S E R V L E T   M A P P I N G                                          -->
+    <!-- ====================================================================== -->
+    <servlet-mapping>
+        <servlet-name>RepositoryStartup</servlet-name>
+        <url-pattern>/admin/*</url-pattern>
+    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Webdav</servlet-name>
         <url-pattern>/repository/*</url-pattern>
@@ -144,7 +213,7 @@
         </web-resource-collection>
         <auth-constraint>
             <description/>
-            <role-name>ChannelMod</role-name>
+            <role-name>LogMod</role-name>
             <role-name>Administrator</role-name>
         </auth-constraint>
         <user-data-constraint>
@@ -164,8 +233,8 @@
         </web-resource-collection>
         <auth-constraint>
             <description/>
-            <role-name>PropertyMod</role-name>
-            <role-name>ChannelMod</role-name>
+            <role-name>LogbookMod</role-name>
+            <role-name>LogMod</role-name>
             <role-name>Administrator</role-name>
         </auth-constraint>
         <user-data-constraint>
@@ -186,8 +255,8 @@
         <auth-constraint>
             <description/>
             <role-name>TagMod</role-name>
-            <role-name>PropertyMod</role-name>
-            <role-name>ChannelMod</role-name>
+            <role-name>LogbookMod</role-name>
+            <role-name>LogMod</role-name>
             <role-name>Administrator</role-name>
         </auth-constraint>
         <user-data-constraint>
@@ -197,15 +266,15 @@
     </security-constraint>
     <login-config>
         <auth-method>BASIC</auth-method>
-        <realm-name>channelfinder</realm-name>
+        <realm-name>olog</realm-name>
     </login-config>
     <security-role>
         <description>May add or modify logs</description>
-        <role-name>ChannelMod</role-name>
+        <role-name>LogMod</role-name>
     </security-role>
     <security-role>
         <description>May add or modify logbooks</description>
-        <role-name>PropertyMod</role-name>
+        <role-name>LogbookMod</role-name>
     </security-role>
     <security-role>
         <description>May add or modify tags</description>
@@ -227,4 +296,12 @@
         <res-auth>Container</res-auth>
         <res-sharing-scope>Shareable</res-sharing-scope>
     </resource-ref>
+    <error-page>
+        <exception-type>org.apache.jackrabbit.j2ee.JcrApiNotFoundException</exception-type>
+        <location>/error/classpath.jsp</location>
+    </error-page>
+    <error-page>
+        <exception-type>javax.jcr.RepositoryException</exception-type>
+        <location>/error/repository.jsp</location>
+    </error-page>
 </web-app>

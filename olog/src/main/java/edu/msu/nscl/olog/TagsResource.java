@@ -147,7 +147,7 @@ public class TagsResource {
      * Setting the owner attribute in the XML root element is mandatory.
      *
      * @param tag URI path parameter: tag name
-     * @param data XmlTag structure containing the list of channels to be tagged
+     * @param data XmlTag structure containing the list of logs to be tagged
      * @return HTTP Response
      */
     @PUT

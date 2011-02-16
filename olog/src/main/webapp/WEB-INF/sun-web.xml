@@ -3,20 +3,20 @@
 <sun-web-app error-url="">
   <context-root>/Olog</context-root>
   <security-role-mapping>
-    <role-name>ChannelMod</role-name>
-    <group-name>cf-channels</group-name>
+    <role-name>LogMod</role-name>
+    <group-name>olog-logs</group-name>
   </security-role-mapping>
   <security-role-mapping>
     <role-name>TagMod</role-name>
-    <group-name>cf-tags</group-name>
+    <group-name>olog-tags</group-name>
   </security-role-mapping>
   <security-role-mapping>
-    <role-name>PropertyMod</role-name>
-    <group-name>cf-properties</group-name>
+    <role-name>LogbookMod</role-name>
+    <group-name>olog-logbooks</group-name>
   </security-role-mapping>
   <security-role-mapping>
     <role-name>Administrator</role-name>
-    <group-name>cf-admins</group-name>
+    <group-name>olog-admins</group-name>
   </security-role-mapping>
   <class-loader delegate="true"/>
   <jsp-config>

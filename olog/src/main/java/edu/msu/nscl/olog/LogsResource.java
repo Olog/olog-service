@@ -99,6 +99,12 @@ public class LogsResource {
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
+            XmlLogs data_temp = new XmlLogs();
+            for(XmlLog datum : data.getLogs()){
+                datum.setOwner(um.getUserName());
+                data_temp.addXmlLog(datum);
+            }
+            data = data_temp;
             XmlLogs result = cm.createOrReplaceLogs(hostAddress,data);
             db.commit();
             Response r = Response.ok(result).build();
@@ -176,6 +182,8 @@ public class LogsResource {
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
+            data.setOwner(um.getUserName());
+
             cm.createOrReplaceLog(hostAddress, logId, data);
             db.commit();
             Response r = Response.noContent().build();
@@ -195,7 +203,7 @@ public class LogsResource {
      * POST method for merging logbooks and tags of the Log identified by the
      * payload into an existing log.
      *
-     * @param logId id of channel to add
+     * @param logId id of log to add
      * @param data new XmlLog data (logbooks/tags) to be merged into log <tt>id</tt>
      * @return HTTP response
      */
@@ -216,6 +224,7 @@ public class LogsResource {
                 cm.checkUserBelongsToGroupOfLog(um.getUserName(), logId);
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
+            data.setOwner(um.getUserName());
             cm.updateLog(hostAddress, logId, data);
             db.commit();
             Response r = Response.noContent().build();

@@ -21,7 +21,7 @@ import java.util.Map;
 import javax.ws.rs.core.Response;
 
 /**
- * JDBC query to create one channel.
+ * JDBC query to create one log.
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
