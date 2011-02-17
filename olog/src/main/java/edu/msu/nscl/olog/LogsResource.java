@@ -93,18 +93,19 @@ public class LogsResource {
         List<String> hostAddress = headers.getRequestHeader("HOST");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
-            cm.checkValidSubjectAndOwner(data);
-            db.getConnection();
-            db.beginTransaction();
-            if (!um.userHasAdminRole()) {
-                cm.checkUserBelongsToGroup(um.getUserName(), data);
-            }
             XmlLogs data_temp = new XmlLogs();
             for(XmlLog datum : data.getLogs()){
                 datum.setOwner(um.getUserName());
                 data_temp.addXmlLog(datum);
             }
             data = data_temp;
+            cm.checkValidSubjectAndOwner(data);
+            db.getConnection();
+            db.beginTransaction();
+            if (!um.userHasAdminRole()) {
+                cm.checkUserBelongsToGroup(um.getUserName(), data);
+            }
+            
             XmlLogs result = cm.createOrReplaceLogs(hostAddress,data);
             db.commit();
             Response r = Response.ok(result).build();
@@ -175,6 +176,7 @@ public class LogsResource {
         List<String> hostAddress = headers.getRequestHeader("HOST");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
+            data.setOwner(um.getUserName());
             cm.checkValidSubjectAndOwner(data);
             cm.checkIdMatchesPayload(logId, data);
             db.getConnection();
@@ -182,8 +184,7 @@ public class LogsResource {
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
-            data.setOwner(um.getUserName());
-
+            
             cm.createOrReplaceLog(hostAddress, logId, data);
             db.commit();
             Response r = Response.noContent().build();
@@ -217,6 +218,7 @@ public class LogsResource {
         List<String> hostAddress = headers.getRequestHeader("HOST");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
+            data.setOwner(um.getUserName());
             cm.checkValidSubjectAndOwner(data);
             db.getConnection();
             db.beginTransaction();
@@ -224,7 +226,7 @@ public class LogsResource {
                 cm.checkUserBelongsToGroupOfLog(um.getUserName(), logId);
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
-            data.setOwner(um.getUserName());
+            
             cm.updateLog(hostAddress, logId, data);
             db.commit();
             Response r = Response.noContent().build();

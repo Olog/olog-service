@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="ChannelFinder">
+<project name="Olog">
     <bannerLeft>
-        <name>ChannelFinder</name>
+        <name>Olog</name>
         <!--<src>http://maven.apache.org/images/apache-maven-project.png</src>-->
         <href>http://olog.sourceforge.net</href>
     </bannerLeft>
@@ -14,7 +14,7 @@
         <links>
             <item name="EPICS" href="http://www.aps.anl.gov/epics/"/>
         </links>
-        <menu name="ChannelFinder">
+        <menu name="Olog">
             <item name="Overview" href="index.html"/>
             <item name="Download" href="download.html"/>
             <item name="Installation" href="installation.html"/>
