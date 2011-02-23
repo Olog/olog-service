@@ -61,13 +61,14 @@ public class FindLogsQuery {
     private FindLogsQuery(MultivaluedMap<String, String> matches) {
         for (Map.Entry<String, List<String>> match : matches.entrySet()) {
             String key = match.getKey().toLowerCase();
-            if (key.equals("~subject")) {
+            if (key.equals("~search")) {
                 log_matches.addAll(match.getValue());
             } else if (key.equals("~tag")) {
                 addTagMatches(match.getValue());
             } else if (key.equals("~logbook")){
                 addTagMatches(match.getValue());
-                //value_matches.putAll(key, match.getValue());
+            } else {
+                value_matches.putAll(key, match.getValue());
             }
         }
     }
@@ -121,17 +122,6 @@ public class FindLogsQuery {
         Set<Long> ids = new HashSet<Long>();           // set of matching log ids
         List<String> params = new ArrayList<String>(); // parameter list for this query
 
-        //for (Map.Entry<String, Collection<String>> match : value_matches.asMap().entrySet()) {
-            //StringBuilder valueList = new StringBuilder("log.subject LIKE");
-            //params.add(match.getKey().toLowerCase());
-            //for (String value : match.getValue()) {
-               // valueList.append(" ? OR log.subject LIKE");
-               // params.add(convertFileGlobToSQLPattern(value));
-            //}
-            //query.append(" (LOWER(t.name) = ? AND ("
-            //        + valueList.substring(0, valueList.length() - 17) + ")) OR");
-        //}
-
         for (String tag : tag_matches) {
             params.add(convertFileGlobToSQLPattern(tag).toLowerCase());
             query.append(" LOWER(t.name) LIKE ? OR");
@@ -147,6 +137,66 @@ public class FindLogsQuery {
                 ps.setString(i++, p);
             }
             ps.setLong(i++, value_matches.asMap().size()  + tag_matches.size());
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                // Add key to list of matching log ids
+                ids.add(rs.getLong(1));
+            }
+        } catch (SQLException e) {
+            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "SQL Exception while getting log ids in logbook match query: "+ query.toString(), e);
+        }
+        return ids;
+    }
+ /**
+     * Creates and executes the properties string match subquery using GROUP.
+     *
+     * @param con connection to use
+     * @return a set of log ids that match
+     */
+    private Set<Long> getIdsFromPropertiesMatch(Connection con) throws CFException {
+        StringBuilder query = new StringBuilder("SELECT log.*, t.*, level.name, "+
+                                                "(SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, "+
+                                                "(SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children "+
+                                                "FROM `logs` as log "+
+                                                "LEFT JOIN `logs` as parent ON log.id = parent.parent_id "+
+                                                "LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id "+
+                                                "LEFT JOIN logbooks as t ON lt.logbook_id = t.id "+
+                                                "LEFT JOIN levels as level ON log.level_id = level.id "+
+                                                "LEFT JOIN statuses as status ON log.status_id = status.id "+
+                                                "LEFT JOIN statuses as ltstatus ON lt.status_id = status.id "+
+                                                "LEFT JOIN statuses as tstatus ON t.status_id = status.id "+
+                                                "LEFT JOIN properties as prop ON log.id = prop.log_id "+
+                                                "WHERE (parent.parent_id IS NULL and log.parent_id IS NULL "+
+                                                "OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) "+
+                                                "AND status.name = 'Active' "+
+                                                "AND ltstatus.name = 'Active' "+
+                                                "AND tstatus.name = 'Active' AND ");
+        Set<Long> ids = new HashSet<Long>();           // set of matching log ids
+        List<String> params = new ArrayList<String>(); // parameter list for this query
+
+        for (Map.Entry<String, Collection<String>> match : value_matches.asMap().entrySet()) {
+            StringBuilder valueList = new StringBuilder("prop.value LIKE ");
+            params.add(match.getKey().toLowerCase());
+            for (String value : match.getValue()) {
+                valueList.append("? OR prop.value LIKE ");
+                params.add(convertFileGlobToSQLPattern(value));
+            }
+            query.append("(LOWER(prop.name) = ? AND ( "
+                    + valueList.substring(0, valueList.length() - 20) + ")) OR ");
+        }
+
+
+        query.replace(query.length() - 3, query.length(),
+                " GROUP BY lt.id HAVING COUNT(log.id) = ? ORDER BY lt.log_id DESC, ifnull(parent_created,log.created) DESC");
+
+        try {
+            PreparedStatement ps = con.prepareStatement(query.toString());
+            int i = 1;
+            for (String p : params) {
+                ps.setString(i++, p);
+            }
+            ps.setLong(i++, value_matches.asMap().size());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 // Add key to list of matching log ids
@@ -228,8 +278,16 @@ public class FindLogsQuery {
         List<String> name_params = new ArrayList<String>();
         Set<Long> result = new HashSet<Long>();
 
-        if (!value_matches.isEmpty() || !tag_matches.isEmpty()) {
+        if (!tag_matches.isEmpty()) {
             Set<Long> ids = getIdsFromLogbookAndTagMatch(con);
+            if (ids.isEmpty()) {
+                return null;
+            }
+            result = ids;
+        }
+
+        if (!value_matches.isEmpty()) {
+            Set<Long> ids = getIdsFromPropertiesMatch(con);
             if (ids.isEmpty()) {
                 return null;
             }

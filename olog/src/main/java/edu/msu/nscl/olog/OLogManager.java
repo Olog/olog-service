@@ -55,7 +55,6 @@ public class OLogManager {
         for (XmlLogbook s : src.getXmlLogbooks().getLogbooks()) {
             for (XmlLogbook d : dest.getXmlLogbooks().getLogbooks()) {
                 if (d.getName().equals(s.getName())) {
- //TODO: here                   d.setState(s.getState());
                     continue src_logbooks;
                 }
             }
@@ -65,6 +64,7 @@ public class OLogManager {
         for (XmlTag s : src.getXmlTags().getTags()) {
             for (XmlTag d : dest.getXmlTags().getTags()) {
                 if (d.getName().equals(s.getName())) {
+//TODO: here                   d.setState(s.getState());
                     continue src_tags;
                 }
             }
@@ -197,6 +197,8 @@ public class OLogManager {
     /**
      * Add the logbook identified by <tt>logbook</tt>
      * to the single log <tt>id</tt>.
+     *
+     * TODO: this couldn't work as stated
      *
      * @param logbook logbook to add
      * @param logId log to add the logbook to

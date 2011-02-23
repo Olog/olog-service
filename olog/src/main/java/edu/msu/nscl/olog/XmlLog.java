@@ -30,6 +30,7 @@ public class XmlLog {
     private Date modifiedDate;
     private String subject;
     private String description;
+    private XmlProperties properties = new XmlProperties();
     private XmlLogbooks logbooks = new XmlLogbooks();
     private XmlTags tags = new XmlTags();
   
@@ -246,6 +247,34 @@ public class XmlLog {
      */
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    /**
+     * Getter for log's XmlProperties.
+     *
+     * @return properties XmlProperties
+     */
+    @XmlElement(name = "properties")
+    public XmlProperties getXmlProperties() {
+        return properties;
+    }
+
+    /**
+     * Setter for log's XmlProperties.
+     *
+     * @param properties XmlProperties
+     */
+    public void setXmlProperties(XmlProperties properties) {
+        this.properties = properties;
+    }
+
+    /**
+     * Adds an XmlProperty to the log.
+     *
+     * @param property single XmlProperty
+     */
+    public void addXmlProperty(XmlProperty property) {
+        this.properties.addXmlProperty(property);
     }
 
     /**
