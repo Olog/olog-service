@@ -11,6 +11,11 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response;
@@ -86,10 +91,21 @@ public class LogsResource {
     @POST
     @Consumes({"application/xml", "application/json"})
     @Produces({"application/xml", "application/json"})
-    public Response add(@Context HttpHeaders headers,XmlLogs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Response add(@Context HttpHeaders headers,XmlLogs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
         DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
+        // TODO: make getInstance for ContentRepository; Shouldn't need to pass params
+        //ContentRepository jcr = ContentRepository.getInstance();
+        //Session scr = jcr.getSession();
+            //Node root = scr.getRootNode();
+            // Store content
+            //Node hello = root.addNode("hello");
+            //Node world = hello.addNode("world");
+            //world.setProperty("message", "Hello, World!");
+            //scr.save();
+        //audit.info("<h1>Success</h1>");
+       // audit.info("logged in as user: " + scr.getUserID());
         List<String> hostAddress = headers.getRequestHeader("HOST");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {

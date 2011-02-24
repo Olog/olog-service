@@ -11,6 +11,12 @@
                 </property>
             </activation>
             <properties>
+                <glassfish.glassfishDirectory>C:/Program Files/glassfish-3.0.1/glassfish</glassfish.glassfishDirectory>
+                <glassfish.user>admin</glassfish.user>
+                <glassfish.adminPassword>adminadmin</glassfish.adminPassword>
+                <glassfish.domain.name>domain1</glassfish.domain.name>
+                <glassfish.domain.host>localhost</glassfish.domain.host>
+                <glassfish.domain.adminPort>4848</glassfish.domain.adminPort>
                 <netbeans.deployment.server.id>[/opt/sges-v3/glassfish]deployer:gfv3ee6:localhost:4848</netbeans.deployment.server.id>
             </properties>
         </profile>

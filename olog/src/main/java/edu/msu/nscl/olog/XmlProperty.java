@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlType;
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@helmholtz-berlin.de>
  */
-@XmlType(propOrder = {"name","value","owner","xmlChannels"})
+@XmlType(propOrder = {"name","value","owner","xmlLogs"})
 @XmlRootElement(name = "property")
 public class XmlProperty {
     private String name = null;

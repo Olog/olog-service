@@ -33,6 +33,7 @@ public class XmlLog {
     private XmlProperties properties = new XmlProperties();
     private XmlLogbooks logbooks = new XmlLogbooks();
     private XmlTags tags = new XmlTags();
+    private XmlAttachments attachments = new XmlAttachments();
   
     /** Creates a new instance of XmlLog */
     public XmlLog() {
@@ -41,7 +42,7 @@ public class XmlLog {
     /**
      * Creates a new instance of XmlLog.
      *
-     * @param logId Log id
+     * @param logId log id
      */
     public XmlLog(Long logId) {
         this.id = logId;
@@ -70,11 +71,11 @@ public class XmlLog {
     /**
      * Creates a new instance of XmlLog.
      *
-     * @param id log id
+     * @param logId log id
      * @param owner log owner
      */
-    public XmlLog(Long id, String owner) {
-        this.id = id;
+    public XmlLog(Long logId, String owner) {
+        this.id = logId;
         this.owner = owner;
     }
 
@@ -91,16 +92,16 @@ public class XmlLog {
     /**
      * Setter for log id.
      *
-     * @param id
+     * @param logId
      */
-    public void setId(Long id) {
-        this.id = id;
+    public void setId(Long logId) {
+        this.id = logId;
     }
 
     /**
      * Getter for log version id.
      *
-     * @return version
+     * @return versionId
      */
     @XmlAttribute
     public int getVersion() {
@@ -146,7 +147,7 @@ public class XmlLog {
     }
 
     /**
-     * Setter for log level.
+     * Setter for log owner.
      *
      * @param level
      */
@@ -280,7 +281,7 @@ public class XmlLog {
     /**
      * Getter for log's XmlLogbooks.
      *
-     * @return logbooks XmlLogbooks
+     * @return XmlLogbooks
      */
     @XmlElement(name = "logbooks")
     public XmlLogbooks getXmlLogbooks() {
@@ -308,7 +309,7 @@ public class XmlLog {
     /**
      * Getter for the log's XmlTags.
      *
-     * @return tags XmlTags for this log
+     * @return XmlTags for this log
      */
     @XmlElement(name = "tags")
     public XmlTags getXmlTags() {
@@ -327,10 +328,38 @@ public class XmlLog {
     /**
      * Adds an XmlTag to the collection.
      *
-     * @param tag XmlTag
+     * @param tag
      */
     public void addXmlTag(XmlTag tag) {
         this.tags.addXmlTag(tag);
+    }
+
+        /**
+     * Getter for the log's XmlAttachments.
+     *
+     * @return XmlAttachments for this log
+     */
+    @XmlElement(name = "attachments")
+    public XmlAttachments getXmlAttachments() {
+        return attachments;
+    }
+
+    /**
+     * Setter for the log's XmlAttachments.
+     *
+     * @param attachments XmlAttachments
+     */
+    public void setXmlAttachments(XmlAttachments attachments) {
+        this.attachments = attachments;
+    }
+
+    /**
+     * Adds an XmlAttachment to the collection.
+     *
+     * @param attachment
+     */
+    public void addXmlAttachment(XmlAttachment attachment) {
+        this.attachments.addXmlAttachment(attachment);
     }
 
     /**
@@ -340,9 +369,10 @@ public class XmlLog {
      * @return string representation
      */
     public static String toLog(XmlLog data) {
-        return data.getSubject() + "(" + data.getOwner() + "):["
+        return data.getId()+"-v."+data.getVersion()+" : "+data.getSubject() + "(" + data.getOwner() + "):["
                 + XmlLogbooks.toLog(data.logbooks)
                 + XmlTags.toLog(data.tags)
-                + "]";
+                + XmlAttachments.toLog(data.attachments)
+                + "]\n";
     }
 }
