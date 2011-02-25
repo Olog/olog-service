@@ -70,6 +70,15 @@ public class OLogManager {
             }
             dest.getXmlTags().addXmlTag(s);
         }
+        src_properties:
+        for (XmlProperty s : src.getXmlProperties().getProperties()) {
+            for (XmlProperty d : dest.getXmlProperties().getProperties()) {
+                if (d.getName().equals(s.getName())) {
+                    continue src_properties;
+                }
+            }
+            dest.getXmlProperties().addXmlProperty(s);
+        }
     }
 
     /**

@@ -135,6 +135,39 @@ public class CreateLogQuery {
                         "SQL Exception while adding logbooks/tags for log '" + log.getSubject() + "'", e);
             }
         }
+        if (this.log.getXmlProperties().getProperties().size() > 0) {
+            params.clear();
+            query.setLength(0);
+            query.append("INSERT INTO properties (log_id, name, value) VALUES ");
+            for (XmlProperty property : this.log.getXmlProperties().getProperties()) {
+                if (property.getName().isEmpty() || property.getName() == null) {
+                    throw new CFException(Response.Status.NOT_FOUND,
+                    "Property name (key) can not be null ");
+                }
+                query.append("(?,?,?),");
+                ArrayList<String> par = new ArrayList<String>();
+                par.add(property.getName());
+                par.add(property.getValue());
+                params.add(par);
+            }
+            try {
+                ps = con.prepareStatement(query.substring(0, query.length() - 1));
+                i = 1;
+                for (List<String> par : params) {
+                    ps.setLong(i++, id);
+                    ps.setString(i++, par.get(0));
+                    if (par.get(1) == null) {
+                        ps.setNull(i++, java.sql.Types.NULL);
+                    } else {
+                        ps.setString(i++, par.get(1));
+                    }
+                }
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                        "SQL Exception while adding properties for log '" + log.getSubject() + "' "+ps.toString(), e);
+            }
+        }
         return log;
     }
 

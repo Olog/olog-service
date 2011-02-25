@@ -489,7 +489,7 @@ public class FindLogsQuery {
                         xmlLog.setLevel(rs.getString("level.name"));
                         xmlLogs.addXmlLog(xmlLog);
                         lastlog = thislog;
-                    } else if(thislog != (lastlogp) ){
+                    } else if(thislog != (lastlogp) && !thislogbook.equals(lastlogbook) ){
                         addProperty(xmlLog,properties);
                         properties.clear();
                         lastlogp = thislog;
@@ -522,12 +522,16 @@ public class FindLogsQuery {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
 
             Long lastlog = 0L;
+            Long lastlogp = 0L;
             String lastlogbook = null;
+            HashMap<String, String> properties = new HashMap();
             if (rs != null) {
                 xmlLogs = new XmlLogs();
                 while (rs.next()) {
                     Long thislog = rs.getLong("log.id");
                     String thislogbook = rs.getString("t.name");
+                    if(rs.getString("prop.name") != null)
+                        properties.put(rs.getString("prop.name"), rs.getString("prop.value"));
                     if (thislog != lastlog || rs.isFirst()) {
                         if (rs.getLong("log.parent_id")==0L || rs.getLong("log.id")==rs.getLong("log.parent_id")) {
                             xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
@@ -543,12 +547,15 @@ public class FindLogsQuery {
                         xmlLog.setLevel(rs.getString("level.name"));
                         xmlLogs.addXmlLog(xmlLog);
                         lastlog = thislog;
+                    } else if(thislog != (lastlogp) && !thislogbook.equals(lastlogbook) ){
+                        addProperty(xmlLog,properties);
+                        properties.clear();
+                        lastlogp = thislog;
                     }
                     if (!thislogbook.equals(lastlogbook) || rs.isFirst()) {
                         addLogbook(xmlLog, rs);
                         lastlogbook = thislogbook;
                     }
-                   // addProperty(xmlLog, rs);
                 }
             }
             return xmlLogs;
@@ -568,13 +575,17 @@ public class FindLogsQuery {
     public static XmlLog findLogById(Long logId) throws CFException {
         FindLogsQuery q = new FindLogsQuery(SearchType.LOG, logId);
         XmlLog xmlLog = null;
-        String lastlogbook = null;
         try {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
+            Long lastlogp = 0L;
+            String lastlogbook = null;
+            HashMap<String, String> properties = new HashMap();
             if (rs != null) {
                 while (rs.next()) {
                     Long thislog = rs.getLong("log.id");
                     String thislogbook = rs.getString("t.name");
+                    if(rs.getString("prop.name") != null)
+                        properties.put(rs.getString("prop.name"), rs.getString("prop.value"));
                     if (rs.isFirst()) {
                         if (rs.getLong("log.parent_id")==0 || rs.getLong("log.id")==rs.getLong("log.parent_id")) {
                             xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
@@ -588,12 +599,15 @@ public class FindLogsQuery {
                         xmlLog.setSubject(rs.getString("subject"));
                         xmlLog.setDescription(rs.getString("description"));
                         xmlLog.setLevel(rs.getString("level.name"));
+                    } else if(thislog != (lastlogp) && !thislogbook.equals(lastlogbook) ){
+                        addProperty(xmlLog,properties);
+                        properties.clear();
+                        lastlogp = thislog;
                     }
                     if (!thislogbook.equals(lastlogbook) || rs.isFirst()) {
                         addLogbook(xmlLog, rs);
                         lastlogbook = thislogbook;
                     }
-                   // addProperty(xmlLog, rs);
                 }
             }
         } catch (SQLException e) {

@@ -142,7 +142,7 @@ CREATE TABLE `properties` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `log_id` int(11) NOT NULL,
   `name` varchar(200) NOT NULL,
-  `value` varchar(200) NOT NULL,
+  `value` varchar(200),
   PRIMARY KEY (`id`),
   KEY `properties_log_id_fk` (`log_id`),
   CONSTRAINT `properties_log_id_fk` FOREIGN KEY (`log_id`) REFERENCES `logs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
