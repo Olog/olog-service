@@ -26,7 +26,7 @@ public  class OlogContextListener implements ServletContextListener {
 
   public void contextDestroyed(ServletContextEvent event) {
     //Output a simple message to the server's console
-    System.out.println("Olog JCR Sessions Been Removed");
+    System.out.println("Olog JCR Sessions have been removed");
     this.context = null;
    // if(this.jcr.getSession()!=null)
    //     this.jcr.cleanJcrSessions();

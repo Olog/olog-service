@@ -16,12 +16,11 @@ import javax.xml.bind.annotation.XmlType;
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@helmholtz-berlin.de>
  */
-@XmlType(propOrder = {"name","value","owner","xmlLogs"})
+@XmlType(propOrder = {"name","value","xmlLogs"})
 @XmlRootElement(name = "property")
 public class XmlProperty {
     private String name = null;
     private String value = null;
-    private String owner = null;
     private XmlLogs logs = null;
 
     /**
@@ -35,23 +34,10 @@ public class XmlProperty {
      * Creates a new instance of XmlProperty.
      *
      * @param name
-     * @param owner
-     */
-    public XmlProperty(String name, String owner) {
-        this.owner = owner;
-        this.name = name;
-    }
-
-    /**
-     * Creates a new instance of XmlProperty.
-     *
-     * @param name
-     * @param owner
      * @param value
      */
-    public XmlProperty(String name, String owner, String value) {
+    public XmlProperty(String name, String value) {
         this.value = value;
-        this.owner = owner;
         this.name = name;
     }
 
@@ -94,25 +80,6 @@ public class XmlProperty {
     }
 
     /**
-     * Getter for property owner.
-     *
-     * @return property owner
-     */
-    @XmlAttribute
-    public String getOwner() {
-        return owner;
-    }
-
-    /**
-     * Setter for property owner.
-     *
-     * @param owner property owner
-     */
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
-    /**
      * Getter for property's XmlLogs.
      *
      * @return XmlChannels object
@@ -125,7 +92,7 @@ public class XmlProperty {
     /**
      * Setter for property's XmlLogs.
      *
-     * @param channels XmlLogs object
+     * @param logs XmlLogs object
      */
     public void setXmlLogs(XmlLogs logs) {
         this.logs = logs;
@@ -139,9 +106,9 @@ public class XmlProperty {
      */
     public static String toLog(XmlProperty data) {
          if (data.logs == null) {
-            return data.getName() + "(" + data.getOwner() + ")";
+            return data.getName() + "(" + data.getValue() + ")";
         } else {
-            return data.getName() + "(" + data.getOwner() + ")"
+            return data.getName() + "(" + data.getValue() + ")"
                     + XmlLogs.toLog(data.logs);
         }
     }

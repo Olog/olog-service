@@ -362,7 +362,7 @@ public class FindLogsQuery {
             query.replace(query.length() - 4, query.length(), ")");
         }
 
-        query.append(" ORDER BY lt.log_id DESC, ifnull(parent_created,log.created) DESC");
+        query.append(" ORDER BY lt.log_id DESC, ifnull(parent_created,log.created) DESC, t.name");
 
         try {
             PreparedStatement ps = con.prepareStatement(query.toString());
@@ -446,11 +446,10 @@ public class FindLogsQuery {
                 for( Map.Entry entry : properties.entrySet()){
                     if(entry.getKey() != null || entry.getKey() != "")
                         c.addXmlProperty(new XmlProperty(entry.getKey().toString(),
-                                                 null,
                                                  entry.getValue().toString()));
-                }
+            }
         }
-    }
+            }
     /**
      * Finds logs by matching logbook/tag values and/or log and/or tag names.
      *
@@ -465,6 +464,7 @@ public class FindLogsQuery {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
             Long lastlog = 0L;
             Long lastlogp = 0L;
+            Long lastlogl = 0L;
             String lastlogbook = null;
             HashMap<String, String> properties = new HashMap();
             if (rs != null) {
@@ -473,7 +473,7 @@ public class FindLogsQuery {
                     String thislogbook = rs.getString("t.name");
                     if(rs.getString("prop.name") != null)
                         properties.put(rs.getString("prop.name"), rs.getString("prop.value"));
-                    
+
                     if (thislog != (lastlog) || rs.isFirst()) {
                         if (rs.getLong("log.parent_id")==0L || rs.getLong("log.id")==rs.getLong("log.parent_id")) {
                             xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
@@ -489,16 +489,18 @@ public class FindLogsQuery {
                         xmlLog.setLevel(rs.getString("level.name"));
                         xmlLogs.addXmlLog(xmlLog);
                         lastlog = thislog;
-                    } else if(thislog != (lastlogp) && !thislogbook.equals(lastlogbook) ){
+                    }
+                    if(thislog != (lastlogp) && !rs.isFirst() ){
                         addProperty(xmlLog,properties);
                         properties.clear();
                         lastlogp = thislog;
                     }
-                    if (!thislogbook.equals(lastlogbook) || rs.isFirst()) {
+                    if (thislog != (lastlogl) || !thislogbook.equals(lastlogbook) || rs.isFirst()) {
                         addLogbook(xmlLog, rs);
-                        lastlogbook = thislogbook;  
-                    }
+                        lastlogbook = thislogbook;
+                        lastlogl = thislog;
                 }
+            }
 
             }
             return xmlLogs;
@@ -523,6 +525,7 @@ public class FindLogsQuery {
 
             Long lastlog = 0L;
             Long lastlogp = 0L;
+            Long lastlogl = 0L;
             String lastlogbook = null;
             HashMap<String, String> properties = new HashMap();
             if (rs != null) {
@@ -547,16 +550,18 @@ public class FindLogsQuery {
                         xmlLog.setLevel(rs.getString("level.name"));
                         xmlLogs.addXmlLog(xmlLog);
                         lastlog = thislog;
-                    } else if(thislog != (lastlogp) && !thislogbook.equals(lastlogbook) ){
+                    }
+                    if(thislog != (lastlogp) && !rs.isFirst() ){
                         addProperty(xmlLog,properties);
                         properties.clear();
                         lastlogp = thislog;
                     }
-                    if (!thislogbook.equals(lastlogbook) || rs.isFirst()) {
+                    if (thislog != (lastlogl) || !thislogbook.equals(lastlogbook) || rs.isFirst()) {
                         addLogbook(xmlLog, rs);
                         lastlogbook = thislogbook;
-                    }
+                        lastlogl = thislog;
                 }
+            }
             }
             return xmlLogs;
         } catch (SQLException e) {
@@ -577,7 +582,6 @@ public class FindLogsQuery {
         XmlLog xmlLog = null;
         try {
             ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
-            Long lastlogp = 0L;
             String lastlogbook = null;
             HashMap<String, String> properties = new HashMap();
             if (rs != null) {
@@ -599,10 +603,10 @@ public class FindLogsQuery {
                         xmlLog.setSubject(rs.getString("subject"));
                         xmlLog.setDescription(rs.getString("description"));
                         xmlLog.setLevel(rs.getString("level.name"));
-                    } else if(thislog != (lastlogp) && !thislogbook.equals(lastlogbook) ){
+                    }
+                    if(rs.isLast() ){
                         addProperty(xmlLog,properties);
                         properties.clear();
-                        lastlogp = thislog;
                     }
                     if (!thislogbook.equals(lastlogbook) || rs.isFirst()) {
                         addLogbook(xmlLog, rs);
