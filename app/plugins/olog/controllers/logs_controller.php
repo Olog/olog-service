@@ -76,68 +76,34 @@ class LogsController extends OlogAppController {
 	}
 
 	function add() {
-		$result = array('response' => 'failed');
 		if (!empty($this->data)) {
 			if ($this->Session->check('Auth.User.id')) {
-				($this->_isRest())?$data = $this->restPreparePostData($this->data):$data = $this->preparePostData($this->data);
-				$this->Log->begin();
-				if ($this->_numeric($data)){
-					$saved=$this->Log->saveAll($data);
-				} else {
-					unset($this->data['Log']);
-					unset($this->data['Tag']);
-					unset($data['Upload']);
-					// Saving data separately with transaction, need to get the id first
-					$saved=$this->Log->save($data);
-					// save is called in uploader plugin component against $this->data
-					if(!$this->uploadFiles($this->Log->id)) $saved=false;
-				}
+				$saved=$this->Log->save($data);
+				// save is called in uploader plugin component against $this->data
+				if(!$this->uploadFiles($this->Log->id)) $saved=false;
 				if ($saved) {
-					$this->Log->commit();
-					if ($this->_isRest()){
-						// need to fix this for more than one id too!
-						$result = array('response' => 'success', 'id' => $this->Log->id);
-					} else {
-						$this->Session->setFlash(__('The log has been saved', true));
-						$this->redirect(array('action' => 'index'));							
-					}
-					$this->sendEmail($this->Log->id);
+					$this->Session->setFlash(__('The log has been saved', true));
+					$this->redirect(array('action' => 'index'));							
 				} else {
-					$this->Log->rollback();
-					if ($this->_isRest()){
-						$result = array('response' => 'failed');
-					} else {
-						/** Todo quick fix for tag validation error not showing up **/
-						$print_error = "";
-						foreach ($this->Log->validationErrors as $errorKey => $error) {
-							$print_error .= "For input ".$errorKey.": ".$error.'<br>';
-						}
-						$this->Session->setFlash(__($print_error.'The log could not be saved. Please, try again.', true));
+					/** Todo quick fix for tag validation error not showing up **/
+					$print_error = "";
+					foreach ($this->Log->validationErrors as $errorKey => $error) {
+						$print_error .= "For input ".$errorKey.": ".$error.'<br>';
 					}
+					$this->Session->setFlash(__($print_error.'The log could not be saved. Please, try again.', true));
 				}
 			} else {
-				if ($this->_isRest()){
-					$result = array('response' => 'failed');
-				} else {
-					$this->Session->setFlash(__('The log could not be saved. Please, try again.', true));
-				}
+				$this->Session->setFlash(__('The log could not be saved. Please, try again.', true));
 			}
 		}
-		if ($this->_isRest()){
-			$this->set('response',compact('result'));
-		} else {
-			$users = $this->Log->User->find('list');
-			$levels = $this->Log->Level->find('list');
-			$parentLogs = $this->Log->ParentLog->find('list');
-			$tags = $this->Log->Tag->find('list', array(
-							'conditions' => array('book'=>0)
-						      ));
-			$logbooks = $this->Log->Tag->find('list', array(
-							'conditions' => array('book'=>1)
-						      ));
-			$uploads = $this->Log->Upload->find('list');
-			$this->set(compact('users', 'levels', 'parentLogs', 'tags', 'logbooks', 'uploads'));
-		}
+		$levels = array("Info","Problem","Request","Suggestion","Urgent");
+		Controller::loadModel('Tag');
+                $tags = $this->Tag->find('list');
+		Controller::loadModel('Logbook');
+		$logbooks = $this->Logbook->find('list');
+                print_r($tags);
+		//$uploads = $this->Log->Upload->find('list');
+		$this->set(compact('levels', 'tags', 'logbooks'));
 	}
 
 	function edit($id = null) {

@@ -130,3 +130,4 @@
 2011-05-19 08:49:07 Warning: Warning (2): Invalid argument supplied for foreach() in [C:\xampp\htdocs\logbook\app\plugins\olog\views\logs\index.ctp, line 64]
 2011-05-19 08:51:26 Warning: Warning (2): Invalid argument supplied for foreach() in [C:\xampp\htdocs\logbook\app\plugins\olog\views\logs\index.ctp, line 64]
 2011-05-19 08:51:32 Warning: Warning (2): Invalid argument supplied for foreach() in [C:\xampp\htdocs\logbook\app\plugins\olog\views\logs\index.ctp, line 64]
+2011-05-19 10:00:19 Warning: Warning (2): Invalid argument supplied for foreach() in [C:\xampp\htdocs\logbook\app\plugins\olog\models\logbook.php, line 129]
