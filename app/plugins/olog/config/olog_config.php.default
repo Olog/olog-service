@@ -1,0 +1,10 @@
+<?php
+
+class OLOG_CONFIG {
+
+  var $Olog = array(
+    'uri' => 'http://localhost:8080/Olog/resources'
+  );
+
+}
+?>
