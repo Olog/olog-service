@@ -72,7 +72,8 @@ class LogsController extends OlogAppController {
 		  $this->redirect(array('action' => 'index'));
 
 		}
-		$this->set('log', $this->Log->read(null, $id));
+                $this->set('log', $this->Log->find('log', array('conditions' => array('id' => $id))));
+		//$this->set('log', $this->Log->read());
 	}
 
 	function add() {
@@ -101,7 +102,6 @@ class LogsController extends OlogAppController {
                 $tags = $this->Tag->find('list');
 		Controller::loadModel('Logbook');
 		$logbooks = $this->Logbook->find('list');
-                print_r($tags);
 		//$uploads = $this->Log->Upload->find('list');
 		$this->set(compact('levels', 'tags', 'logbooks'));
 	}

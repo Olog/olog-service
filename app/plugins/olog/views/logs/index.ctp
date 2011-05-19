@@ -68,21 +68,21 @@
                 }
         ?>
                 <tr<?php echo $class; ?>>
-                    <td><?php echo $log['id']; ?></td>
-                    <td><?php echo $log['createdDate']; ?>&nbsp;<br><div class="edited"><?php if ($log['version'] > 0
+                    <td class="id"><?php echo $log['id']; ?></td>
+                    <td class="date"><?php echo $log['createdDate']; ?>&nbsp;<br><div class="edited"><?php if ($log['version'] > 0
 
                     )echo '[edited]'; ?></div></td>
-            <td>
+            <td class="level">
 <?php echo $this->Html->link($log['level'], array('controller' => 'levels', 'action' => 'view', $log['level'])); ?>
             </td>
-            <td><?php echo $log['subject']; ?>&nbsp;&nbsp<br>
+            <td class="subject"><?php echo $log['subject']; ?>&nbsp;&nbsp<br>
 <?php echo $log['description']; ?>
                 <div class="tag"><?php
                 foreach ($log['tags'] as $tag)
                     echo $tag['name'] . '&nbsp;|&nbsp;';
                 foreach ($log['logbooks'] as $logbook)
                     echo $logbook['name'] . '&nbsp;|&nbsp;'; ?></div></td>
-            <td>
+            <td class="col_owner">
 <?php echo $this->Html->link($log['owner'], array('controller' => 'users', 'action' => 'view', $log['owner'])); ?>
             </td>
             <td class="actions">
