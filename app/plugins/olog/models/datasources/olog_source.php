@@ -34,22 +34,34 @@ class OlogSource extends RestSource {
   
     /**
    * Overloads method = POST in request if not already set
-   *
+   *  // TODO:  This is one ugly to XML
    * @param AppModel $model
    * @param array $fields 
    * @param array $values
    */
   public function create(&$model, $fields = null, $values = null) {
     $model->request['uri']['path']=strtolower(Inflector::pluralize($model->name));
-pr($fields);
-pr($values);
-//    $model->request['body']=$body;
-//    if (is_array($queryData['conditions'] && isset($model->request['uri']['query']))){
-//      $model->request['uri']['query']=$model->request = array_merge($queryData['conditions'], $model->request['uri']['query']);
-//    }
-//    if (is_array($queryData['conditions'] && !isset($model->request['uri']['query']))){
-//      $model->request['uri']['query']=$model->request = $queryData['conditions'];
-//    }
+    $body = '<?xml version="1.0" encoding="UTF-8" ?>';
+    $body .= '<logs>';
+    $level_keys = array_keys($fields, 'level');
+    $body .='<log level="'.$values[$level_keys[0]].'">';
+    foreach($fields as $key=>$field){
+      if($field=='description'||$field=='subject')
+        $body .= '<'.$field.'><![CDATA['.$values[$key].']]></'.$field.'>';
+      if($field=='tags'||$field=='logbooks'){
+        if(is_array($values[$key])){
+          $body .= '<'.$field.'>';
+          foreach($values[$key] as $child){
+            $body .= '<'.strtolower(Inflector::singularize($field)).' name="'.$child.'"/>';
+          }
+          $body .= '</'.$field.'>';
+        }
+      }
+    }
+    $body .= "</log>";
+    $body .= "</logs>";
+    $model->request['body']=$body;
+
     $response = parent::create($model, $fields, $values);
 
     return $response;

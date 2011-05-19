@@ -82,7 +82,6 @@ class LogsController extends OlogAppController {
 
 			//if ($this->Session->check('Auth.User.id')) {
 				$saved=$this->Log->save($this->data);
-                                exit();
 				// save is called in uploader plugin component against $this->data
 				//if(!$this->uploadFiles($this->Log->id)) $saved=false;
 				if ($saved) {
