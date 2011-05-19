@@ -26,19 +26,19 @@
 /** Or #011640 #2D6DA6 #6997BF #F29D35 #730202 **/
 /** One more #27538C #6997BF #A9C2D9 #F2EEEB #D9D2CC **/
 body {
-	background: #6997bf;
+	background: #BBBBBB;
 	color: #fff;
 	font-family:'lucida grande',verdana,helvetica,arial,sans-serif;
 	font-size:90%;
 	margin: 0;
 }
 a {
-	color: #6997bf;
+	color: #316600;
 	text-decoration: underline;
 	font-weight: bold;
 }
 a:hover {
-	color: #367889;
+	color: #316600;
 	text-decoration:none;
 }
 a img {
@@ -51,7 +51,8 @@ h1, h2, h3, h4 {
 h1 {
 	background:#fff;
 	color: #6997bf;
-	font-size: 100%;
+	font-size: 150%;
+        font-family: arial,bold;
 }
 h2 {
 	background:#fff;
@@ -83,20 +84,46 @@ ul, li {
 	position: absolute;
 	top: 0;
 	right: 0;
-	width: 350px;
 	text-align:right;
+        padding-top: 5px;
+        padding-right: 250px;
 }
 #sign a {
 	color: #fff;
-	background: #6997bf;
-	font-weight: normal;
-	text-decoration: none;
+	background: #006633;
+	font-weight: bold;
+	text-decoration: underline;
 }
 #sign a:hover {
 	color: #fff;
-	background: #6997bf;
+	background: #006633;
+        font-weight: bold;
 	text-decoration: underline;
 }
+
+#menu {
+    background: #CCE0D6;
+    padding-top: 5px;
+    padding-left: 5px;
+    margin-bottom: 5px;
+    text-align: left;
+    font-size: 14px;
+    height: 24px;
+    width: 195px;
+    border: dotted 1px;
+}
+#menu a {
+
+}
+
+#logviews {
+    text-align: right;
+    padding-bottom: 10px;
+}
+#logviews a {
+
+}
+
 #quickfilters {
 	font-weight: normal;
 	padding: 0px 10px;
@@ -107,28 +134,24 @@ ul, li {
 	font-weight: normal;
 	font-size: 75%;
 }
-#menu a {
-	color: #27538C;
-}
-#logviews a {
-	color: #27538C;
-}
+
 #container {
-	text-align: left;
+        margin: 0 auto;
+        width: 1200px;
 }
 
 #header{
-	padding: 0px 20px;
+
 }
 #header h1 {
-	line-height:45px;
-	background: #6997bf url('../img/54px-Nuvola_apps_bookcase_1_blue.png') no-repeat left;
+	line-height:75px;
+	background: #006633 url('../img/FRIB.png') no-repeat left;
 	color: #fff;
-	padding: 0px 90px;
+	padding: 0px 100px;
 }
 #header h1 a {
 	color: #fff;
-	background: #6997bf;
+	background: #006633;
 	font-weight: normal;
 	text-decoration: none;
 }
@@ -141,7 +164,7 @@ ul, li {
 	background: #fff;
 	clear: both;
 	color: #333;
-	padding: 5px 20px 10px 20px;
+
 	overflow: auto;
 }
 #footer {
@@ -155,7 +178,7 @@ div.form,
 div.index,
 div.view {
 	float:left;
-	width:80%;
+	width:90%;
 	#border-left:1px solid #666;
 	padding:10px 2%;
 	font-size: 85%;
@@ -224,7 +247,7 @@ td.actions {
 	white-space: nowrap;
 }
 table th.actions {
-	color: #27538C;
+	color: #316600;
 }
 table td.actions a {
 	margin: 0px 6px;
@@ -250,11 +273,11 @@ div.paging {
 	clear:both;
 }
 div.paging span.disabled {
-	color: #ddd;
+	color: #000;
 	display: inline;
 }
 div.paging span.current {
-	color: #c73e14;
+	color: #000;
 }
 div.paging span a {
 }

@@ -28,7 +28,7 @@ $session->flash('auth');
 	<?php
 		echo $this->Html->meta('icon');
 
-		echo $this->Html->css('cake.generic');
+		echo $this->Html->css('logbook');
 
 		echo $scripts_for_layout;
 	?>
@@ -40,15 +40,15 @@ $session->flash('auth');
 <body>
 	<div id="container">
 		<div id="header">
-			<h1><?php echo $this->Html->link(__('Online Log', true), '/'); ?></h1>
-		<div id="sign"><?php
-		if ($this->Session->check('Auth.User.id')) {
-			echo $session->read('Auth.User.name')."&nbsp;|&nbsp;";
-			echo $this->Html->link(__('Sign out',true), array('controller' => 'users', 'action' => 'logout'));
-		} else {
-			echo $this->Html->link(__('Sign in',true), array('controller' => 'users', 'action' => 'login'));
-		}
-		?></div>
+			<h1><?php echo $this->Html->link(__('Logbook', true), '/'); ?></h1>
+                        <div id="sign"><?php
+                            if ($this->Session->check('Auth.User.id')) {
+                                echo $session->read('Auth.User.name')."&nbsp;|&nbsp;";
+                                echo $this->Html->link(__('Sign out',true), array('controller' => 'users', 'action' => 'logout'));
+                            } else {
+                                echo $this->Html->link(__('Sign in',true), array('controller' => 'users', 'action' => 'login'));
+                            }
+                        ?></div>
 		</div>
 		<div id="content">
 
@@ -60,12 +60,6 @@ $session->flash('auth');
 		</div>
 
 		<div id="footer">
-			<?php echo $this->Html->link(
-					$this->Html->image('cake.power.gif', array('alt'=> __('CakePHP: the rapid development php framework', true), 'border' => '0')),
-					'http://www.cakephp.org/',
-					array('target' => '_blank', 'escape' => false)
-				);
-			?>
 		</div>
 	</div>
 	<?php echo $this->element('sql_dump'); ?>
