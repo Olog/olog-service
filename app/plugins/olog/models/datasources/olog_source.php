@@ -4,7 +4,6 @@
 App::import('Datasource', 'Rest.RestSource');
 
 class OlogSource extends RestSource {
-
     /**
      * Overloads the RestSource::request() method to add Olog API
      * specific elements to the request property of the passed model before
@@ -32,7 +31,30 @@ class OlogSource extends RestSource {
 
         return $response;
     }
+  
+    /**
+   * Overloads method = POST in request if not already set
+   *
+   * @param AppModel $model
+   * @param array $fields 
+   * @param array $values
+   */
+  public function create(&$model, $fields = null, $values = null) {
+    $model->request['uri']['path']=strtolower(Inflector::pluralize($model->name));
+pr($fields);
+pr($values);
+//    $model->request['body']=$body;
+//    if (is_array($queryData['conditions'] && isset($model->request['uri']['query']))){
+//      $model->request['uri']['query']=$model->request = array_merge($queryData['conditions'], $model->request['uri']['query']);
+//    }
+//    if (is_array($queryData['conditions'] && !isset($model->request['uri']['query']))){
+//      $model->request['uri']['query']=$model->request = $queryData['conditions'];
+//    }
+    $response = parent::create($model, $fields, $values);
 
+    return $response;
+    }
+  
     /**
      * Overloads method = GET in request if not already set
      *
@@ -43,7 +65,6 @@ class OlogSource extends RestSource {
         if (!isset($model->request['uri']['path'])) {
             $model->request['uri']['path']=strtolower(Inflector::pluralize($model->name));
         }
-
         if (is_array($queryData) && isset($queryData['conditions'][$model->name . '.id'])) {
             $model->request['uri']['path'] = $model->request['uri']['path'] . '/' . $queryData['conditions'][$model->name . '.id'];
             unset($queryData['conditions'][$model->name . '.id']);

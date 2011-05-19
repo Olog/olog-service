@@ -127,7 +127,7 @@ class Logbook extends OlogAppModel {
     } else {
 
      foreach($results['logbooks']['logbook'] as $list){
-        $listform[] = $list['name']; 
+        $listform[$list['name']] = $list['name']; 
       }
 
       return $listform;

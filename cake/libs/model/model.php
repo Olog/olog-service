@@ -1012,9 +1012,8 @@ class Model extends Overloadable {
 		}
 
 		if (empty($this->_schema)) {
-			$this->schema();
+			$this->schema($name);
 		}
-
 		if ($this->_schema != null) {
 			return isset($this->_schema[$name]);
 		}
@@ -1313,7 +1312,6 @@ class Model extends Overloadable {
 			}
 		}
 		$count = count($fields);
-
 		if (!$exists && $count > 0) {
 			$this->id = false;
 		}

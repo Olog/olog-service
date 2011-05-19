@@ -74,14 +74,17 @@ class LogsController extends OlogAppController {
 		}
                 $this->set('log', $this->Log->find('log', array('conditions' => array('id' => $id))));
 		//$this->set('log', $this->Log->read());
+                //pr($backtrace);
 	}
 
 	function add() {
 		if (!empty($this->data)) {
-			if ($this->Session->check('Auth.User.id')) {
-				$saved=$this->Log->save($data);
+
+			//if ($this->Session->check('Auth.User.id')) {
+				$saved=$this->Log->save($this->data);
+                                exit();
 				// save is called in uploader plugin component against $this->data
-				if(!$this->uploadFiles($this->Log->id)) $saved=false;
+				//if(!$this->uploadFiles($this->Log->id)) $saved=false;
 				if ($saved) {
 					$this->Session->setFlash(__('The log has been saved', true));
 					$this->redirect(array('action' => 'index'));							
@@ -93,11 +96,15 @@ class LogsController extends OlogAppController {
 					}
 					$this->Session->setFlash(__($print_error.'The log could not be saved. Please, try again.', true));
 				}
-			} else {
-				$this->Session->setFlash(__('The log could not be saved. Please, try again.', true));
-			}
+			//} else {
+			//	$this->Session->setFlash(__('The log could not be saved. Please, try again.', true));
+			//}
 		}
-		$levels = array("Info","Problem","Request","Suggestion","Urgent");
+		$levels = array("Info"=>"Info",
+                                "Problem"=>"Problem",
+                                "Request"=>"Request",
+                                "Suggestion"=>"Suggestion",
+                                "Uregent"=>"Urgent");
 		Controller::loadModel('Tag');
                 $tags = $this->Tag->find('list');
 		Controller::loadModel('Logbook');

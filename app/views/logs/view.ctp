@@ -1,4 +1,5 @@
 <div class="logs view">
+	<?php pr($log); ?>
 <h2><?php  __('Log #'.$log['Log']['id']);?></h2>
 	<dl><?php $i = 0; $class = ' class="altrow"';?>
 		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Id'); ?></dt>

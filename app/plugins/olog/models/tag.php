@@ -124,7 +124,7 @@ class Tag extends OlogAppModel {
       
     } else {
       foreach($results['tags']['tag'] as $list){
-        $listform[] =$list['name']; 
+        $listform[$list['name']] =$list['name']; 
       }
 
       return $listform;

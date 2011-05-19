@@ -5,14 +5,13 @@
 	<fieldset>
  		<legend><?php __('New Log'); ?></legend>
 	<?php
-		echo $this->Form->input('id');
 		echo $this->Form->input('level');
 		echo $this->Form->input('subject');
 		echo $this->Form->input('description');
-		echo $this->Form->input('Logbook',array( 'type' => 'select', 'multiple' => true ));
-		echo $this->Form->input('Tag');
-		echo '<a href="javascript:addElement()">add another file</a>';
-		echo $this->Form->input('Upload.0.file', array('type' => 'file','div' => array('id' => 'fileDivId')));
+		echo $this->Form->input('logbooks',array( 'type' => 'select', 'multiple' => true ));
+		echo $this->Form->input('tags', array( 'type' => 'select', 'multiple' => true ));
+	//	echo '<a href="javascript:addElement()">add another file</a>';
+	//	echo $this->Form->input('Upload.0.file', array('type' => 'file','div' => array('id' => 'fileDivId')));
 	?>
 	</fieldset>
 <?php echo $this->Form->end(__('Submit', true));?>
