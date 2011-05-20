@@ -6,7 +6,8 @@
 //    'url' => array( 'controller' => 'logs', 'action' => 'index'), 
 //    'update' => 'test', 'frequency' => 10
 //    )
-//); 
+//);
+
 ?>
 <div class="logs index">
     <div id="menu">

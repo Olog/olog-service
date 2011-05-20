@@ -1,7 +1,7 @@
 <div class="logs form">
 <?php echo $this->Html->script('addUpload.js'); ?>
 <?php echo $this->element('tinymce',array('preset' => 'basic')); ?> 
-<?php echo $this->Form->create('Log', array('type' => 'file'));?>
+<?php echo $this->Form->create('log', array('type' => 'file'));?>
 	<fieldset>
  		<legend><?php __('New Log'); ?></legend>
 	<?php

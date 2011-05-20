@@ -96,12 +96,12 @@ class Log extends OlogAppModel {
   }
   
   public function save($data = null, $validate = true, $fieldList = array()) {
-    foreach($data['Log'] as $field=>$value){
+    foreach($data['log'] as $field=>$value){
       list($fields[], $values[]) = array($field, $value);
     }
     
     $db =& ConnectionManager::getDataSource($this->useDbConfig);
-    if (!empty($data->id)) {
+    if (!empty($data['log']['id'])) {
       $success = (bool)$db->update($this, $fields, $values);
     }
     if (!$db->create($this, $fields, $values)) {

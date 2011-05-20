@@ -113,136 +113,49 @@ class LogsController extends OlogAppController {
 	}
 
 	function edit($id = null) {
-		$result = array('response' => 'failed');
 		if (!$id && empty($this->data)) {
-			if ($this->RequestHandler->isXml()){
-				$result = array('response' => 'failed');
-			} else {
-				$this->Session->setFlash(__('Invalid log', true));
-				$this->redirect(array('action' => 'index'));
-			}
+			$this->Session->setFlash(__('Invalid log', true));
+			$this->redirect(array('action' => 'index'));
 		}
 		if (!empty($this->data)) {
-			if ($this->Session->check('Auth.User.id')) {
-				if ($this->RequestHandler->isXml()) {
-					$this->data = array_merge($this->Log->read(null, $id),$this->data);
-				}
-				$editedCreated = $this->Log->read('created',$id);
-				$this->Log->create();
-				if (is_array($this->data['Tag']['Tag'])&&is_array($this->data['Log']['Logbook'])) {
-					$this->data['Tag']['Tag'] = array_merge($this->data['Tag']['Tag'], $this->data['Log']['Logbook']);
-				} else {
-					$this->data['Tag']['Tag'] = $this->data['Log']['Logbook'];
-				}
-				unset($this->data['Log']['id']);
-				$this->data['Log']['user_id'] = $this->Session->read('Auth.User.id');
-				$this->data['Log']['source'] = $this->RequestHandler->getClientIp();
-				$this->data['Log']['md5recent'] = $this->md5ComputeRecent($this->data);
-				$this->data['Log']['md5entry'] = $this->md5ComputeEntry($this->data);
-				$this->data['Log']['created'] = $editedCreated['Log']['created'];
+//			if ($this->Session->check('Auth.User.id')) {
 				if ($this->Log->save($this->data)) {
-					// get children of $id and change parent_id to $this->Log->id
-					// read $id, and change parent_id to $this->Log->id
-					// read $id, and change status_id to 1 (edit)
-					$newParent = $this->Log->id;
-					$this->Log->id = $id;
-					$modified = $this->Log->read('modified',$id);
-					$this->Log->save(array(
-							       'parent_id'=>$newParent,
-							       'status_id'=>2,
-							       'modified'=>$modified['Log']['modified']
-					));
-					foreach($this->Log->children($id,true) as $kids) {
-						$this->Log->id = $kids['Log']['id'];
-						$modified = $this->Log->read('modified',$kids['Log']['id']);
-						$this->Log->save(array(
-								       'parent_id'=>$newParent,
-								       'status_id'=>1,
-								       'modified'=>$modified['Log']['modified']
-						));
-					}
-					if ($this->RequestHandler->isXml()){
-						$result = array('response' => 'success', 'id' => $this->Log->id);
-					} else {
-						$this->Session->setFlash(__('The log has been saved', true));
-						$this->redirect(array('action' => 'index'));
-					}
-					$this->sendEmail($this->Log->id);
-				} else {
-					if ($this->RequestHandler->isXml()){
-						$result = array('response' => 'failed');
-					} else {
-						$this->Session->setFlash(__('The log could not be saved. Please, try again.', true));
-					}
-				}
-			} else {
-				if ($this->RequestHandler->isXml()){
-					$result = array('response' => 'failed');
+					$this->Session->setFlash(__('The log has been saved', true));
+					$this->redirect(array('action' => 'index'));
 				} else {
 					$this->Session->setFlash(__('The log could not be saved. Please, try again.', true));
 				}
-			}
+//			} else {
+//					$this->Session->setFlash(__('The log could not be saved. Please, try again.', true));
+//			}
 		}
 		if (empty($this->data)) {
-			$this->data = $this->Log->read(null, $id);
-			// Todo: Maybe this logbook as a tag was a bad idea
-			// need to separate it!
-			//print_r($this->data);
-			
-			foreach($this->data['Tag'] as $tag) {
-				if ($tag['book']==1)
-					$this->data['Log']['Logbook'][]=$tag['id'];
-			}
+                        $this->data = $this->Log->find('log', array('conditions' => array('id' => $id)));
 		}
-		if ($this->RequestHandler->isXml()){
-			$this->set(compact('result'));
-		} else {
-			$webdavdir = $this->Sabredav->server->getBaseUri();
-			$uploads = $this->Log->Upload->find('all', array(
-							'conditions' => array('log_id'=>$id),
-							'fields' => array('Upload.name','Upload.store')
-						      ));
-			$users = $this->Log->User->find('list');
-			$levels = $this->Log->Level->find('list');
-			$parentLogs = $this->Log->ParentLog->find('list');
-			$tags = $this->Log->Tag->find('list', array(
-							'conditions' => array('book'=>0)
-						      ));
-			$logbooks = $this->Log->Tag->find('list', array(
-							'conditions' => array('book'=>1)
-						      ));
-			$this->set(compact('users', 'levels', 'parentLogs', 'logbooks', 'tags', 'uploads', 'webdavdir'));
-		}
+		//$uploads = $this->Log->Upload->find('all', array(
+		//				'conditions' => array('log_id'=>$id),
+		//				'fields' => array('Upload.name','Upload.store')
+		//			      ));
+		Controller::loadModel('Tag');
+                $tags = $this->Tag->find('list');
+		Controller::loadModel('Logbook');
+		$logbooks = $this->Logbook->find('list');
+		//$uploads = $this->Log->Upload->find('list');
+		$this->set(compact('levels', 'tags', 'logbooks'));
+		//$this->set(compact('users', 'levels', 'parentLogs', 'logbooks', 'tags', 'uploads', 'webdavdir'));
 	}
 
 	function delete($id = null) {
-		$result = array('response' => 'failed');
 		if (!$id) {
-			if ($this->_isRest()){
-				$result = array('response' => 'failed');
-			} else {
-				$this->Session->setFlash(__('Invalid id for log', true));
-				$this->redirect(array('action'=>'index'));
-			}
+          		$this->Session->setFlash(__('Invalid id for log', true));
+			$this->redirect(array('action'=>'index'));
 		}
-		if (empty($this->data)) {
-			$this->data = $this->Log->read(null, $id);
+		if ($this->Log->delete($id)) {
+			$this->Session->setFlash(__('Log deleted', true));
+			$this->redirect(array('action'=>'index'));
 		}
-		$this->data['Log']['status_id'] = 3;
-		if ($this->Log->save($this->data)) {
-			if ($this->_isRest()){
-				$result = array('response' => 'success');
-			} else {
-				$this->Session->setFlash(__('Log deleted', true));
-				$this->redirect(array('action'=>'index'));
-			}
-		}
-		if ($this->_isRest()){
-			$this->set(compact('result'));
-		} else {
-			$this->Session->setFlash(__('Log was not deleted', true));
-			$this->redirect(array('action' => 'index'));
-		}
+		$this->Session->setFlash(__('Log was not deleted', true));
+		$this->redirect(array('action' => 'index'));
 	}
 	/** moving to own controller ?**/
 	function search() {

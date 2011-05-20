@@ -31,6 +31,10 @@ class OlogSource extends RestSource {
 
         return $response;
     }
+    
+    public function calculate(){
+        return '';
+    }
   
     /**
    * Overloads method = POST in request if not already set
@@ -83,12 +87,15 @@ class OlogSource extends RestSource {
     public function update(&$model, $fields = null, $values = null) {
 
         $model->request['uri']['path']=strtolower(Inflector::pluralize($model->name));
-        if (is_array($fields) && isset($fields['id'])) {
-            $id_keys = array_keys($fields, 'id');
+        $id_keys = array_keys($fields, 'id');
+        if (is_array($fields) && isset($values[$id_keys[0]])) {
             $model->request['uri']['path'] = $model->request['uri']['path'] . '/' . $values[$id_keys[0]];
         }
         $body = $this->xmlFormater($fields, $values);
         $model->request['body']=$body;
+        pr($model->request);
+        pr($fields);
+        pr($values);
         $response = parent::update($model, $fields, $values);
         return $response;
     }
