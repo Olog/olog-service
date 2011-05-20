@@ -473,3 +473,6 @@
 2011-05-19 16:30:33 Debug: Notice (8): Undefined variable: config in [C:\xampp\htdocs\logbook\app\plugins\rest\models\datasources\rest_source.php, line 33]
 2011-05-19 16:31:19 Debug: Notice (8): Undefined variable: config in [C:\xampp\htdocs\logbook\app\plugins\rest\models\datasources\rest_source.php, line 33]
 2011-05-19 16:31:20 Debug: Notice (8): Undefined index: Content-Type in [C:\xampp\htdocs\logbook\app\plugins\rest\models\datasources\rest_source.php, line 114]
+2011-05-20 08:30:23 Debug: Notice (8): Undefined property: LogsController::$RequestHandler in [C:\xampp\htdocs\logbook\app\plugins\olog\controllers\logs_controller.php, line 197]
+2011-05-20 08:30:57 Debug: Notice (8): Undefined offset: 0 in [C:\xampp\htdocs\logbook\app\plugins\olog\models\datasources\olog_source.php, line 115]
+2011-05-20 08:30:57 Debug: Notice (8): Undefined index:  in [C:\xampp\htdocs\logbook\app\plugins\olog\models\datasources\olog_source.php, line 115]

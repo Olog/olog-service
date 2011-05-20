@@ -147,3 +147,4 @@
 2011-05-19 16:47:28 Warning: Warning (2): Illegal offset type in [C:\xampp\htdocs\logbook\app\plugins\olog\models\datasources\olog_source.php, line 49]
 2011-05-19 17:04:43 Warning: Warning (2): Invalid argument supplied for foreach() in [C:\xampp\htdocs\logbook\app\plugins\olog\models\datasources\olog_source.php, line 53]
 2011-05-19 17:04:44 Warning: Warning (2): Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\logbook\cake\libs\debugger.php:673) in [C:\xampp\htdocs\logbook\cake\libs\controller\controller.php, line 742]
+2011-05-20 08:30:23 Warning: Warning (2): Invalid argument supplied for foreach() in [C:\xampp\htdocs\logbook\app\plugins\olog\controllers\logs_controller.php, line 192]

@@ -41,29 +41,9 @@ class OlogSource extends RestSource {
    */
   public function create(&$model, $fields = null, $values = null) {
     $model->request['uri']['path']=strtolower(Inflector::pluralize($model->name));
-    $body = '<?xml version="1.0" encoding="UTF-8" ?>';
-    $body .= '<logs>';
-    $level_keys = array_keys($fields, 'level');
-    $body .='<log level="'.$values[$level_keys[0]].'">';
-    foreach($fields as $key=>$field){
-      if($field=='description'||$field=='subject')
-        $body .= '<'.$field.'><![CDATA['.$values[$key].']]></'.$field.'>';
-      if($field=='tags'||$field=='logbooks'){
-        if(is_array($values[$key])){
-          $body .= '<'.$field.'>';
-          foreach($values[$key] as $child){
-            $body .= '<'.strtolower(Inflector::singularize($field)).' name="'.$child.'"/>';
-          }
-          $body .= '</'.$field.'>';
-        }
-      }
-    }
-    $body .= "</log>";
-    $body .= "</logs>";
+    $body = $this->xmlFormater($fields, $values);
     $model->request['body']=$body;
-
     $response = parent::create($model, $fields, $values);
-
     return $response;
     }
   
@@ -102,9 +82,13 @@ class OlogSource extends RestSource {
      */
     public function update(&$model, $fields = null, $values = null) {
 
+        $model->request['uri']['path']=strtolower(Inflector::pluralize($model->name));
         if (is_array($fields) && isset($fields['id'])) {
-            $model->request['uri']['path'] = $model->request['uri']['path'] . '/' . $fields['id'];
+            $id_keys = array_keys($fields, 'id');
+            $model->request['uri']['path'] = $model->request['uri']['path'] . '/' . $values[$id_keys[0]];
         }
+        $body = $this->xmlFormater($fields, $values);
+        $model->request['body']=$body;
         $response = parent::update($model, $fields, $values);
         return $response;
     }
@@ -122,7 +106,32 @@ class OlogSource extends RestSource {
         $response = parent::delete($model, $id);
         return $response;
     }
+    
+    private function xmlFormater($fields, $values){
+        $body = '<?xml version="1.0" encoding="UTF-8" ?>';
+        $body .= '<logs>';
+        $level_keys = array_keys($fields, 'level');
+        $id_keys = array_keys($fields, 'id');
+        $body .='<log level="'.$values[$level_keys[0]].'"'.(!empty($id_keys[0])?' id="'.$id_keys[0].'">':'>');
+        foreach($fields as $key=>$field){
+          if($field=='description'||$field=='subject')
+            $body .= '<'.$field.'><![CDATA['.$values[$key].']]></'.$field.'>';
+          if($field=='tags'||$field=='logbooks'){
+            if(is_array($values[$key])){
+              $body .= '<'.$field.'>';
+              foreach($values[$key] as $child){
+                $body .= '<'.strtolower(Inflector::singularize($field)).' name="'.$child.'"/>';
+              }
+              $body .= '</'.$field.'>';
+            }
+          }
+        }
+        $body .= "</log>";
+        $body .= "</logs>";
+        
+        return $body;
+    }
 
-}
+  }
 
 ?>
