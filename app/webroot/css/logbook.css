@@ -86,7 +86,7 @@ ul, li {
     right: 0;
     text-align:right;
     padding-top: 5px;
-    padding-right: 250px;
+    padding-right: 350px;
 }
 #sign a {
     color: #fff;
@@ -101,24 +101,74 @@ ul, li {
     text-decoration: underline;
 }
 
+#logFormCredentials {
+    margin: 0 auto;
+    height: 25px;
+    float: left;
+}
+
+#logFormUsername {
+    position: absolute;
+    width: 100px;
+}
+
+#logFormPassword {
+    width: 100px;
+    margin-left: 100px;
+}
+
+#logFormContainer {
+    height: 175px;
+}
+
+#logFormInfo {
+    position: absolute;
+    height: 175px;
+}
+
+#logFormDescription {
+
+}
+
+#logFormSelects {
+    margin: 0 auto;
+    width: 300px;
+    height: 75px;
+    margin-left: 350px;
+}
+
+#logFormLevels {
+    width: 75px;
+    height: 20px;
+}
+
+#logFormLogbooks {
+    width: 200px;
+    height: 70px;
+}
+
+#logFormTags {
+    width: 200px;
+}
+
+#logFormSubmit {
+    float: right;
+    height: 30px;
+}
+
 #menu {
-    background: #CCE0D6;
-    padding-top: 5px;
     padding-left: 5px;
-    margin-bottom: 5px;
-    text-align: left;
-    font-size: 14px;
+    float: left;
     height: 24px;
-    width: 195px;
-    border: dotted 1px;
+    width: 280px;
 }
 #menu a {
 
 }
 
 #logviews {
-    text-align: right;
-    padding-bottom: 10px;
+    float: right;
+    width: 475px;
 }
 #logviews a {
 

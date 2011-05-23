@@ -25,7 +25,6 @@ class OlogSource extends RestSource {
             $model->request['auth']['method'] = 'Basic';
             $model->request['auth']['user'] = 'berryman';
             $model->request['auth']['pass'] = 'mensch27!';
-            $xmlObj = $model->request['body'];
         }
 
         $response = parent::request($model);
