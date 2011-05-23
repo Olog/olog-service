@@ -33,7 +33,7 @@
  */
         require_once CORE_PATH.'app'.DS.'plugins'.DS.'PluginManager'.DS.'bootstrap.php';
 
-	Router::connect('/', array('controller' => 'logs', 'action' => 'index', 'home'));
+	Router::connect('/', array('plugin' => 'olog', 'controller' => 'logs', 'action' => 'index', 'home'));
 /**
  * ...and connect the rest of 'Pages' controller's urls.
  */

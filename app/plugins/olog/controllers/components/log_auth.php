@@ -1,10 +1,10 @@
 <?php
 App::import('Component', 'Auth');
 
-class LdapAuthComponent extends AuthComponent {
-	var $ldap = null;
-        var $users = null;
+class LogAuthComponent extends AuthComponent {
         
+	var $Log = null;
+	var $User = null;
         /**
         * Initialize method ensures Auth methods remain working as described in the book.
         */
@@ -12,7 +12,13 @@ class LdapAuthComponent extends AuthComponent {
 //        parent::initialize($controller);
 //        $controller->Auth =& $this;
 //        }
-
+	function initialize(&$controller, $settings=array()){
+		$this->Log = $controller->loadModel('Log');
+		$this->User = $controller->loadModel('User');
+		$this->Log = $controller->Log;
+		$this->User = $controller->User;
+		parent::initialize($controller, $settings);
+	}
 	/**
 	 * Main execution method.  Handles redirecting of invalid users, and processing
 	 * of login form data.
@@ -61,8 +67,6 @@ class LdapAuthComponent extends AuthComponent {
 		if ($loginAction != $url && $isAllowed) {
 			return true;
 		}
-		$this->ldap = $this->getModel('LdapUser');
-                $this->users = $this->getModel('User');
 
 		if ($loginAction == $url) {
 			if (empty($controller->data) || !isset($controller->data[$this->userModel])) {
@@ -97,19 +101,10 @@ class LdapAuthComponent extends AuthComponent {
 			return false;
 		} else {
 			if (!$this->user()) {
-				if (!$this->RequestHandler->isAjax()) {
-					$this->Session->setFlash($this->authError, 'default', array(), 'auth');
-					$this->Session->write('Auth.redirect', $url);
-					$controller->redirect($loginAction);
-					return false;
-				} elseif (!empty($this->ajaxLogin)) {
-					$controller->viewPath = 'elements';
-					echo $controller->render($this->ajaxLogin, $this->RequestHandler->ajaxLayout);
-					$this->_stop();
-					return false;
-				} else {
-					$controller->redirect(null, 403);
-				}
+				$this->Session->setFlash($this->authError, 'default', array(), 'auth');
+				$this->Session->write('Auth.redirect', $url);
+				$controller->redirect($loginAction);
+				return false;
 			}
 		}
 
@@ -125,13 +120,7 @@ class LdapAuthComponent extends AuthComponent {
 			break;
 			case 'crud':
 			case 'actions':
-				if (isset($controller->Acl)) {
-					$this->Acl =& $controller->Acl;
-				} else {
-					$err = 'Could not find AclComponent. Please include Acl in ';
-					$err .= 'Controller::$components.';
-					trigger_error(__($err, true), E_USER_WARNING);
-				}
+				//TODO: ACL on actions?
 			break;
 			case 'model':
 				if (!isset($object)) {
@@ -165,46 +154,38 @@ class LdapAuthComponent extends AuthComponent {
 
 
 	function login($data,$clear=null){
-                if(is_null($this->users))
-                        $this->users = $this->getModel('User');
+                if(is_null($this->User))
+                        $this->User = $this->getModel('User');
                 $uid = $data[$this->userModel]['username'];
                 $password = $clear;
 		$this->__setDefaults();
 		$this->_loggedIn = false;
-                $dbConfig = new DATABASE_CONFIG;
-                ($dbConfig->ldap['type'] == 'ActiveDirectory')?$uidAttr='sAMAccountName':$uidAttr='uid';
-		$dn = $this->getDn($uidAttr, $uid);
                 $loginResult = 0;
-		if (!is_null($password))$loginResult = $this->ldapauth($dn, $password); 
-		if( $loginResult == 1){
+		if (!is_null($password))$loginResult = $this->logauth($uid, $password); 
+		if( $loginResult == true){
 			$this->_loggedIn = true;
-                        $userObj = $this->users->find('all',array('conditions' => array('User.username' => $uid)));
+                        $userObj = $this->User->find('all',array('conditions' => array('User.username' => $uid)));
                         $data[$this->userModel][$this->fields['username']]=$uid;
                         $data[$this->userModel][$this->fields['password']]=$this->password($password);
-                        $user = $this->ldap->find('all', array('scope'=>'base', 'targetDn'=>$dn));
                         if (!empty($userObj)){
                                 $id = $userObj[0][$this->userModel]['id'];
-                                $this->users->id = $id;
+                                $this->User->id = $id;
                                 $user_data = $userObj[0][$this->userModel];
-                                $data[$this->userModel]['group_id']=$user_data['group_id'];
                         } else {
-                                $data[$this->userModel]['group_id']=3;
-                                $data[$this->userModel]['name']=$user[0]['LdapUser']['cn'];
                                 $user_data = $data[$this->userModel];
                         }
-                        $this->users->save($data[$this->userModel]);
-                        $user_id = $this->users->id;
+                        $this->User->save($data[$this->userModel]);
+                        $user_id = $this->User->id;
                         
                         $user_data['id'] = $user_id;
-                        $user_data['LdapUser'] = $user[0]['LdapUser'];
-                        $user_data['bindDN'] = $dn;
 			$user_data['bindPasswd'] = $password;
 			$this->Session->write($this->sessionKey, $user_data);
+			$this->Session->write('Log', $user_data);
 		}else{
                        // Check Database
                        // Doesn't not redirect with debugging on (writing late to header problem)
                        $loginResult = parent::login($data);
-                        if ($loginResult == 1){
+                        if ($loginResult == true){
                                 $this->_loggedIn = true;
                         } else {
                                 $this->loginError =  $loginResult;
@@ -213,22 +194,19 @@ class LdapAuthComponent extends AuthComponent {
                 return $this->_loggedIn;
 	}
 
-	function ldapauth($dn, $password){
-                if(is_null($this->ldap))
-                        $this->ldap = $this->getModel('LdapUser');
-		$authResult =  $this->ldap->auth( array('dn'=>$dn, 'password'=>$password));
-		return $authResult;
+	function logauth($uid, $password){
+                if(is_null($this->Log))
+                        $this->Log = $this->getModel('Log');
+		$db =& ConnectionManager::getDataSource('olog');
+		$this->Log->request['auth']['user'] = $uid;
+		$this->Log->request['auth']['pass'] = $password;
+		if (!is_null($password))$authResult = $db->create($this->Log, null, null);
+		($authResult==401)? $result=false : $result=true;
+		return $result;
 	}
 
-	function getDn( $attr, $query){
-                if(is_null($this->ldap))
-                        $this->ldap = $this->getModel('LdapUser');
-		$userObj = $this->ldap->find('all', array('conditions'=>"$attr=$query", 'scope'=>'sub'));
-                //$this->log("auth lookup found: ".print_r($userObj,true)." with the following conditions: ".print_r(array('conditions'=>"$attr=$query", 'scope'=>'one'),true),'debug');
-		return($userObj[0]['LdapUser']['dn']);
-	}
         
-// Validate group, this parent is not working from the aros_acos ... not sure why.        
+// Validate group, this parent is not working ... not sure why.        
         function isAuthorized($type = null, $object = null, $user = null) {
                 $actions  = $this->__authType($type);
                 if( $actions['type'] != 'actions' ){
@@ -240,9 +218,7 @@ class LdapAuthComponent extends AuthComponent {
                     $user = $this->user();
                 }
 
-
-                $group = array('model' => 'Group','foreign_key' =>$user[$this->userModel]['group_id']);
-                $valid = $this->Acl->check($group, $this->action());
+                $valid = true;
                 return $valid;
     }
 }
