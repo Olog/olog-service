@@ -4,7 +4,6 @@ App::import('Component', 'Auth');
 class LogAuthComponent extends AuthComponent {
         
 	var $Log = null;
-	var $User = null;
         /**
         * Initialize method ensures Auth methods remain working as described in the book.
         */
@@ -14,9 +13,7 @@ class LogAuthComponent extends AuthComponent {
 //        }
 	function initialize(&$controller, $settings=array()){
 		$this->Log = $controller->loadModel('Log');
-		$this->User = $controller->loadModel('User');
 		$this->Log = $controller->Log;
-		$this->User = $controller->User;
 		parent::initialize($controller, $settings);
 	}
 	/**
@@ -154,8 +151,6 @@ class LogAuthComponent extends AuthComponent {
 
 
 	function login($data,$clear=null){
-                if(is_null($this->User))
-                        $this->User = $this->getModel('User');
                 $uid = $data[$this->userModel]['username'];
                 $password = $clear;
 		$this->__setDefaults();
@@ -164,39 +159,21 @@ class LogAuthComponent extends AuthComponent {
 		if (!is_null($password))$loginResult = $this->logauth($uid, $password); 
 		if( $loginResult == true){
 			$this->_loggedIn = true;
-                        $userObj = $this->User->find('all',array('conditions' => array('User.username' => $uid)));
                         $data[$this->userModel][$this->fields['username']]=$uid;
                         $data[$this->userModel][$this->fields['password']]=$this->password($password);
-                        if (!empty($userObj)){
-                                $id = $userObj[0][$this->userModel]['id'];
-                                $this->User->id = $id;
-                                $user_data = $userObj[0][$this->userModel];
-                        } else {
                                 $user_data = $data[$this->userModel];
-                        }
-                        $this->User->save($data[$this->userModel]);
-                        $user_id = $this->User->id;
                         
-                        $user_data['id'] = $user_id;
 			$user_data['bindPasswd'] = $password;
 			$this->Session->write($this->sessionKey, $user_data);
 			$this->Session->write('Log', $user_data);
+			$this->Session->write('Auth.User.name', $uid);
 		}else{
-                       // Check Database
-                       // Doesn't not redirect with debugging on (writing late to header problem)
-                       $loginResult = parent::login($data);
-                        if ($loginResult == true){
-                                $this->_loggedIn = true;
-                        } else {
-                                $this->loginError =  $loginResult;
-                        }
+                        $this->loginError =  $loginResult;
 		}
                 return $this->_loggedIn;
 	}
 
 	function logauth($uid, $password){
-                if(is_null($this->Log))
-                        $this->Log = $this->getModel('Log');
 		$db =& ConnectionManager::getDataSource('olog');
 		$this->Log->request['auth']['user'] = $uid;
 		$this->Log->request['auth']['pass'] = $password;

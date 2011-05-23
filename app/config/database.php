@@ -78,7 +78,14 @@
 class DATABASE_CONFIG {
 
 	var $default = array(
-		'driver' => 'my_dbo_source'
+		'datasource' => 'Olog.Olog',
+		'scheme' => 'https',
+		'host' => '35.9.59.95',
+		'port' => '8181',
+		'path' => 'Olog/resources',
+                'default_subject' => 'Logbook Application',
+		'database' => ''
+		
 	);
 
 	var $test = array(
@@ -92,16 +99,6 @@ class DATABASE_CONFIG {
 		'port' => '8181',
 		'path' => 'Olog/resources',
                 'default_subject' => 'Logbook Application'
-	);
-	
-	var $user = array(
-		'driver' => 'mysql',
-		'persistent' => false,
-		'host' => 'localhost',
-		'login' => 'root',
-		'password' => 'gogreen',
-		'database' => 'logbook',
-		'prefix' => '',
 	);
 
 }

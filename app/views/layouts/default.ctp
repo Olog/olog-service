@@ -42,7 +42,7 @@ $session->flash('auth');
 		<div id="header">
 			<h1><?php echo $this->Html->link(__('Logbook', true), '/'); ?></h1>
                         <div id="sign"><?php
-                            if ($this->Session->check('Auth.User.id')) {
+                            if ($this->Session->check('Auth.User.name')) {
                                 echo $session->read('Auth.User.name')."&nbsp;|&nbsp;";
                                 echo $this->Html->link(__('Sign out',true), array('controller' => 'users', 'action' => 'logout'));
                             } else {
