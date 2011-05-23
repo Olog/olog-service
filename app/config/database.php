@@ -100,23 +100,10 @@ class DATABASE_CONFIG {
 		'host' => 'localhost',
 		'login' => 'root',
 		'password' => 'gogreen',
-		'database' => 'ologdb4',
+		'database' => 'logbook',
 		'prefix' => '',
 	);
 
-	var $ldap = array (
-		'datasource' => 'ldap',
-		'persistent' => false,
-		'host' => 'intranet.nscl.msu.edu',
-		'port' => 636,
-		'basedn' => 'dc=intranet,dc=nscl,dc=msu,dc=edu',
-		'login' => 'cn=svc_cf-user,OU=Service Accounts,DC=intranet,DC=nscl,DC=msu,DC=edu',
-		'password' => 'U?e4cA5X',
-		'database' => '',
-                'tls'         => false,
-                'type' => 'ActiveDirectory', //Available types are 'OpenLDAP', 'ActiveDirectory', 'Netscape'
-		'version' => 3
-	);
 }
 
 ?>

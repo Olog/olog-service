@@ -15,7 +15,9 @@ class OlogSource extends RestSource {
      * @return mixed
      */
     public function request(&$model) {
-
+        App::import('Component', 'CakeSession'); 
+        $session = new CakeSession();
+        
         if (!isset($model->request['uri']['host'])) {
             $model->request['uri']['host'] = $this->config['host'];
             $model->request['uri']['port'] = $this->config['port'];
@@ -23,9 +25,10 @@ class OlogSource extends RestSource {
             $model->request['uri']['scheme'] = $this->config['scheme'];
             $model->request['header']['Content-Type'] = 'application/xml';
             $model->request['auth']['method'] = 'Basic';
-            $model->request['auth']['user'] = 'berryman';
-            $model->request['auth']['pass'] = 'mensch27!';
-            $xmlObj = $model->request['body'];
+            $xmlObj = (isset($model->request['body']))?$model->request['body']:'';
+            $auth = $session->read('Log');
+            $model->request['auth']['user'] = $auth['username'];
+            $model->request['auth']['pass'] = $auth['bindPasswd'];
         }
 
         $response = parent::request($model);
@@ -50,10 +53,12 @@ class OlogSource extends RestSource {
     // Default subject - find subject field and change value to default
     $dbinfo = get_class_vars('DATABASE_CONFIG');
     $defaultSubject = $dbinfo['olog']['default_subject'];
-    foreach ($fields as $key=>$value) {
-        if ($value == 'subject') {
-            $values[$key] = $defaultSubject;
-        }
+    if(is_array($fields)){
+      foreach ($fields as $key=>$value) {
+          if ($value == 'subject') {
+              $values[$key] = $defaultSubject;
+          }
+      }
     }
 
     $body = $this->xmlFormater($fields, $values);
@@ -123,6 +128,8 @@ class OlogSource extends RestSource {
     }
     
     private function xmlFormater($fields, $values){
+      $body = '';
+      if(is_array($fields)&& is_array($fields)){
         $body = '<?xml version="1.0" encoding="UTF-8" ?>';
         $level_keys = array_keys($fields, 'level');
         $id_keys = array_keys($fields, 'id');
@@ -143,7 +150,7 @@ class OlogSource extends RestSource {
         }
         $body .= "</log>";
         if (!isset($id_keys[0])) $body .= "</logs>";
-        
+      }  
         return $body;
     }
 
