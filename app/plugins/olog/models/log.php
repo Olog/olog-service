@@ -8,7 +8,7 @@ class Log extends OlogAppModel {
    * @var name
    */
   public $name ='Log';
-
+  
   /**
    * The custom find types available on the model
    * 
@@ -102,7 +102,7 @@ class Log extends OlogAppModel {
     
     $db =& ConnectionManager::getDataSource($this->useDbConfig);
     if (!empty($data['log']['id'])) {
-      $success = (bool)$db->update($this, $fields, $values);
+       return (bool)$db->update($this, $fields, $values);
     }
     if (!$db->create($this, $fields, $values)) {
       $success = false;

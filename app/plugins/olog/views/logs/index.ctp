@@ -51,8 +51,8 @@
     </div>
     <table cellpadding="0" cellspacing="0">
         <tr>
-            <th><?php echo $this->Paginator->sort('id'); ?></th>
-            <th><?php echo $this->Paginator->sort('createdDate'); ?></th>
+       <!--     <th><?php echo $this->Paginator->sort('id'); ?></th>-->
+            <th><?php echo $this->Paginator->sort('created'); ?></th>
             <th><?php echo $this->Paginator->sort('level'); ?></th>
             <th><?php echo $this->Paginator->sort('subject'); ?></th>
             <th><?php echo $this->Paginator->sort('owner'); ?></th>
@@ -69,7 +69,7 @@
                 }
         ?>
                 <tr<?php echo $class; ?>>
-                    <td class="id"><?php echo $log['id']; ?></td>
+         <!--           <td class="id"><?php echo $log['id']; ?></td> -->
                     <td class="date"><?php echo $log['createdDate']; ?>&nbsp;<br><div class="edited"><?php if ($log['version'] > 0
 
                     )echo '[edited]'; ?></div></td>
@@ -77,7 +77,7 @@
 <?php echo $this->Html->link($log['level'], array('controller' => 'levels', 'action' => 'view', $log['level'])); ?>
             </td>
             <td class="subject"><?php echo $log['subject']; ?>&nbsp;&nbsp<br>
-<?php echo $log['description']; ?>
+<?php echo (!empty($log['description'])?$log['description']:''); ?>
                 <div class="tag"><?php
                 foreach ($log['tags'] as $tag)
                     echo $tag['name'] . '&nbsp;|&nbsp;';
@@ -89,7 +89,7 @@
             <td class="actions">
                 <?php echo $this->Html->link(__('View', true), array('action' => 'view', $log['id'])); ?>
 <?php echo $this->Html->link(__('Edit', true), array('action' => 'edit', $log['id'])); ?>
-<?php echo $this->Html->link(__('Delete', true), array('action' => 'delete', $log['id']), null, sprintf(__('Are you sure you want to delete # %s?', true), $log['id'])); ?>
+<?php //echo $this->Html->link(__('Delete', true), array('action' => 'delete', $log['id']), null, sprintf(__('Are you sure you want to delete # %s?', true), $log['id'])); ?>
             </td>
         </tr>
 <?php endforeach; ?>

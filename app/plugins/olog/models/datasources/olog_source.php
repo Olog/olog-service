@@ -93,9 +93,6 @@ class OlogSource extends RestSource {
         }
         $body = $this->xmlFormater($fields, $values);
         $model->request['body']=$body;
-        pr($model->request);
-        pr($fields);
-        pr($values);
         $response = parent::update($model, $fields, $values);
         return $response;
     }
@@ -116,10 +113,10 @@ class OlogSource extends RestSource {
     
     private function xmlFormater($fields, $values){
         $body = '<?xml version="1.0" encoding="UTF-8" ?>';
-        $body .= '<logs>';
         $level_keys = array_keys($fields, 'level');
         $id_keys = array_keys($fields, 'id');
-        $body .='<log level="'.$values[$level_keys[0]].'"'.(!empty($id_keys[0])?' id="'.$id_keys[0].'">':'>');
+        if(!isset($id_keys[0])) $body .= '<logs>';
+        $body .='<log level="'.$values[$level_keys[0]].'"'.(isset($id_keys[0])?' id="'.$values[$id_keys[0]].'">':'>');
         foreach($fields as $key=>$field){
           if($field=='description'||$field=='subject')
             $body .= '<'.$field.'><![CDATA['.$values[$key].']]></'.$field.'>';
@@ -134,7 +131,7 @@ class OlogSource extends RestSource {
           }
         }
         $body .= "</log>";
-        $body .= "</logs>";
+        if (!isset($id_keys[0])) $body .= "</logs>";
         
         return $body;
     }

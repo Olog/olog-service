@@ -95,7 +95,6 @@ class RestSource extends DataSource {
    * @return mixed The response or false
    */
   public function request(&$model) {
-
     if (is_object($model)) {
       $request = $model->request;
     } elseif (is_array($model)) {
@@ -106,23 +105,22 @@ class RestSource extends DataSource {
 
     // Remove unwanted elements from request array
     $request = array_intersect_key($request, $this->Http->request);
-
     // Issues request
     $response = $this->Http->request($request);
-
     // Get content type header
-    $contentType = $this->Http->response['header']['Content-Type'];
+    if(isset($this->Http->response['header']['Content-Type'])){
+      $contentType = $this->Http->response['header']['Content-Type'];
 
-    // Extract content type from content type header
-    if (preg_match('/^([a-z0-9\/\+]+);\s*charset=([a-z0-9\-]+)/i', $contentType, $matches)) {
-      $contentType = $matches[1];
-      $charset = $matches[2];
-    }
+      // Extract content type from content type header
+      if (preg_match('/^([a-z0-9\/\+]+);\s*charset=([a-z0-9\-]+)/i', $contentType, $matches)) {
+        $contentType = $matches[1];
+        $charset = $matches[2];
+      }
 
-    // Decode response according to content type
-    switch ($contentType) {
-    	case 'application/xml':
-    	case 'application/atom+xml':
+      // Decode response according to content type
+      switch ($contentType) {
+      	case 'application/xml':
+      	case 'application/atom+xml':
     	case 'application/rss+xml':
         // If making multiple requests that return xml, I found that using the
         // same Xml object with Xml::load() to load new responses did not work,
@@ -141,8 +139,8 @@ class RestSource extends DataSource {
       case 'text/javascript':
         $response = json_decode($response, true);
         break;
+      }
     }
-
     if (is_object($model)) {
       $model->response = $response;
     }
@@ -154,7 +152,7 @@ class RestSource extends DataSource {
       }
       return false;
     }
-
+    if($this->Http->response['status']['code']==204) return true;
     return $response;
 
   }
