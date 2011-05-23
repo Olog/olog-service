@@ -21,6 +21,7 @@
             </div>
             <div id='logFormContainer'>
                 <div id='logFormInfo'>
+                    <?php echo $this->Form->input('subject', array('type' => 'hidden')); ?>
                     <div id='logFormDescription'><?php echo $this->Form->input('description', array('type' => 'textarea', 'rows' => '2')); ?></div>
                 </div>
                 <div id='logFormSelects'>
