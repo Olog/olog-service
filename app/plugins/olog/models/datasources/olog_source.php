@@ -25,6 +25,7 @@ class OlogSource extends RestSource {
             $model->request['auth']['method'] = 'Basic';
             $model->request['auth']['user'] = 'berryman';
             $model->request['auth']['pass'] = 'mensch27!';
+            $xmlObj = $model->request['body'];
         }
 
         $response = parent::request($model);
@@ -45,6 +46,16 @@ class OlogSource extends RestSource {
    */
   public function create(&$model, $fields = null, $values = null) {
     $model->request['uri']['path']=strtolower(Inflector::pluralize($model->name));
+
+    // Default subject - find subject field and change value to default
+    $dbinfo = get_class_vars('DATABASE_CONFIG');
+    $defaultSubject = $dbinfo['olog']['default_subject'];
+    foreach ($fields as $key=>$value) {
+        if ($value == 'subject') {
+            $values[$key] = $defaultSubject;
+        }
+    }
+
     $body = $this->xmlFormater($fields, $values);
     $model->request['body']=$body;
     $response = parent::create($model, $fields, $values);

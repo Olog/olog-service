@@ -88,9 +88,10 @@ class DATABASE_CONFIG {
 	var $olog = array(
 		'datasource' => 'Olog.Olog',
 		'scheme' => 'https',
-		'host' => 'localhost',
+		'host' => '35.9.59.95',
 		'port' => '8181',
 		'path' => 'Olog/resources',
+                'default_subject' => 'Logbook Application'
 	);
 	
 	var $user = array(
@@ -117,15 +118,5 @@ class DATABASE_CONFIG {
 		'version' => 3
 	);
 }
-class OLOG_CONFIG {
 
-	var $olog = array(
-		'datasource' => 'Olog.Olog',
-		'scheme' => 'https',
-		'host' => 'localhost',
-		'port' => '8181',
-		'path' => 'Olog/resources',
-	);
-
-}
 ?>
