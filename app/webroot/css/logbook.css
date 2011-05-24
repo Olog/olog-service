@@ -74,9 +74,6 @@ ul, li {
 }
 
 /** Layout **/
-#search {
-    font-size: 75%;
-}
 #filter {
     font-size: 65%;
 }
@@ -190,6 +187,20 @@ ul, li {
     width: 1200px;
 }
 
+#search {
+    margin: 0 auto;
+    margin-bottom: 10px;
+    font-size: 10px;
+}
+
+#searchItem {
+    position: absolute;
+}
+
+#searchButton {
+    margin-left: 150px;
+}
+
 #header{
 
 }
@@ -243,11 +254,6 @@ div.actions h3 {
 
 
 /** Tables **/
-div.tag {
-    font-size: 65%;
-    padding:1px 1px;
-    border-top:2px solid #D9D2CC;
-}
 div.edited {
     font-size: 55%;
     padding:2px 2px;
@@ -297,18 +303,37 @@ td.date {
     width: 225px;
 }
 td.level {
-
+    width: 125px;
 }
 td.subject {
-
+    
 }
-td.owner {
 
+#subject {
+    border: 1px dotted;
+    background-color: #CCCCB7;
+    display: inline-block;
+    padding-right: 5px;
+}
+
+#description {
+    border: 1px dotted;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+#tag {
+    font-size: 75%;
+    padding:1px 1px;
+    border-top:2px solid #D9D2CC;
+}
+
+td.owner {
+    padding-right: 10px;
 }
 td.actions {
-    text-align: center;
     white-space: nowrap;
-    width: 150px;
+    width: 100px;
 }
 table th.actions {
     color: #316600;
@@ -377,7 +402,7 @@ fieldset {
     border: 1px solid #ccc;
     margin-top: 10px;
     margin-bottom: 1em;
-    padding: 5px 10px;
+    padding: 0px 10px;
 }
 fieldset legend {
     background:#fff;
