@@ -128,8 +128,9 @@ ul, li {
 }
 
 #logFormSelects {
+    position: absolute;
     margin: 0 auto;
-    width: 300px;
+    width: 200px;
     height: 75px;
     margin-left: 350px;
 }
@@ -146,6 +147,11 @@ ul, li {
 
 #logFormTags {
     width: 200px;
+}
+
+#logFormUploads {
+    margin-left: 575px;
+    vertical-align: top;
 }
 
 #logFormSubmit {
@@ -309,15 +315,7 @@ td.subject {
     
 }
 
-#subject {
-    border: 1px dotted;
-    background-color: #CCCCB7;
-    display: inline-block;
-    padding-right: 5px;
-}
-
 #description {
-    border: 1px dotted;
     padding-top: 5px;
     padding-bottom: 5px;
 }
@@ -403,6 +401,7 @@ fieldset {
     margin-top: 10px;
     margin-bottom: 1em;
     padding: 0px 10px;
+    width: 650px;
 }
 fieldset legend {
     background:#fff;
