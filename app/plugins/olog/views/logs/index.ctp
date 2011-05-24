@@ -104,7 +104,7 @@
                         foreach ($log['logbooks'] as $logbook)
                             echo $logbook['name'] . '&nbsp;|&nbsp;';
         ?></div></td>
-                <td class="date"><?php echo $log['createdDate']; ?>&nbsp;<br><div class="edited"><?php if ($log['version'] > 0
+                <td class="date"><?php echo date('d M Y H:i', strtotime($log['createdDate']));?>&nbsp;<br><div class="edited"><?php if ($log['version'] > 0
 
                             )echo '[edited]'; ?></div></td>
                 <td class="level">
