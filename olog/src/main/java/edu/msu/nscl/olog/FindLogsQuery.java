@@ -405,15 +405,19 @@ public class FindLogsQuery {
             }
             if(limit!=null && offset!=null){
                 Long longOffset = Long.valueOf(offset)*Long.valueOf(limit)-Long.valueOf(limit);
-                query.append(" LIMIT ? OFFSET ?");
+                int first = query.indexOf("FROM `logs` as log ");
+                query.replace(first, first+19, "FROM (SELECT * FROM `logs` ORDER BY id DESC LIMIT ? OFFSET ?) as log ");
                 paginate_params.add(Long.valueOf(limit));
                 paginate_params.add(longOffset);
-                // needs to be Long not string berryman!!!!
+                // needs to be Long not string!!!!
             }
         }
         try {
             PreparedStatement ps = con.prepareStatement(query.toString());
             int i = 1;
+            for (long l : paginate_params) {
+                ps.setLong(i++, l);
+            }
             for (long q : date_params) {
                 ps.setLong(i++, q);
             }
@@ -422,9 +426,6 @@ public class FindLogsQuery {
             }
             for (String s : name_params) {
                 ps.setString(i++, s);
-            }
-            for (long l : paginate_params) {
-                ps.setLong(i++, l);
             }
 
             return ps.executeQuery();
