@@ -95,6 +95,10 @@ class LogAuthComponent extends AuthComponent {
                     }
                     return true;
                 }
+                else {
+                    $this->Session->setFlash(__('You are not authorized to use this application!', true));
+                    $controller->redirect($this->redirect(), null, true);
+                }
             }
             $this->Session->setFlash($this->loginError, 'default', array(), 'auth');
             $controller->data[$this->userModel][$this->fields['password']] = null;
@@ -158,8 +162,9 @@ class LogAuthComponent extends AuthComponent {
         $this->__setDefaults();
         $this->_loggedIn = false;
         $loginResult = 0;
-        if (!is_null($password)
-            )$loginResult = $this->logauth($uid, $password);
+        if (!is_null($password)) {
+            $loginResult = $this->logauth($uid, $password);
+        }
         if ($loginResult == true) {
             $this->_loggedIn = true;
             $data[$this->userModel][$this->fields['username']] = $uid;
@@ -171,7 +176,7 @@ class LogAuthComponent extends AuthComponent {
             $this->Session->write('Log', $user_data);
             $this->Session->write('Auth.User.name', $uid);
         } else {
-            $this->loginError = $loginResult;
+            $this->loginError = "ERROR";
         }
         return $this->_loggedIn;
     }
