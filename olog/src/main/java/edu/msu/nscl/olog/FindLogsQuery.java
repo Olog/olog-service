@@ -35,6 +35,8 @@ public class FindLogsQuery {
         LOG, TAG
     };
     private Multimap<String, String> value_matches = ArrayListMultimap.create();
+    private Multimap<String, String> logPaginate_matches = ArrayListMultimap.create();
+    private Multimap<String, String> date_matches = ArrayListMultimap.create();
     private List<String> log_matches = new ArrayList();
     private List<Long> logId_matches = new ArrayList();
     private List<String> tag_matches = new ArrayList();
@@ -68,6 +70,14 @@ public class FindLogsQuery {
                 addTagMatches(match.getValue());
             } else if (key.equals("~logbook")){
                 addTagMatches(match.getValue());
+            } else if (key.equals("page")) {
+                logPaginate_matches.putAll(key,match.getValue());
+            } else if (key.equals("limit")) {
+                logPaginate_matches.putAll(key,match.getValue());
+            } else if (key.equals("start")){
+                date_matches.putAll(key,match.getValue());
+            } else if (key.equals("end")){
+                date_matches.putAll(key,match.getValue());
             } else {
                 value_matches.putAll(key, match.getValue());
             }
@@ -232,7 +242,7 @@ public class FindLogsQuery {
                        "AND status.name = 'Active' "+
                        "AND ltstatus.name = 'Active' "+
                        "AND tstatus.name = 'Active' "+
-                       "GROUP BY lt.id ORDER BY lt.log_id, ifnull(parent_created,log.created) DESC";
+                       "GROUP BY lt.id ORDER BY lt.log_id, ifnull(parent_created,log.created) DESC, t.name";
         Set<Long> ids = new HashSet<Long>();
 
         try {
@@ -278,6 +288,8 @@ public class FindLogsQuery {
                                                 "AND tstatus.name = 'Active' ");
         List<Long> id_params = new ArrayList<Long>();       // parameter lists for the outer query
         List<String> name_params = new ArrayList<String>();
+        List<Long> paginate_params = new ArrayList<Long>();
+        List<Long> date_params = new ArrayList<Long>();
         Set<Long> tag_result = new HashSet<Long>();
         Set<Long> value_result = new HashSet<Long>();
 
@@ -311,6 +323,23 @@ public class FindLogsQuery {
                         return null;
                     }
                 }
+            }
+        }
+        if (!date_matches.isEmpty()) {
+            String start = null, end = null;
+            for (Map.Entry<String, Collection<String>> match : date_matches.asMap().entrySet()) {
+                if (match.getKey().toLowerCase().equals("start")){
+                    start = match.getValue().iterator().next();
+                }
+                if (match.getKey().toLowerCase().equals("end")){
+                    end = match.getValue().iterator().next();
+                }
+            }
+            if(start!=null && end!=null){
+                query.append(" AND log.created > FROM_UNIXTIME(?) AND log.created <= FROM_UNIXTIME(?) ");
+                date_params.add(Long.valueOf(start));
+                date_params.add(Long.valueOf(end));
+                // needs to be Long not string!!!!
             }
         }
         if (!logId_matches.isEmpty()) {
@@ -364,14 +393,38 @@ public class FindLogsQuery {
 
         query.append(" ORDER BY lt.log_id DESC, ifnull(parent_created,log.created) DESC, t.name");
 
+        if (!logPaginate_matches.isEmpty()) {
+            String limit = null, offset = null;
+            for (Map.Entry<String, Collection<String>> match : logPaginate_matches.asMap().entrySet()) {
+                if (match.getKey().toLowerCase().equals("limit")){
+                    limit = match.getValue().iterator().next();
+                }
+                if (match.getKey().toLowerCase().equals("page")){
+                    offset = match.getValue().iterator().next();
+                }
+            }
+            if(limit!=null && offset!=null){
+                Long longOffset = Long.valueOf(offset)*Long.valueOf(limit)-Long.valueOf(limit);
+                query.append(" LIMIT ? OFFSET ?");
+                paginate_params.add(Long.valueOf(limit));
+                paginate_params.add(longOffset);
+                // needs to be Long not string berryman!!!!
+            }
+        }
         try {
             PreparedStatement ps = con.prepareStatement(query.toString());
             int i = 1;
+            for (long q : date_params) {
+                ps.setLong(i++, q);
+            }
             for (long p : id_params) {
                 ps.setLong(i++, p);
             }
             for (String s : name_params) {
                 ps.setString(i++, s);
+            }
+            for (long l : paginate_params) {
+                ps.setLong(i++, l);
             }
 
             return ps.executeQuery();
@@ -474,7 +527,7 @@ public class FindLogsQuery {
                     if(rs.getString("prop.name") != null)
                         properties.put(rs.getString("prop.name"), rs.getString("prop.value"));
 
-                    if (thislog != (lastlog) || rs.isFirst()) {
+                    if (!thislog.equals(lastlog) || rs.isFirst()) {
                         if (rs.getLong("log.parent_id")==0L || rs.getLong("log.id")==rs.getLong("log.parent_id")) {
                             xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
                             xmlLog.setCreatedDate(rs.getTimestamp("log.created"));
@@ -490,12 +543,12 @@ public class FindLogsQuery {
                         xmlLogs.addXmlLog(xmlLog);
                         lastlog = thislog;
                     }
-                    if(thislog != (lastlogp) && !rs.isFirst() ){
+                    if(!thislog.equals(lastlogp) && !rs.isFirst() ){
                         addProperty(xmlLog,properties);
                         properties.clear();
                         lastlogp = thislog;
                     }
-                    if (thislog != (lastlogl) || !thislogbook.equals(lastlogbook) || rs.isFirst()) {
+                    if (!thislog.equals(lastlogl) || !thislogbook.equals(lastlogbook) || rs.isFirst()) {
                         addLogbook(xmlLog, rs);
                         lastlogbook = thislogbook;
                         lastlogl = thislog;
@@ -535,7 +588,7 @@ public class FindLogsQuery {
                     String thislogbook = rs.getString("t.name");
                     if(rs.getString("prop.name") != null)
                         properties.put(rs.getString("prop.name"), rs.getString("prop.value"));
-                    if (thislog != lastlog || rs.isFirst()) {
+                    if (!thislog.equals(lastlog) || rs.isFirst()) {
                         if (rs.getLong("log.parent_id")==0L || rs.getLong("log.id")==rs.getLong("log.parent_id")) {
                             xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
                             xmlLog.setCreatedDate(rs.getTimestamp("log.created"));
@@ -551,12 +604,12 @@ public class FindLogsQuery {
                         xmlLogs.addXmlLog(xmlLog);
                         lastlog = thislog;
                     }
-                    if(thislog != (lastlogp) && !rs.isFirst() ){
+                    if(!thislog.equals(lastlogp) && !rs.isFirst() ){
                         addProperty(xmlLog,properties);
                         properties.clear();
                         lastlogp = thislog;
                     }
-                    if (thislog != (lastlogl) || !thislogbook.equals(lastlogbook) || rs.isFirst()) {
+                    if (!thislog.equals(lastlogl) || !thislogbook.equals(lastlogbook) || rs.isFirst()) {
                         addLogbook(xmlLog, rs);
                         lastlogbook = thislogbook;
                         lastlogl = thislog;

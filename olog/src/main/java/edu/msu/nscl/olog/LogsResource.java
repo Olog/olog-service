@@ -11,11 +11,13 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.annotation.Resource;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response;
@@ -29,6 +31,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.HttpHeaders;
+import javax.xml.ws.WebServiceContext;
+import javax.xml.ws.handler.MessageContext;
 
 /**
  * Top level Jersey HTTP methods for the .../logs URL
@@ -38,6 +42,8 @@ import javax.ws.rs.core.HttpHeaders;
 
 @Path("/logs/")
 public class LogsResource {
+    //@Resource
+    //private WebServiceContext wsContext
     @Context
     private UriInfo uriInfo;
     @Context
@@ -106,7 +112,9 @@ public class LogsResource {
             //scr.save();
         //audit.info("<h1>Success</h1>");
        // audit.info("logged in as user: " + scr.getUserID());
-        List<String> hostAddress = headers.getRequestHeader("HOST");
+        //MessageContext mc = wsContext.getMessageContext();
+        //HttpServletRequest req = (HttpServletRequest)mc.get(MessageContext.SERVLET_REQUEST);
+        String hostAddress = "0.0.0.0";//req.getRemoteAddr();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             XmlLogs data_temp = new XmlLogs();
@@ -189,7 +197,9 @@ public class LogsResource {
         DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
-        List<String> hostAddress = headers.getRequestHeader("HOST");
+        //MessageContext mc = wsContext.getMessageContext();
+        //HttpServletRequest req = (HttpServletRequest)mc.get(MessageContext.SERVLET_REQUEST);
+        String hostAddress = "0.0.0.0";//req.getRemoteAddr();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             data.setOwner(um.getUserName());
@@ -231,7 +241,9 @@ public class LogsResource {
         DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
-        List<String> hostAddress = headers.getRequestHeader("HOST");
+        //MessageContext mc = wsContext.getMessageContext();
+        //HttpServletRequest req = (HttpServletRequest)mc.get(MessageContext.SERVLET_REQUEST);
+        String hostAddress = "0.0.0.0";//req.getRemoteAddr();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             data.setOwner(um.getUserName());

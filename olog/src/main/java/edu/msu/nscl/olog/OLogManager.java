@@ -361,8 +361,8 @@ public class OLogManager {
      * @param data XmlLog data
      * @throws CFException on ownership or name mismatch, or wrapping an SQLException
      */
-    public void createOrReplaceLog(List<String> hostAddress, Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        data.setSource(hostAddress.toString().trim());
+    public void createOrReplaceLog(String hostAddress, Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        data.setSource(hostAddress);
         DeleteLogQuery.deleteLogIgnoreNoexist(logId);
         CreateLogQuery.createLog(data);
     }
@@ -373,10 +373,10 @@ public class OLogManager {
      * @param data XmlLogs data
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public XmlLogs createOrReplaceLogs(List<String> hostAddress, XmlLogs data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public XmlLogs createOrReplaceLogs(String hostAddress, XmlLogs data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         XmlLogs xmlLogs = new XmlLogs();
         for (XmlLog log : data.getLogs()) {
-            log.setSource(hostAddress.toString().trim());
+            log.setSource(hostAddress);
             removeLog(log.getId());
             xmlLogs.addXmlLog(createOneLog(log));
         }
@@ -400,7 +400,7 @@ public class OLogManager {
      * @param data XmlLog data containing logbooks and tags
      * @throws CFException on name or owner mismatch, or wrapping an SQLException
      */
-    public void updateLog(List<String> hostAddress, Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public void updateLog(String hostAddress, Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         XmlLog dest = findLogById(logId);
         if (dest == null) {
             throw new CFException(Response.Status.NOT_FOUND,

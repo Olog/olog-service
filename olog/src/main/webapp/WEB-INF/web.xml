@@ -167,6 +167,10 @@
         <!--
             Optional parameter to define the value of the 'WWW-Authenticate' header
         -->
+         <init-param>
+             <param-name>missing-auth-mapping</param-name>
+             <param-value></param-value>
+         </init-param>
         <init-param>
             <param-name>authenticate-header</param-name>
             <param-value>Basic realm="olog"</param-value>

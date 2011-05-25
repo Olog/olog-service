@@ -16,7 +16,7 @@
   </security-role-mapping>
   <security-role-mapping>
     <role-name>Administrator</role-name>
-    <group-name>iso9001g</group-name>
+    <group-name>ctrlswg</group-name>
   </security-role-mapping>
   <class-loader delegate="true"/>
   <jsp-config>
