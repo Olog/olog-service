@@ -76,7 +76,11 @@ class OlogAppModel extends PluginManagerAppModel {
     $this->paginate['conditions']['page']=$this->paginate['page'];
     
     $response = $this->find($this->paginate[0], $this->paginate);
-    $total = $this->find($this->paginate[0]);
+    
+    unset($this->paginate['conditions']['limit']);
+    unset($this->paginate['conditions']['page']);
+
+    $total = $this->find($this->paginate[0], $this->paginate);
     $this->_results = $response;
     return count($total['logs']['log']);
   }

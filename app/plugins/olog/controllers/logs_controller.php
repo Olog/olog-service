@@ -61,7 +61,7 @@ class LogsController extends OlogAppController {
 
             if (isset($this->data['log']['username']) && isset($this->data['log']['password'])) {
                 $this->Log->request['auth']['user'] = $this->data['log']['username'];
-		$this->Log->request['auth']['pass'] = $this->data['log']['password'];
+                $this->Log->request['auth']['pass'] = $this->data['log']['password'];
             }
 
             //if ($this->Session->check('Auth.User.id')) {
@@ -141,6 +141,37 @@ class LogsController extends OlogAppController {
         }
         $this->Session->setFlash(__('Log was not deleted', true));
         $this->redirect(array('action' => 'index'));
+    }
+
+    function timespanChange($newTimeSpan = null) {
+        $startDate = null;
+        $endDate = date('U');
+
+        switch ($newTimeSpan) {
+            case 0: // Last day
+                $startDate = mktime(0, 0, 0, date('m'), date('d') - 1, date('y'));
+                break;
+            case 1: // Last 3 Days
+                $startDate = mktime(0, 0, 0, date('m'), date('d') - 3, date('y'));
+                break;
+            case 2: // Last week
+                $startDate = mktime(0, 0, 0, date('m'), date('d') - 7, date('y'));
+                break;
+            case 3: // Last month
+                $startDate = mktime(0, 0, 0, date('m') - 1, date('d'), date('y'));
+                break;
+            case 4: // Last 3 Months
+                $startDate = mktime(0, 0, 0, date('m') - 3, date('d'), date('y'));
+                break;
+            case 5: // Last 6 Months
+                $startDate = mktime(0, 0, 0, date('m') - 6, date('d'), date('y'));
+                break;
+            case 6: // Last year
+                $startDate = mktime(0, 0, 0, date('m'), date('d'), date('y') - 1);
+                break;
+        }
+
+        $this->redirect('/olog/logs/index/start:' . $startDate . '/end:' . $endDate);
     }
 
     private function uploadFiles($id) {
