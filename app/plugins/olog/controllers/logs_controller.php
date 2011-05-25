@@ -4,6 +4,11 @@ class LogsController extends OlogAppController {
 
     var $name = 'Logs';
 
+    function beforeFilter() {
+        parent::beforeFilter();
+        $this->LogAuth->allowedActions = array('index', 'add');
+    }
+
     function index() {
         $this->data['Log'] = $this->passedArgs;
         $this->paginate['Log'] = array(
@@ -26,6 +31,8 @@ class LogsController extends OlogAppController {
 
         $this->set('logbooks', $logbooks);
         $this->set(compact('tags', 'levels'));
+
+        $this->set('session', $this->Session);
     }
 
     /** Todo: implement a threaded view * */
@@ -52,6 +59,11 @@ class LogsController extends OlogAppController {
     function add() {
         if (!empty($this->data)) {
 
+            if (isset($this->data['log']['username']) && isset($this->data['log']['password'])) {
+                $this->Log->request['auth']['user'] = $this->data['log']['username'];
+		$this->Log->request['auth']['pass'] = $this->data['log']['password'];
+            }
+
             //if ($this->Session->check('Auth.User.id')) {
             $saved = $this->Log->save($this->data);
             // save is called in uploader plugin component against $this->data
@@ -66,6 +78,7 @@ class LogsController extends OlogAppController {
                     $print_error .= "For input " . $errorKey . ": " . $error . '<br>';
                 }
                 $this->Session->setFlash(__($print_error . 'The log could not be saved. Please, try again.', true));
+                $this->redirect(array('action' => 'index'));
             }
             //} else {
             //	$this->Session->setFlash(__('The log could not be saved. Please, try again.', true));

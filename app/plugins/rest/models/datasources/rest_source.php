@@ -144,7 +144,8 @@ class RestSource extends DataSource {
     if (is_object($model)) {
       $model->response = $response;
     }
-    if($this->Http->response['status']['code']==401) return 401;
+    if($this->Http->response['status']['code']==401 && isset($model->request['auth_request'])) return false;
+    if($this->Http->response['status']['code']==400 && isset($model->request['auth_request'])) return true;
 
     // Check response status code for success or failure
     if (substr($this->Http->response['status']['code'], 0, 1) != 2) {
