@@ -6,7 +6,7 @@ class LogsController extends OlogAppController {
 
     function beforeFilter() {
         parent::beforeFilter();
-        $this->LogAuth->allowedActions = array('index', 'add');
+        $this->LogAuth->allowedActions = array('index', 'add', 'view');
     }
 
     function index() {
@@ -33,6 +33,7 @@ class LogsController extends OlogAppController {
         $this->set(compact('tags', 'levels'));
 
         $this->set('session', $this->Session);
+        $this->set('base', $this->base);
     }
 
     /** Todo: implement a threaded view * */

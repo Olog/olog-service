@@ -107,7 +107,7 @@
 //                        }
                         foreach ($log['tags'] as $tags) {
                             if (isset($tags['name'])) {
-                                echo $tags['name'] . '&nbsp;|&nbsp;';
+                                echo $tags['name'];
                             } else {
                                 foreach ($tags as $tag) {
                                     if (isset($tag['name'])) {
@@ -151,10 +151,10 @@
 <script type="text/javascript">
     $('#logbook').bind('change', function() {
         var logbookType = $('#logbook').val();
-        window.location.replace('/olog/logs/index/~logbook:' + logbookType);
+        window.location.replace('<?php echo $base; ?>/olog/logs/index/~logbook:' + logbookType);
     });
     $('#timespan').bind('change', function() {
         var newTimeSpan = $('#timespan').val();
-        window.location.replace('/olog/logs/timespanChange/' + newTimeSpan);
+        window.location.replace('<?php echo $base; ?>/olog/logs/timespanChange/' + newTimeSpan);
     });
 </script>

@@ -131,7 +131,6 @@ ul, li {
     position: absolute;
     margin: 0 auto;
     width: 200px;
-    height: 75px;
     margin-left: 350px;
 }
 
@@ -391,7 +390,7 @@ dd {
 
 /** Forms **/
 form {
-    clear: both;
+
     margin-right: 20px;
     padding: 0;
     width: 50%;
@@ -402,6 +401,7 @@ fieldset {
     margin-bottom: 1em;
     padding: 0px 10px;
     width: 650px;
+    min-height: 295px;
 }
 fieldset legend {
     background:#fff;
