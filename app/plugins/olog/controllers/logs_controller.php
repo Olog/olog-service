@@ -6,7 +6,7 @@ class LogsController extends OlogAppController {
 
     function beforeFilter() {
         parent::beforeFilter();
-        $this->LogAuth->allowedActions = array('index', 'add', 'view');
+        $this->LogAuth->allowedActions = array('index', 'add', 'view', 'timespanChange', 'logbookChange');
     }
 
     function index() {
@@ -34,6 +34,12 @@ class LogsController extends OlogAppController {
 
         $this->set('session', $this->Session);
         $this->set('base', $this->base);
+
+        $argumentString = '';
+        foreach ($this->passedArgs as $argumentName => $argumentValue) {
+            $argumentString .= '/' . $argumentName . ':' . $argumentValue;
+        }
+        $this->set(compact('argumentString'));
     }
 
     /** Todo: implement a threaded view * */
@@ -144,6 +150,18 @@ class LogsController extends OlogAppController {
         $this->redirect(array('action' => 'index'));
     }
 
+    function logbookChange($newLogbook = null) {
+
+        $argumentString = '';
+        foreach ($this->passedArgs as $argumentName => $argumentValue) {
+            if ($argumentName != '0' && $argumentName != 'logbook') {
+                $argumentString .= '/' . $argumentName . ':' . $argumentValue;
+            }
+        }
+
+        $this->redirect($this->base . '/olog/logs/index/logbook:' . $newLogbook . $argumentString);
+    }
+
     function timespanChange($newTimeSpan = null) {
         $startDate = null;
         $endDate = date('U');
@@ -172,7 +190,14 @@ class LogsController extends OlogAppController {
                 break;
         }
 
-        $this->redirect('/olog/logs/index/start:' . $startDate . '/end:' . $endDate);
+        $argumentString = '';
+        foreach ($this->passedArgs as $argumentName => $argumentValue) {
+            if ($argumentName != '0' && $argumentName != 'start' && $argumentName != 'end') {
+                $argumentString .= '/' . $argumentName . ':' . $argumentValue;
+            }
+        }
+
+        $this->redirect($this->base . '/olog/logs/index/start:' . $startDate . '/end:' . $endDate . $argumentString);
     }
 
     private function uploadFiles($id) {

@@ -151,10 +151,10 @@
 <script type="text/javascript">
     $('#logbook').bind('change', function() {
         var logbookType = $('#logbook').val();
-        window.location.replace('<?php echo $base; ?>/olog/logs/index/~logbook:' + logbookType);
+        window.location.replace('<?php echo $base; ?>/olog/logs/logbookChange/' + logbookType + '<?php echo $argumentString; ?>');
     });
     $('#timespan').bind('change', function() {
         var newTimeSpan = $('#timespan').val();
-        window.location.replace('<?php echo $base; ?>/olog/logs/timespanChange/' + newTimeSpan);
+        window.location.replace('<?php echo $base; ?>/olog/logs/timespanChange/' + newTimeSpan + '<?php echo $argumentString; ?>');
     });
 </script>
