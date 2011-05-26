@@ -29,17 +29,45 @@ $session->flash('auth');
 		echo $this->Html->meta('icon');
 
 		echo $this->Html->css('logbook');
-		echo $this->Html->css('jquery.fileupload-ui');
-		echo $this->Html->css('style');
-		echo $this->Html->css('jquery-ui');
 
 		echo $scripts_for_layout;
 	?>
 	<?php
-		echo $this->Html->script('jquery-1.6.1.min');
-
-
+		echo $this->Html->script('jquery');
+		echo $this->Html->script('webdav');
 	?>
+<script type="text/javascript">
+      var fs = new WebDAV.Fs('https://localhost:8181/Olog/repository/olog');
+
+      var urlid = function(u) {
+        return u.replace(/:/g, '_').replace(/\//g, '_');
+      };
+
+      var loadDir = function(dir, parentNode) {
+        dir.children(function(children) {
+          var ulId = urlid(dir.url) + '_ul';
+
+          var ul = '<ul id="' + ulId + '">'
+          for (var c in children) {
+            ul += '<li class="' + children[c].type + '" id="' + 
+            urlid(children[c].url) + '"><a href="' + 
+            children[c].url + '">' + children[c].name + '</a></li>';
+          }
+          ul += '</ul>';
+          
+          $(parentNode).append(ul);
+          $('#' + ulId).children('.dir').click(function(e) {
+            loadDir(fs.dir(e.target.href), '#' + urlid(e.target.href));
+            return false;
+          });
+        });
+      }
+
+      $(document).ready(function(){
+        loadDir(fs.dir('/'), '#root')
+      });
+    </script>
+
 </head>
 <body>
 	<div id="container">
