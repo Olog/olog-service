@@ -9,7 +9,7 @@
 //);
 ?>
 <?php echo $this->Html->script('addUpload.js'); ?>
-<?php echo $this->Html->link(__('Configure application', true), array('controller' => 'searches', 'action' => 'search')); ?>
+<?php //echo $this->Html->link(__('Configure application', true), array('controller' => 'searches', 'action' => 'search')); ?>
 <div class="logs index">
     <div class="logs form">
         <?php echo $this->element('tinymce', array('preset' => 'basic')); ?>
@@ -132,13 +132,10 @@
     <form action="/FileUpload/upload.php?id=<?php echo $log['id']; ?>" method="POST" enctype="multipart/form-data">
         <div class="fileupload-buttonbar">
             <label class="fileinput-button">
-                <span>Add files...</span>
+                <span>Add files</span>
 		<input type="hidden" name="id" value="<?php echo $log['id']; ?>" />
                 <input type="file" name="file" multiple>
             </label>
-            <button type="submit" class="start">Start upload</button>
-            <button type="reset" class="cancel">Cancel upload</button>
-            <button type="button" class="delete">Delete files</button>
         </div>
     </form>
     <div class="fileupload-content">

@@ -27,6 +27,11 @@
 
 .fileinput-button {
   overflow: hidden;
+  font-weight: normal;  
+}
+
+.ui-state-default {
+
 }
 
 /* Fix for IE 6: */
@@ -40,7 +45,7 @@
 }
 
 .fileupload-buttonbar {
-  padding: 0.2em 0.4em;
+    height: 10px;
 }
 
 .fileupload-buttonbar .ui-button {
@@ -48,8 +53,7 @@
 }
 
 .fileupload-content {
-  padding: 0.2em 0.4em;
-  border-top-width: 0;
+  padding: 0.2em 0.6em;
 }
 
 .ui-progressbar {
@@ -74,6 +78,16 @@
 .files td {
   padding: 5px;
   border-spacing: 5px;
+}
+
+.files td a {
+    background: none;
+    border: none;
+}
+
+.files td a:hover {
+    background: none;
+    border: none;
 }
 
 .files img {

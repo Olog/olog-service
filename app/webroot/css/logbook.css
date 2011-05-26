@@ -401,7 +401,6 @@ fieldset {
     margin-bottom: 1em;
     padding: 0px 10px;
     width: 650px;
-    min-height: 295px;
 }
 fieldset legend {
     background:#fff;
