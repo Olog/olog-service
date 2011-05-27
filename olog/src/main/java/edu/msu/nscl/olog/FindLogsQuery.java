@@ -64,11 +64,11 @@ public class FindLogsQuery {
     private FindLogsQuery(MultivaluedMap<String, String> matches) {
         for (Map.Entry<String, List<String>> match : matches.entrySet()) {
             String key = match.getKey().toLowerCase();
-            if (key.equals("~search")) {
+            if (key.equals("search")) {
                 log_matches.addAll(match.getValue());
-            } else if (key.equals("~tag")) {
+            } else if (key.equals("tag")) {
                 addTagMatches(match.getValue());
-            } else if (key.equals("~logbook")){
+            } else if (key.equals("logbook")){
                 addTagMatches(match.getValue());
             } else if (key.equals("page")) {
                 logPaginate_matches.putAll(key,match.getValue());
