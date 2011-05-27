@@ -150,18 +150,6 @@ class LogsController extends OlogAppController {
         $this->redirect(array('action' => 'index'));
     }
 
-    function logbookChange($newLogbook = null) {
-
-        $argumentString = '';
-        foreach ($this->passedArgs as $argumentName => $argumentValue) {
-            if ($argumentName != '0' && $argumentName != 'logbook') {
-                $argumentString .= '/' . $argumentName . ':' . $argumentValue;
-            }
-        }
-
-        $this->redirect($this->base . '/olog/logs/index/logbook:' . $newLogbook . $argumentString);
-    }
-
     function timespanChange($newTimeSpan = null) {
         $startDate = null;
         $endDate = date('U');
@@ -197,7 +185,7 @@ class LogsController extends OlogAppController {
             }
         }
 
-        $this->redirect($this->base . '/olog/logs/index/start:' . $startDate . '/end:' . $endDate . $argumentString);
+        $this->redirect('/olog/logs/index/start:' . $startDate . '/end:' . $endDate . $argumentString);
     }
 
     private function uploadFiles($id) {

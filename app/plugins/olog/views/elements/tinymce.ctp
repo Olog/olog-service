@@ -3,10 +3,11 @@
 <?php if($preset = "basic") 
 { 
     $options = ' 
-    mode : "textareas", 
+    mode : "textareas",
+    plugins : "table",
     theme : "advanced", 
-    theme_advanced_buttons1 : "bold,italic,underline,separator,justifyleft,justifycenter,justifyright, justifyfull,bullist,numlist,undo,redo,link,unlink",
-    theme_advanced_buttons2 : "", 
+    theme_advanced_buttons1 : "bold,italic,underline,separator,justifyleft,justifycenter,justifyright, justifyfull,bullist,numlist,undo,redo",
+    theme_advanced_buttons2 : "forecolor,cut,copy,paste,table", 
     theme_advanced_buttons3 : "", 
     theme_advanced_toolbar_location : "top", 
     theme_advanced_toolbar_align : "left", 

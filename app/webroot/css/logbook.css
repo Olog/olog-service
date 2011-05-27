@@ -78,12 +78,11 @@ ul, li {
     font-size: 65%;
 }
 #sign {
-    position: absolute;
+    float: right;
     top: 0;
-    right: 0;
     text-align:right;
-    padding-top: 5px;
-    padding-right: 350px;
+    padding-top: 0px;
+    color: #006633;
 }
 #sign a {
     color: #fff;
@@ -115,7 +114,8 @@ ul, li {
 }
 
 #logFormContainer {
-    height: 175px;
+    height: 200px;
+    width: 600px;
 }
 
 #logFormInfo {
@@ -124,16 +124,18 @@ ul, li {
 }
 
 #logFormDescription {
-
+    width: 500px;
 }
 
 #logFormSelects {
     position: absolute;
     margin: 0 auto;
     width: 200px;
-    margin-left: 350px;
+    margin-left: 525px;
 }
-
+#logFormFieldset {
+    width: 900px;
+}
 #logFormLevels {
     width: 75px;
     height: 20px;
@@ -207,7 +209,8 @@ ul, li {
 }
 
 #header{
-
+    color: #fff;
+    background: #006633;
 }
 #header h1 {
     line-height:75px;
@@ -707,4 +710,9 @@ div.code-coverage-results span.result-ok {
 }
 div.code-coverage-results span.result-good {
     color: #0a0;
+}
+span.uploadspan {
+    float:left;
+    padding-left:10px;
+    padding-top:10px;
 }

@@ -14,7 +14,7 @@
     <div class="logs form">
         <?php echo $this->element('tinymce', array('preset' => 'basic')); ?>
         <?php echo $this->Form->create('log', array('type' => 'file', 'action' => 'add')); ?>
-        <fieldset>
+        <fieldset id='logFormFieldset'>
             <legend><?php __('Add a New Log'); ?></legend>
             <div id='logFormCredentials'>
                 <?php if (!$session->check('Auth.User.name')) {
@@ -64,11 +64,11 @@
                         'Last 6 Months',
                         'Last year'
                     );
+		    
                     echo $this->Form->select('timespan', $timespans, null, array('id' => 'timespan'));
-
                     //  Todo:  Update logs on change of select box
-                    if (isset($this->params['pass'][0])) {
-                        echo $this->Form->select('logbook', $logbooks, $this->params['pass'][0], array('id' => 'logbook'));
+                    if (isset($this->params['named']['logbook'])) {
+                        echo $this->Form->select('logbook', $logbooks, array($this->params['named']['logbook']), array('id' => 'logbook'));
                     } else {
                         echo $this->Form->select('logbook', $logbooks, null, array('id' => 'logbook'));
                     }
@@ -126,17 +126,17 @@
 <?php echo $this->Html->link($log['owner'], array('controller' => 'users', 'action' => 'view', $log['owner'])); ?>
                     </td>
                     <td class="actions">
-<?php echo $this->Html->link(__('View', true), array('action' => 'view', $log['id'])); ?>
-                <?php echo $this->Html->link(__('Edit', true), array('action' => 'edit', $log['id'])); ?>
-<div id="fileupload_<?php echo $log['id']; ?>">
+	<span>	<?php echo $this->Html->link(__('View', true), array('action' => 'view', $log['id'])); ?> </span>
+        <span>  <?php echo $this->Html->link(__('Edit', true), array('action' => 'edit', $log['id'])); ?> </span>
+<span class="uploadspan"> <div id="fileupload_<?php echo $log['id']; ?>">
     <form action="/FileUpload/upload.php?id=<?php echo $log['id']; ?>" method="POST" enctype="multipart/form-data">
-        <div class="fileupload-buttonbar">
+        <?php //<div class="fileupload-buttonbar"> ?>
             <label class="fileinput-button">
                 <span>Add files</span>
 		<input type="hidden" name="id" value="<?php echo $log['id']; ?>" />
                 <input type="file" name="file" multiple>
             </label>
-        </div>
+       <?php // </div> ?>
     </form>
     <div class="fileupload-content">
         <table class="files"></table>
@@ -204,7 +204,7 @@
         </td>
     </tr>
 </script>
-
+</span>
                 <?php //echo $this->Html->link(__('Delete', true), array('action' => 'delete', $log['id']), null, sprintf(__('Are you sure you want to delete # %s?', true), $log['id']));   ?>
                     </td>
                 </tr>
@@ -227,11 +227,19 @@
 <script type="text/javascript">
     $('#logbook').bind('change', function() {
         var logbookType = $('#logbook').val();
-        window.location.replace('<?php echo $base; ?>/olog/logs/logbookChange/' + logbookType + '<?php echo $argumentString; ?>');
+	<?php
+	$args = '';
+	foreach($this->params['named'] as $key=>$param){
+	  if($key !='logbook'){
+	    $args .= '/'.$key.':'.$param;
+	  }
+	}
+	?>
+        window.location.replace('<?php echo $base.'/'.$this->params['plugin'].'/'.$this->params['controller'].'/'.$this->params['action'].'/logbook:'; ?>' + logbookType + '<?php echo $args; ?>');
     });
     $('#timespan').bind('change', function() {
         var newTimeSpan = $('#timespan').val();
-        window.location.replace('<?php echo $base; ?>/olog/logs/timespanChange/' + newTimeSpan + '<?php echo $argumentString; ?>');
+        window.location.replace('<?php echo $base.'/'.$this->params['plugin'].'/'.$this->params['controller']; ?>+ /timespanChange/' + newTimeSpan + '<?php echo $argumentString; ?>');
     });
 </script>
 <?php

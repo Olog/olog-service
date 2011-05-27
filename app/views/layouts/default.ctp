@@ -28,10 +28,10 @@ $session->flash('auth');
 	<?php
 		echo $this->Html->meta('icon');
 
-		echo $this->Html->css('logbook');
+		echo $this->Html->css('jquery-ui-1.8.13.custom');
 		echo $this->Html->css('jquery.fileupload-ui');
+		echo $this->Html->css('logbook');
 		echo $this->Html->css('style');
-		echo $this->Html->css('jquery-ui');
 
 		echo $scripts_for_layout;
 	?>
@@ -44,7 +44,7 @@ $session->flash('auth');
 <body>
 	<div id="container">
 		<div id="header">
-			<h1><?php echo $this->Html->link(__('Logbook', true), '/'); ?></h1>
+			<h1><?php echo $this->Html->link(__('Logbook', true) , array('plugin'=>'olog','controller' => 'logs', 'action' => 'index')); ?></h1>
                         <div id="sign"><?php
                             if ($this->Session->check('Auth.User.name')) {
                                 echo $session->read('Auth.User.name')."&nbsp;|&nbsp;";
