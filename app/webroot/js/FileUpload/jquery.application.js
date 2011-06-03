@@ -21,23 +21,26 @@ $(function () {
     $('div[id^="fileupload_"]').each(function(index,element){
         $.getJSON($('form',element).prop('action'), function (files) {
             var fu = $(element).data('fileupload');
-            fu._adjustMaxNumberOfFiles(-files.length);
-            fu._renderDownload(files)
-                .appendTo($('.files',element))
-                .fadeIn(function () {
-                    // Fix for IE7 and lower:
-                    $(this).show();
+            if(files != null){
+                fu._adjustMaxNumberOfFiles(-files.length);
+                fu._renderDownload(files)
+                    .appendTo($('.files',element))
+                    .fadeIn(function () {
+                        // Fix for IE7 and lower:
+                        $(this).show();
                 });
+            }
         });
     });
 
     // Open download dialogs via iframes,
     // to prevent aborting current uploads:
-    $('div[id^="fileupload_"] .files a:not([target^=_blank])').live('click', function (e) {
-        e.preventDefault();
-        $('<iframe style="display:none;"></iframe>')
-            .prop('src', this.href)
-            .appendTo('body');
+    $('div[id^="fileupload_"]').each(function(index,element){
+        $('.files a:not([target^=_blank])',element).live('click', function (e) {
+            e.preventDefault();
+            $('<iframe style="display:none;"></iframe>')
+                .prop('src', this.href)
+                .appendTo('body');
+        });
     });
-
 });

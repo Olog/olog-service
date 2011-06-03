@@ -80,7 +80,7 @@ class DATABASE_CONFIG {
 	var $default = array(
 		'datasource' => 'Olog.Olog',
 		'scheme' => 'https',
-		'host' => '35.9.59.95',
+		'host' => 'eb-vguest2.nscl.msu.edu',
 		'port' => '8181',
 		'path' => 'Olog/resources',
                 'default_subject' => 'Logbook Application',
@@ -95,7 +95,7 @@ class DATABASE_CONFIG {
 	var $olog = array(
 		'datasource' => 'Olog.Olog',
 		'scheme' => 'https',
-		'host' => '35.9.59.95',
+		'host' => 'eb-vguest2.nscl.msu.edu',
 		'port' => '8181',
 		'path' => 'Olog/resources',
                 'default_subject' => 'Logbook Application'
