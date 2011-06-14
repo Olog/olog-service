@@ -1,6 +1,7 @@
 
 
 <?php
+
 //echo $ajax->remoteTimer( 
 //    array( 
 //    'url' => array( 'controller' => 'logs', 'action' => 'index'), 
@@ -8,11 +9,16 @@
 //    )
 //);
 ?>
+ <div id='logsFormAdd' align='right' >
+     <button id="AddNewLog" class="button" >Add a New Log</button>
+ </div>
+    
 <?php echo $this->Html->script('addUpload.js'); ?>
 <?php //echo $this->Html->link(__('Configure application', true), array('controller' => 'searches', 'action' => 'search')); ?>
 <div class="logs index">
-    <div class="logs form">
-        <?php echo $this->element('tinymce', array('preset' => 'basic')); ?>
+    <div id="logForm" class="logs form" style="display: none" >
+       
+        
         <?php echo $this->Form->create('log', array('type' => 'file', 'action' => 'add')); ?>
         <fieldset id='logFormFieldset'>
             <legend><?php __('Add a New Log'); ?></legend>
@@ -24,9 +30,11 @@
                 <?php } ?>
             </div>
             <div id='logFormContainer'>
+                
                 <div id='logFormInfo'>
+                    
                     <?php echo $this->Form->input('subject', array('type' => 'hidden')); ?>
-                    <div id='logFormDescription'><?php echo $this->Form->input('description', array('type' => 'textarea', 'rows' => '2')); ?></div>
+                    <div id='logFormDescription'><?php echo $this->Form->input('description', array('type' => 'textarea', 'rows' => '15')); ?></div>
                 </div>
                 <div id='logFormSelects'>
                     <div id='logFormLevels'><?php echo $this->Form->input('level'); ?></div>
@@ -70,7 +78,22 @@
 </div>
             <div id='logFormSubmit'><?php echo $this->Form->end(__('Submit', true)); ?></div>
         </fieldset>
+        <div align="right">
+            <button id="cancelAddNewLog" class="button" >Close</button>
+        </div>
     </div>
+
+    <script type="text/javascript" >
+    $('#AddNewLog').click(function() {
+    $('#logForm').show('fast', function() {
+            // Animation complete.
+        });
+    });
+    $('#cancelAddNewLog').click(function() {
+    $('#logForm').hide(1000);
+    });
+    </script>
+    
     <div id="menu">
         <!--<div id='search'><?php echo $this->Form->create('search', array('action' => 'search')); ?>
             <div id='searchItem'><?php echo $this->Form->input('search_item', array('label' => '')); ?></div>
@@ -114,6 +137,16 @@
                     $i = 0;
                     $j = 0;
 
+                    if(empty($logs['logs']['log'][0])){
+                        if(empty($logs['logs']['log'])){
+                            //somehow say there are no logs
+                        }else{
+                        $temp=$logs['logs']['log'];
+                        unset($logs);
+                        $logs['logs']['log'][0]=$temp;
+                        }
+                    }
+
                     foreach ($logs['logs']['log'] as $log):
                         $class = null;
                         if ($i++ % 2 == 0) {
@@ -124,6 +157,7 @@
                             <td class="subject">
 				<span><?php echo date('d M Y H:i', strtotime($log['createdDate'])).', '.$log['owner']; ?></span>
 				<span id="tag"><?php
+                        
 				    foreach ($log['tags'] as $tags) {
 					if (isset($tags['name'])) {
 					    echo $tags['name'];

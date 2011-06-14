@@ -44,7 +44,9 @@ $session->flash('auth');
 <body>
 	<div id="container">
 		<div id="header">
+                   
 			<h1><?php echo $this->Html->link(__('Logbook', true) , array('plugin'=>'olog','controller' => 'logs', 'action' => 'index')); ?></h1>
+
                         <div id="sign"><?php
                             if ($this->Session->check('Auth.User.name')) {
                                 echo $session->read('Auth.User.name')."&nbsp;|&nbsp;";
@@ -52,6 +54,7 @@ $session->flash('auth');
                             } else {
                                 echo $this->Html->link(__('Sign in',true), array('controller' => 'users', 'action' => 'login'));
                             }
+                            
                         ?></div>
 		</div>
 		<div id="content">
