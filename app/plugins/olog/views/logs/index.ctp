@@ -34,6 +34,40 @@
                     <div id='logFormTags'><?php echo $this->Form->input('tags', array('type' => 'select', 'multiple' => true)); ?></div>
                 </div>
             </div>
+	    <div id="fileupload_<?php //echo $log['id']; ?>">
+	    <form action="<?php echo $base; ?>/olog/uploads/index/id:<?php //echo $log['id']; ?>" method="POST" enctype="multipart/form-data">
+		<label class="fileinput-button">
+		    <span>Add files</span>
+			<input type="hidden" name="id" value="<?php //echo $log['id']; ?>" />
+		    <input type="file" name="file" multiple>
+		</label>
+	    </form>
+	    <div class="fileupload-content">
+		<table class="files"></table>
+	    <div class="fileupload-progressbar"></div>
+<script id="template-upload" type="text/x-jquery-tmpl">
+    <tr class="template-upload{{if error}} ui-state-error{{/if}}">
+        <td class="preview"></td>
+        <td class="name">${name}</td>
+        <td class="size">${sizef}</td>
+        {{if error}}
+            <td class="error" colspan="2">Error:
+                {{if error === 'maxFileSize'}}File is too big
+                {{else error === 'minFileSize'}}File is too small
+                {{else error === 'acceptFileTypes'}}Filetype not allowed
+                {{else error === 'maxNumberOfFiles'}}Max number of files exceeded
+                {{else}}${error}
+                {{/if}}
+            </td>
+        {{else}}
+            <td class="progress"><div></div></td>
+            <td class="start"><button>Start</button></td>
+        {{/if}}
+        <td class="cancel"><button>Cancel</button></td>
+    </tr>
+</script>
+    </div>
+</div>
             <div id='logFormSubmit'><?php echo $this->Form->end(__('Submit', true)); ?></div>
         </fieldset>
     </div>
@@ -46,11 +80,10 @@
                 </div>
                 <div id="logviews">
         <?php // Todo:  toggle, when Threaded selected, display collapse/expand  ?>
-        <?php echo $this->Html->link(__('Full', true), array('action' => 'add')) . ' | '; ?>
-        <?php echo $this->Html->link(__('Summary', true), array('action' => 'add')) . ' | '; ?>
-        <?php echo $this->Html->link(__('Threaded', true), array('action' => 'threaded')); ?>
-        <?php //echo $this->Html->link(__('Expand', true), array('action' => 'add')).' | '; ?>
-        <?php //echo $this->Html->link(__('Collapse', true), array('action' => 'add'));  ?>
+        <?php //echo $this->Html->link(__('Full', true), array('action' => 'add')) . ' | '; ?>
+        <?php //echo $this->Html->link(__('Summary', true), array('action' => 'add')) . ' | '; ?>
+        <?php //echo $this->Html->link(__('Threaded', true), array('action' => 'threaded')); ?>
+
                     <span id="quickfilters">
             <?php
                     //  Todo:  Update logs on change of select box
@@ -76,14 +109,7 @@
                 </span>
             </div>
             <table cellpadding="0" cellspacing="0">
-                <tr>
-               <!--     <th><?php echo $this->Paginator->sort('id'); ?></th>-->
-                    <th><?php echo $this->Paginator->sort('description'); ?></th>
-                    <th><?php echo $this->Paginator->sort('created'); ?></th>
-                    <th><?php echo $this->Paginator->sort('level'); ?></th>
-                    <th><?php echo $this->Paginator->sort('owner'); ?></th>
-                    <th class="actions"><?php __('Actions'); ?></th>
-                </tr>
+
         <?php
                     $i = 0;
                     $j = 0;
@@ -95,77 +121,38 @@
                         }
         ?>
                         <tr<?php echo $class; ?>>
-                 <!--           <td class="id"><?php echo $log['id']; ?></td> -->
                             <td class="subject">
+				<span><?php echo date('d M Y H:i', strtotime($log['createdDate'])).', '.$log['owner']; ?></span>
+				<span id="tag"><?php
+				    foreach ($log['tags'] as $tags) {
+					if (isset($tags['name'])) {
+					    echo $tags['name'];
+					} else {
+					    foreach ($tags as $tag) {
+					        if (isset($tag['name'])) {
+							echo $tag['name'] . '&nbsp;,&nbsp;';
+					        }
+					    }
+					}
+				    }?></span>
+				<span id="logbook"><?php
+				    foreach ($log['logbooks'] as $logbooks) {
+					if (isset($logbooks['name'])) {
+					    echo $logbooks['name'];
+					} else {
+					    foreach ($logbooks as $logbook) {
+					        if (isset($logbook['name'])) {
+							echo $logbook['name'] . '&nbsp;,&nbsp;';
+					        }
+					    }
+					}
+				    }?>,&nbsp; </span>
+				<div id="level"><?php echo $log['level'] ?></div>
+				<div class="edited"><?php if ($log['version'] > 0 )echo '[edited]'; ?></div>
                                 <div id='description'><?php echo (!empty($log['description']) ? $log['description'] : ''); ?></div>
-                                <div id="tag"><?php
-//                        foreach ($log['logbooks'] as $logbook) {
-//                            if (isset($logbook['name'])) {
-//                                echo $logbook['name'] . '&nbsp;|&nbsp;';
-//                            }
-//                        }
-                        foreach ($log['tags'] as $tags) {
-                            if (isset($tags['name'])) {
-                                echo $tags['name'];
-                            } else {
-                                foreach ($tags as $tag) {
-                                    if (isset($tag['name'])) {
-                                        echo $tag['name'] . '&nbsp;|&nbsp;';
-                                    }
-                                }
-                            }
-                        }
-        ?></div></td>
-                <td class="date"><?php echo date('d M Y H:i', strtotime($log['createdDate'])); ?>&nbsp;<br><div class="edited"><?php if ($log['version'] > 0
 
-                            )echo '[edited]'; ?></div></td>
-                <td class="level">
-<?php echo $this->Html->link($log['level'], array('controller' => 'levels', 'action' => 'view', $log['level'])); ?>
-                </td>
-                <td class="owner">
-<?php echo $this->Html->link($log['owner'], array('controller' => 'users', 'action' => 'view', $log['owner'])); ?>
-                    </td>
-                    <td class="actions">
-	<span>	<?php echo $this->Html->link(__('View', true), array('action' => 'view', $log['id'])); ?> </span>
-        <span>  <?php echo $this->Html->link(__('Edit', true), array('action' => 'edit', $log['id'])); ?> </span>
-<span class="uploadspan"> <div id="fileupload_<?php echo $log['id']; ?>">
-    <form action="<?php echo $base; ?>/olog/uploads/index/id:<?php echo $log['id']; ?>" method="POST" enctype="multipart/form-data">
-        <?php //<div class="fileupload-buttonbar"> ?>
-            <label class="fileinput-button">
-                <span>Add files</span>
-		<input type="hidden" name="id" value="<?php echo $log['id']; ?>" />
-                <input type="file" name="file" multiple>
-            </label>
-       <?php // </div> ?>
- <!--           <button type="reset" class="cancel">Cancel upload</button>
-            <button type="button" class="delete">Delete files</button> -->
-    </form>
-    <div class="fileupload-content">
-        <table class="files"></table>
-        <div class="fileupload-progressbar"></div>
-    </div>
-</div>
-<script id="template-upload" type="text/x-jquery-tmpl">
-    <tr class="template-upload{{if error}} ui-state-error{{/if}}">
-        <td class="preview"></td>
-        <td class="name">${name}</td>
-        <td class="size">${sizef}</td>
-        {{if error}}
-            <td class="error" colspan="2">Error:
-                {{if error === 'maxFileSize'}}File is too big
-                {{else error === 'minFileSize'}}File is too small
-                {{else error === 'acceptFileTypes'}}Filetype not allowed
-                {{else error === 'maxNumberOfFiles'}}Max number of files exceeded
-                {{else}}${error}
-                {{/if}}
-            </td>
-        {{else}}
-            <td class="progress"><div></div></td>
-            <td class="start"><button>Start</button></td>
-        {{/if}}
-        <td class="cancel"><button>Cancel</button></td>
-    </tr>
-</script>
+<div id="fileupload_<?php echo $log['id']?>" >
+<div class="files" title="<?php echo $base; ?>/olog/uploads/index/id:<?php echo $log['id'];?>"/>
 <script id="template-download" type="text/x-jquery-tmpl">
     <tr class="template-download{{if error}} ui-state-error{{/if}}">
         {{if error}}
@@ -195,20 +182,14 @@
                     <a href="${url}" target="_blank"><img src="${thumbnail_url}"></a>
                 {{/if}}
             </td>
-            <td class="name">
-                <a href="${url}"{{if thumbnail_url}} target="_blank"{{/if}}>${name}</a>
-            </td>
             <td class="size">${sizef}</td>
             <td colspan="2"></td>
         {{/if}}
-        <td class="delete">
-            <button data-type="${delete_type}" data-url="${delete_url}">Delete</button>
-        </td>
+
     </tr>
 </script>
-</span>
-                <?php //echo $this->Html->link(__('Delete', true), array('action' => 'delete', $log['id']), null, sprintf(__('Are you sure you want to delete # %s?', true), $log['id']));   ?>
-                    </td>
+</div>
+
                 </tr>
 <?php endforeach; ?>
             </table>

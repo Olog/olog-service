@@ -19,7 +19,7 @@ $(function () {
 
     // Load existing files:
     $('div[id^="fileupload_"]').each(function(index,element){
-        $.getJSON($('form',element).prop('action'), function (files) {
+        $.getJSON($('div',element).prop('title'), function (files) {
             var fu = $(element).data('fileupload');
             if(files != null){
                 fu._adjustMaxNumberOfFiles(-files.length);

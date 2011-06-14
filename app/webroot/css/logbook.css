@@ -301,7 +301,7 @@ table tr td {
 table tr:nth-child(2n) td {
     background: #f5f5f5;
 }
-table .altrow td {
+table .altrow {
     background: #f5f5f5;
 }
 td.id {
@@ -322,10 +322,22 @@ td.subject {
     padding-bottom: 5px;
 }
 
+#logbook {
+    font-size: 75%;
+    padding:1px 1px;
+    float: right;
+    font-weight: bold;
+}
+
 #tag {
     font-size: 75%;
     padding:1px 1px;
-    border-top:2px solid #D9D2CC;
+    float: right;
+}
+
+#level {
+    font-size: 90%;
+    padding:1px 1px;
 }
 
 td.owner {
