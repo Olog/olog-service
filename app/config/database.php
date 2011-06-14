@@ -98,7 +98,8 @@ class DATABASE_CONFIG {
 		'host' => 'eb-vguest2.nscl.msu.edu',
 		'port' => '8181',
 		'path' => 'Olog/resources',
-                'default_subject' => 'Logbook Application'
+                'default_subject' => 'Logbook Application',
+		'repository' => 'https://eb-vguest2.nscl.msu.edu:8181/Olog/repository/olog/'
 	);
 
 }

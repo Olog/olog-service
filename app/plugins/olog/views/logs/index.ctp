@@ -129,7 +129,7 @@
 	<span>	<?php echo $this->Html->link(__('View', true), array('action' => 'view', $log['id'])); ?> </span>
         <span>  <?php echo $this->Html->link(__('Edit', true), array('action' => 'edit', $log['id'])); ?> </span>
 <span class="uploadspan"> <div id="fileupload_<?php echo $log['id']; ?>">
-    <form action="/FileUpload/upload.php?id=<?php echo $log['id']; ?>" method="POST" enctype="multipart/form-data">
+    <form action="<?php echo $base; ?>/olog/uploads/index/id:<?php echo $log['id']; ?>" method="POST" enctype="multipart/form-data">
         <?php //<div class="fileupload-buttonbar"> ?>
             <label class="fileinput-button">
                 <span>Add files</span>
@@ -137,6 +137,8 @@
                 <input type="file" name="file" multiple>
             </label>
        <?php // </div> ?>
+ <!--           <button type="reset" class="cancel">Cancel upload</button>
+            <button type="button" class="delete">Delete files</button> -->
     </form>
     <div class="fileupload-content">
         <table class="files"></table>
@@ -243,7 +245,7 @@
     });
 </script>
 <?php
-		echo $this->Html->script('FileUpload/jquery-ui.min.js');
+		echo $this->Html->script('FileUpload/jquery-ui-1.8.13.custom.min');
 		echo $this->Html->script('FileUpload/jquery.iframe-transport');
 		echo $this->Html->script('FileUpload/jquery.fileupload');
 		echo $this->Html->script('FileUpload/jquery.fileupload-ui');
