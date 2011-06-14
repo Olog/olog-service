@@ -59,7 +59,6 @@ class UploadsController extends OlogAppController {
 		    case 'POST':
 		        $result = $upload_handler->post($id);
 		        break;
-		// TODO: I know this can be done in Router::connect ... but I can't get it to work
 		    case 'DELETE':
 		        $result = $upload_handler->delete($id,$file);
 		        break;
@@ -68,13 +67,6 @@ class UploadsController extends OlogAppController {
 		}
 		return $result;
 	}
-	//function delete($id=null){
-	//	$id = $this->params['named']['id'];
-	//	$file = $this->params['named']['file'];
-	//	$this->autoRender = false;	        $result = $upload_handler->delete($id,$file);
-	//	return $result;
-	//	
-	//}
 
 }
 ?>

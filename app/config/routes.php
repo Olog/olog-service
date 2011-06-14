@@ -38,7 +38,6 @@
  * ...and connect the rest of 'Pages' controller's urls.
  */
 	Router::connect('/pages/*', array('controller' => 'pages', 'action' => 'display'));
-   //     Router::connect("/:controller/:file/:id", array("action" => "delete", "[method]" => "DELETE"),array("file"=>".*", "id" => "[0-9]+"));
 
 
 

@@ -10,7 +10,7 @@
  * http://creativecommons.org/licenses/MIT/
  */
 include(dirname(__FILE__).DS.'class_webdav_client.php');
-error_reporting(E_ALL | E_STRICT);
+//error_reporting(E_ALL | E_STRICT);
 
 class UploadHandler
 {
@@ -79,15 +79,11 @@ class UploadHandler
     
     private function get_file_object($id,$file_name) {
         $davclient = $this->getDavInstance();
-//	print_r($this->options['image_versions']);
         if ($davclient->is_file($file_name) && $file_name[0] !== '.') {
             $file = new stdClass();
             $file->name = basename($file_name);
-//            print_r($file->name);
-            //$file->size = filesize($file_path);
             $file->url = $this->options['upload_url'].$id.'/'.rawurlencode($file->name);
             foreach($this->options['image_versions'] as $version => $options) {
-//		print_r($options['upload_dir'].$id.'/'.$file->name);
                 if ($davclient->is_file($options['upload_dir'].$id.'/'.$file->name)) {
                     $file->{$version.'_url'} = $options['upload_url'].$id.'/'
                         .rawurlencode($file->name);
@@ -274,7 +270,6 @@ class UploadHandler
         while ($chunk = fgets($fp, 1024)) {
             $data .= $chunk;
         };
-        //print_r(fgets($fp, 1024));
         $filename = $_FILES['file']['name'];
         $davclient->mkcol('/Olog/repository/olog/'.$id);
         $ret = $davclient->put('/Olog/repository/olog/'.$id.'/'.$filename, $data);
@@ -308,7 +303,6 @@ class UploadHandler
         $file_name = isset($file_name)?stripslashes($file_name) : null;
         $file_path = $this->options['upload_dir'].$id.'/'.$file_name;
         $success = $davclient->delete($file_path);
-	//print_r($davclient);
         if ($success) {
             foreach($this->options['image_versions'] as $version => $options) {
                 $file = $options['upload_dir'].$file_name;
