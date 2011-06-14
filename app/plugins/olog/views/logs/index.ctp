@@ -42,7 +42,7 @@
                     <div id='logFormTags'><?php echo $this->Form->input('tags', array('type' => 'select', 'multiple' => true)); ?></div>
                 </div>
             </div>
-	    <div id="fileupload_<?php //echo $log['id']; ?>">
+	    <div class="addFiles" id="fileupload_<?php //echo $log['id']; ?>">
 	    <form action="<?php echo $base; ?>/olog/uploads/index/id:<?php //echo $log['id']; ?>" method="POST" enctype="multipart/form-data">
 		<label class="fileinput-button">
 		    <span>Add files</span>
@@ -85,9 +85,7 @@
 
     <script type="text/javascript" >
     $('#AddNewLog').click(function() {
-    $('#logForm').show('fast', function() {
-            // Animation complete.
-        });
+	$('#logForm').show('fast');
     });
     $('#cancelAddNewLog').click(function() {
     $('#logForm').hide(1000);

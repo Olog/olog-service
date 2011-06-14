@@ -72,7 +72,9 @@ h4 {
 ul, li {
     margin: 0 12px;
 }
-
+.addFiles {
+    padding-top: 25px;
+}
 /** Layout **/
 #filter {
     font-size: 65%;
