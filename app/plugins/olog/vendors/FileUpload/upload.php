@@ -204,7 +204,7 @@ class UploadHandler
         return $error;
     }
     
-    private function handle_file_upload($uploaded_file, $name, $size, $type, $error) {
+ /**   private function handle_file_upload($uploaded_file, $name, $size, $type, $error) {
         $davclient = $this->getDavInstance();
         $file = new stdClass();
         $file->name = basename(stripslashes($name));
@@ -249,7 +249,7 @@ class UploadHandler
         }
         return $file;
     }
-    
+  **/  
     public function get($id) {
         $file_name = isset($_REQUEST['file']) ?
             basename(stripslashes($_REQUEST['file'])) : null;
@@ -271,8 +271,8 @@ class UploadHandler
             $data .= $chunk;
         };
         $filename = $_FILES['file']['name'];
-        $davclient->mkcol('/Olog/repository/olog/'.$id);
-        $ret = $davclient->put('/Olog/repository/olog/'.$id.'/'.$filename, $data);
+        $davclient->mkcol($this->options['upload_dir'].$id);
+        $ret = $davclient->put($this->options['upload_dir'].$id.'/'.$filename, $data);
         header('Cache-Control: no-cache, must-revalidate');
         header('Vary: Accept');
         if (isset($_SERVER['HTTP_ACCEPT']) &&
