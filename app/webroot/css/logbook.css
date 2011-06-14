@@ -83,6 +83,7 @@ ul, li {
     text-align:right;
     padding-top: 0px;
     color: #006633;
+    margin-bottom: 2px;
 }
 #sign a {
     color: #fff;
@@ -95,6 +96,11 @@ ul, li {
     background: #006633;
     font-weight: bold;
     text-decoration: underline;
+}
+
+#AddNewLog {
+    margin-right: 10px;
+    margin-top: 10px;
 }
 
 #logFormCredentials {
@@ -125,8 +131,12 @@ ul, li {
 
 #logFormDescription {
     width: 500px;
+    resize: none;
 }
 
+#description{
+    resize: none;
+}
 #logFormSelects {
     position: absolute;
     margin: 0 auto;
@@ -576,6 +586,21 @@ div.actions ul li a {
 }
 div.actions ul li a:hover {
     text-decoration: underline;
+}
+button.button {
+    font-weight:normal;
+    padding: 2px 4px;
+    background:#e6e49f;
+    background: -webkit-gradient(linear, left top, left bottom, from(#f1f1d4), to(#e6e49f));
+    background-image: -moz-linear-gradient(top, #f1f1d4, #e6e49f);
+    color:#333;
+    border:1px solid #aaac62;
+    -webkit-border-radius:8px;
+    -moz-border-radius:8px;
+    border-radius:8px;
+    text-decoration:none;
+    text-shadow: #fff 0px 1px 0px;
+    min-width: 0;
 }
 
 input[type=submit],
