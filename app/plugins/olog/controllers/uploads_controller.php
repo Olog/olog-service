@@ -3,8 +3,11 @@ class UploadsController extends OlogAppController {
 
    	var $name = 'Uploads';
 	var $uses = array();
-	
 
+	function beforeFilter() {
+		parent::beforeFilter();
+		$this->LogAuth->allowedActions = array('index');
+	}
 	
 	function index() {
 		$id = $this->params['named']['id'];
