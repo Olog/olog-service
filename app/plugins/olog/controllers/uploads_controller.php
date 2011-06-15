@@ -31,7 +31,6 @@ class UploadsController extends OlogAppController {
 			'user' => $user,
 			'pass' => $pass,
 			'id' => $id,
-			// I know I shouldn't take host from the repo
 			'script_url' => $this->base.'/olog/uploads/index',
 			'upload_dir' => $repoArray['path'],
 			'upload_url' => $repository,

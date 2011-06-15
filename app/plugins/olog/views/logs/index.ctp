@@ -209,12 +209,15 @@
                 {{/if}}
             </td>
         {{else}}
-            <td class="preview">
-                {{if thumbnail_url}}
+	    {{if thumbnail_url}}
+	        <td class="preview">
                     <a href="${url}" target="_blank"><img src="${thumbnail_url}"></a>
-                {{/if}}
-            </td>
-            <td class="size">${sizef}</td>
+		</td>
+	    {{else}}
+		<td class="name">
+		    <a href="${url}" target="_blank">${name}</a>
+		</td>
+	    {{/if}}
             <td colspan="2"></td>
         {{/if}}
 
