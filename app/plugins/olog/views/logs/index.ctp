@@ -10,8 +10,8 @@
 //);
 ?>
  <div id='logsFormAdd' align='right' >
-    <img id="closeNewLog" style="display:none" src="<?php echo $base; ?>/img/blue-document--minus.png" alt="close new log">
-    <img id="addNewLog" src="<?php echo $base; ?>/img/blue-document--plus.png" alt="add new log">
+    <a><img id="closeNewLog" style="display:none" src="<?php echo $base; ?>/img/blue-document--minus.png" alt="close new log"></a>
+    <a><img id="addNewLog" src="<?php echo $base; ?>/img/blue-document--plus.png" alt="add new log"></a>
  </div>
     
 <?php echo $this->Html->script('addUpload.js'); ?>
@@ -87,10 +87,21 @@
 	$('#addNewLog').hide();
 	$('#closeNewLog').show();
     });
+    
     $('#closeNewLog').click(function() {
 	$('#logForm').hide();
 	$('#closeNewLog').hide();
 	$('#addNewLog').show();
+    });
+    
+    $(document).ready(function() {
+	$("input[type=file]").filestyle({ 
+	    image: "<?php echo $base; ?>/img/image--plus.png",
+	    imageheight : 16,
+	    imagewidth : 16,
+	    width : 0,
+	    showFilename : false
+	});
     });
     </script>
     
@@ -227,9 +238,16 @@
     </tr>
 </script>
 </div>
+
 <div class="actionButton">
-    <a href="logs/edit/<?php echo $log['id'];?>"><img border="0" src="<?php echo $base; ?>/img/blue-document--pencil.png" alt="edit"></a>
-    <a><img border="0" src="<?php echo $base; ?>/img/image--plus.png" alt="edit"></a>
+    <form style='padding: 0px' action="<?php echo $base; ?>/olog/uploads/index/id:<?php echo $log['id']; ?>" method="POST" enctype="multipart/form-data">
+
+	<input type="file" name="file" multiple>
+	<input type="hidden" name="id" value="<?php echo $log['id']; ?>" />
+	<a style="padding: 0px 0px 0px 20px;' href="<?php echo $base.'/'.$this->params['plugin'].'/'.$this->params['controller'].'/edit/'.$log['id'];?>">
+	    <img border="0" src="<?php echo $base; ?>/img/blue-document--pencil.png" alt="edit">
+	</a>
+    </form>
 </div>
 
                 </tr>
@@ -274,6 +292,7 @@
 		echo $this->Html->script('FileUpload/jquery.fileupload-ui');
 		echo $this->Html->script('FileUpload/jquery.application');
 		echo $this->Html->script('FileUpload/jquery.tmpl.min');
+
 
 
 ?>

@@ -353,7 +353,7 @@ div.level {
 div.actionButton {
     float:right;
 }
-img {
+a img {
     cursor:pointer;
 }
 td.owner {
