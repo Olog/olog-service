@@ -1,6 +1,6 @@
 <div class="logs form">
 <?php //echo $this->Html->script('addUpload.js'); ?>
-<?php echo $this->element('tinymce',array('preset' => 'basic')); ?> 
+<?php //echo $this->element('tinymce',array('preset' => 'basic')); ?> 
 <?php echo $this->Form->create('Log', array('type' => 'file'));?>
 	<fieldset>
  		<legend><?php __('Edit Log: '.$this->data['log']['id']); ?></legend>

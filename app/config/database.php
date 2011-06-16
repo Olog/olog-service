@@ -88,9 +88,9 @@ class DATABASE_CONFIG {
 		
 	);
 
-	var $test = array(
-		'driver' => 'my_dbo_source'
-	);
+	//var $test = array(
+	//	'driver' => 'my_dbo_source'
+	//);
 	
 	var $olog = array(
 		'datasource' => 'Olog.Olog',

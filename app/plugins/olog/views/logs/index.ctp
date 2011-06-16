@@ -10,7 +10,8 @@
 //);
 ?>
  <div id='logsFormAdd' align='right' >
-     <button id="AddNewLog" class="button" >Add a New Log</button>
+    <img id="closeNewLog" style="display:none" src="../img/blue-document--minus.png" alt="close new log">
+    <img id="addNewLog" src="../img/blue-document--plus.png" alt="add new log">
  </div>
     
 <?php echo $this->Html->script('addUpload.js'); ?>
@@ -42,53 +43,54 @@
                     <div id='logFormTags'><?php echo $this->Form->input('tags', array('type' => 'select', 'multiple' => true)); ?></div>
                 </div>
             </div>
-	    <div class="addFiles" id="fileupload_<?php //echo $log['id']; ?>">
-	    <form action="<?php echo $base; ?>/olog/uploads/index/id:<?php //echo $log['id']; ?>" method="POST" enctype="multipart/form-data">
-		<label class="fileinput-button">
-		    <span>Add files</span>
+	    <div style="display:none" class="addFiles" id="fileupload_<?php //echo $log['id']; ?>">
+		<form action="<?php echo $base; ?>/olog/uploads/index/id:<?php //echo $log['id']; ?>" method="POST" enctype="multipart/form-data">
+		    <label class="fileinput-button">
+			<span>Add files</span>
 			<input type="hidden" name="id" value="<?php //echo $log['id']; ?>" />
-		    <input type="file" name="file" multiple>
-		</label>
-	    </form>
-	    <div class="fileupload-content">
-		<table class="files"></table>
-	    <div class="fileupload-progressbar"></div>
-<script id="template-upload" type="text/x-jquery-tmpl">
-    <tr class="template-upload{{if error}} ui-state-error{{/if}}">
-        <td class="preview"></td>
-        <td class="name">${name}</td>
-        <td class="size">${sizef}</td>
-        {{if error}}
-            <td class="error" colspan="2">Error:
-                {{if error === 'maxFileSize'}}File is too big
-                {{else error === 'minFileSize'}}File is too small
-                {{else error === 'acceptFileTypes'}}Filetype not allowed
-                {{else error === 'maxNumberOfFiles'}}Max number of files exceeded
-                {{else}}${error}
-                {{/if}}
-            </td>
-        {{else}}
-            <td class="progress"><div></div></td>
-            <td class="start"><button>Start</button></td>
-        {{/if}}
-        <td class="cancel"><button>Cancel</button></td>
-    </tr>
-</script>
-    </div>
-</div>
+			<input type="file" name="file" multiple>
+		    </label>
+		</form>
+		<div class="fileupload-content">
+		    <table class="files"></table>
+		    <div class="fileupload-progressbar"></div>
+		    <script id="template-upload" type="text/x-jquery-tmpl">
+			<tr class="template-upload{{if error}} ui-state-error{{/if}}">
+			    <td class="preview"></td>
+			    <td class="name">${name}</td>
+			    <td class="size">${sizef}</td>
+			    {{if error}}
+				<td class="error" colspan="2">Error:
+				{{if error === 'maxFileSize'}}File is too big
+				{{else error === 'minFileSize'}}File is too small
+				{{else error === 'acceptFileTypes'}}Filetype not allowed
+				{{else error === 'maxNumberOfFiles'}}Max number of files exceeded
+				{{else}}${error}
+				{{/if}}
+				</td>
+			    {{else}}
+				<td class="progress"><div></div></td>
+				<td class="start"><button>Start</button></td>
+			    {{/if}}
+			    <td class="cancel"><button>Cancel</button></td>
+			</tr>
+		    </script>
+		</div>
+	    </div>
             <div id='logFormSubmit'><?php echo $this->Form->end(__('Submit', true)); ?></div>
         </fieldset>
-        <div align="right">
-            <button id="cancelAddNewLog" class="button" >Close</button>
-        </div>
     </div>
 
     <script type="text/javascript" >
-    $('#AddNewLog').click(function() {
+    $('#addNewLog').click(function() {
 	$('#logForm').show('fast');
+	$('#addNewLog').hide();
+	$('#closeNewLog').show();
     });
-    $('#cancelAddNewLog').click(function() {
-    $('#logForm').hide(1000);
+    $('#closeNewLog').click(function() {
+	$('#logForm').hide();
+	$('#closeNewLog').hide();
+	$('#addNewLog').show();
     });
     </script>
     
@@ -154,7 +156,7 @@
                         <tr<?php echo $class; ?>>
                             <td class="subject">
 				<span><?php echo date('d M Y H:i', strtotime($log['createdDate'])).', '.$log['owner']; ?></span>
-				<span id="tag"><?php
+				<span class="tag"><?php
                         
 				    foreach ($log['tags'] as $tags) {
 					if (isset($tags['name'])) {
@@ -167,7 +169,7 @@
 					    }
 					}
 				    }?></span>
-				<span id="logbook"><?php
+				<span class="logbook"><?php
 				    foreach ($log['logbooks'] as $logbooks) {
 					if (isset($logbooks['name'])) {
 					    echo $logbooks['name'];
@@ -179,9 +181,9 @@
 					    }
 					}
 				    }?>,&nbsp; </span>
-				<div id="level"><?php echo $log['level'] ?></div>
+				<div class="level"><?php echo $log['level'] ?></div>
 				<div class="edited"><?php if ($log['version'] > 0 )echo '[edited]'; ?></div>
-                                <div id='description'><?php echo (!empty($log['description']) ? $log['description'] : ''); ?></div>
+                                <div class='description'><?php echo (!empty($log['description']) ? htmlentities($log['description']) : ''); ?></div>
 
 <div id="fileupload_<?php echo $log['id']?>" >
 <div class="files" title="<?php echo $base; ?>/olog/uploads/index/id:<?php echo $log['id'];?>"/>
@@ -223,6 +225,10 @@
 
     </tr>
 </script>
+</div>
+<div class="actionButton">
+    <a href="logs/edit/<?php echo $log['id'];?>"><img border="0" src="../img/blue-document--pencil.png" alt="edit"></a>
+    <a><img border="0" src="../img/image--plus.png" alt="edit"></a>
 </div>
 
                 </tr>

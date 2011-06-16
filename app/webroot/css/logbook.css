@@ -136,9 +136,6 @@ ul, li {
     resize: none;
 }
 
-#description{
-    resize: none;
-}
 #logFormSelects {
     position: absolute;
     margin: 0 auto;
@@ -328,30 +325,37 @@ td.level {
 td.subject {
     
 }
-
-#description {
+div.description {
+    resize: none;
+}
+div.description {
     padding-top: 5px;
     padding-bottom: 5px;
 }
 
-#logbook {
+span.logbook {
     font-size: 75%;
     padding:1px 1px;
     float: right;
     font-weight: bold;
 }
 
-#tag {
+span.tag {
     font-size: 75%;
     padding:1px 1px;
     float: right;
 }
 
-#level {
+div.level {
     font-size: 90%;
     padding:1px 1px;
 }
-
+div.actionButton {
+    float:right;
+}
+img {
+    cursor:pointer;
+}
 td.owner {
     padding-right: 10px;
 }
