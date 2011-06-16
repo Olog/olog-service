@@ -10,8 +10,8 @@
 //);
 ?>
  <div id='logsFormAdd' align='right' >
-    <img id="closeNewLog" style="display:none" src="../img/blue-document--minus.png" alt="close new log">
-    <img id="addNewLog" src="../img/blue-document--plus.png" alt="add new log">
+    <img id="closeNewLog" style="display:none" src="<?php echo $base; ?>/img/blue-document--minus.png" alt="close new log">
+    <img id="addNewLog" src="<?php echo $base; ?>/img/blue-document--plus.png" alt="add new log">
  </div>
     
 <?php echo $this->Html->script('addUpload.js'); ?>
@@ -156,8 +156,8 @@
                         <tr<?php echo $class; ?>>
                             <td class="subject">
 				<span><?php echo date('d M Y H:i', strtotime($log['createdDate'])).', '.$log['owner']; ?></span>
-				<span class="tag"><?php
-                        
+				<span class="tag">
+				<?php if(!empty($log['tags'])) echo '<img src="'.$base.'/img/tag-medium.png">&nbsp;';
 				    foreach ($log['tags'] as $tags) {
 					if (isset($tags['name'])) {
 					    echo $tags['name'];
@@ -169,7 +169,8 @@
 					    }
 					}
 				    }?></span>
-				<span class="logbook"><?php
+				<span class="logbook">
+				    <img src="<?php echo $base; ?>/img/17px-Nuvola_apps_bookcase_1_blue.png">&nbsp;<?php
 				    foreach ($log['logbooks'] as $logbooks) {
 					if (isset($logbooks['name'])) {
 					    echo $logbooks['name'];
@@ -227,8 +228,8 @@
 </script>
 </div>
 <div class="actionButton">
-    <a href="logs/edit/<?php echo $log['id'];?>"><img border="0" src="../img/blue-document--pencil.png" alt="edit"></a>
-    <a><img border="0" src="../img/image--plus.png" alt="edit"></a>
+    <a href="logs/edit/<?php echo $log['id'];?>"><img border="0" src="<?php echo $base; ?>/img/blue-document--pencil.png" alt="edit"></a>
+    <a><img border="0" src="<?php echo $base; ?>/img/image--plus.png" alt="edit"></a>
 </div>
 
                 </tr>
