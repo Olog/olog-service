@@ -128,7 +128,7 @@
                         'Last year'
                     );
 		    
-                    echo '<input width="1" size="1" style="display:inline" type="text" name="search" />';
+                    echo '<input width="1" size="1" style="display:inline; margin-bottom:5px;" type="text" name="search" id="search" />';
 		    echo $this->Form->select('timespan', $timespans, null, array('id' => 'timespan'));
                     //  Todo:  Update logs on change of select box
                     if (isset($this->params['named']['logbook'])) {
@@ -267,7 +267,7 @@
 
                     <div class="paging">
 <?php echo $this->Paginator->prev('<< ' . __('previous', true), array(), null, array('class' => 'disabled')); ?>
-                                                                                                                                                                                                                                                                                                                                                                                                                            	 | 	<?php echo $this->Paginator->numbers(); ?>
+                        | 	<?php echo $this->Paginator->numbers(); ?>
                         |
 <?php echo $this->Paginator->next(__('next', true) . ' >>', array(), null, array('class' => 'disabled')); ?>
     </div>
@@ -294,17 +294,23 @@
         window.location.replace('<?php echo $base.'/'.$this->params['plugin'].'/'.$this->params['controller']; ?>+ /timespanChange/' + newTimeSpan + '<?php echo $argumentString; ?>');
     });
     
-    $('#search').bind('enter', function() {
-        var search = $('#search').val();
-	<?php
-	$args = '';
-	foreach($this->params['named'] as $key=>$param){
-	  if($key !='search'){
-	    $args .= '/'.$key.':'.$param;
-	  }
-	}
-	?>
-        window.location.replace('<?php echo $base.'/'.$this->params['plugin'].'/'.$this->params['controller'].'/'.$this->params['action'].'/logbook:'; ?>' + search + '<?php echo $args; ?>');
+    $('#search').bind('keypress', function(e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if(code == 13) {
+            var search = $('#search').val();
+            if(search!=''){
+                search='search:'+search;
+            }
+            <?php
+            $args = '';
+            foreach($this->params['named'] as $key=>$param){
+                if($key !='search'){
+                    $args .= '/'.$key.':'.$param;
+                }
+            }
+            ?>
+        window.location.replace('<?php echo $base.'/'.$this->params['plugin'].'/'.$this->params['controller'].'/'.$this->params['action'].'/'; ?>' + search + '<?php echo $args; ?>');
+        }
     });
 </script>
 <?php
