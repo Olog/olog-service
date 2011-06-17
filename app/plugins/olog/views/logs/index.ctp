@@ -102,7 +102,7 @@
 	    image: "<?php echo $base; ?>/img/image--plus.png",
 	    imageheight : 16,
 	    imagewidth : 16,
-	    width : 0,
+	    width : 16,
 	    showFilename : false
 	});
     });
