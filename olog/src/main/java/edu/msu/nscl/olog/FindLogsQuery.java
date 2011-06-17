@@ -387,6 +387,10 @@ public class FindLogsQuery {
             for (String value : log_matches) {
                 query.append("log.subject LIKE ? OR ");
                 name_params.add(convertFileGlobToSQLPattern(value));
+                query.append("log.description LIKE ? OR ");
+                name_params.add(convertFileGlobToSQLPattern(value));
+                query.append("log.owner LIKE ? OR ");
+                name_params.add(convertFileGlobToSQLPattern(value));
             }
             query.replace(query.length() - 4, query.length(), ")");
         }
