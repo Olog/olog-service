@@ -38,6 +38,7 @@ $session->flash('auth');
 	<?php
 		echo $this->Html->script('jquery-1.6.1.min');
 		echo $this->Html->script('jquery.filestyle.showfilename');
+                echo $this->Html->script('watermark');
 
 
 	?>

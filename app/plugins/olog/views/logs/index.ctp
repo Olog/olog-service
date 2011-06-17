@@ -128,7 +128,7 @@
                         'Last year'
                     );
 		    
-                    echo '<input width="1" size="1" style="display:inline; margin-bottom:5px;" type="text" name="search" id="search" />';
+                    echo '<input size="100" style="margin-bottom:5px;" type="text" name="search" id="search" />';
 		    echo $this->Form->select('timespan', $timespans, null, array('id' => 'timespan'));
                     //  Todo:  Update logs on change of select box
                     if (isset($this->params['named']['logbook'])) {
@@ -293,7 +293,7 @@
         var newTimeSpan = $('#timespan').val();
         window.location.replace('<?php echo $base.'/'.$this->params['plugin'].'/'.$this->params['controller']; ?>+ /timespanChange/' + newTimeSpan + '<?php echo $argumentString; ?>');
     });
-    
+
     $('#search').bind('keypress', function(e) {
         var code = (e.keyCode ? e.keyCode : e.which);
         if(code == 13) {
@@ -311,8 +311,10 @@
             ?>
         window.location.replace('<?php echo $base.'/'.$this->params['plugin'].'/'.$this->params['controller'].'/'.$this->params['action'].'/'; ?>' + search + '<?php echo $args; ?>');
         }
-    });
+    }).watermark('Search...');
 </script>
+
+
 <?php
 		echo $this->Html->script('FileUpload/jquery-ui-1.8.13.custom.min');
 		echo $this->Html->script('FileUpload/jquery.iframe-transport');
