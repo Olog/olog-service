@@ -100,11 +100,10 @@ ul, li {
     text-decoration: underline;
 }
 
-#AddNewLog {
-    margin-right: 10px;
-    margin-top: 10px;
+.NewLog_icons {
+    padding-top: 10px;
+    padding-right: 10px;
 }
-
 #logFormCredentials {
     margin: 0 auto;
     height: 25px;
@@ -133,7 +132,7 @@ ul, li {
 
 #logFormDescription {
     width: 500px;
-    resize: none;
+    
 }
 
 #logFormSelects {
@@ -167,6 +166,11 @@ ul, li {
 #logFormSubmit {
     float: right;
     height: 30px;
+}
+
+#addNewFile {
+    float: left;
+    padding-top: 35px;
 }
 
 #menu {
@@ -352,6 +356,7 @@ div.level {
 }
 div.actionButton {
     float:right;
+    height:16px;
 }
 a img {
     cursor:pointer;
@@ -547,7 +552,7 @@ div.message {
     color: #fff;
     font-size: 140%;
     font-weight: bold;
-    margin: 0 0 1em 0;
+    margin: 0 0 0 0;
     background: #992F08;
     padding: 5px;
 }
