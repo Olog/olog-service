@@ -105,14 +105,7 @@
     });
     </script>
     
-    <div id="menu">
-        <!--<div id='search'><?php echo $this->Form->create('search', array('action' => 'search')); ?>
-            <div id='searchItem'><?php echo $this->Form->input('search_item', array('label' => '')); ?></div>
-            <div id='searchButton'><?php echo $this->Form->end(__('Search', true)); ?></div>
-        </div>-->
-        <?php // Todo:  on click update +2 days  ?>
-                </div>
-                <div id="logviews">
+    <div id="logviews">
         <?php // Todo:  toggle, when Threaded selected, display collapse/expand  ?>
         <?php //echo $this->Html->link(__('Full', true), array('action' => 'add')) . ' | '; ?>
         <?php //echo $this->Html->link(__('Summary', true), array('action' => 'add')) . ' | '; ?>
@@ -132,7 +125,8 @@
                         'Last year'
                     );
 		    
-                    echo $this->Form->select('timespan', $timespans, null, array('id' => 'timespan'));
+                    echo '<input width="1" size="1" style="display:inline" type="text" name="search" />';
+		    echo $this->Form->select('timespan', $timespans, null, array('id' => 'timespan'));
                     //  Todo:  Update logs on change of select box
                     if (isset($this->params['named']['logbook'])) {
                         echo $this->Form->select('logbook', $logbooks, array($this->params['named']['logbook']), array('id' => 'logbook'));
@@ -141,8 +135,8 @@
                     }
             ?>
                 </span>
-            </div>
-            <table cellpadding="0" cellspacing="0">
+    </div>
+            <table style="border-top:1px solid #ccc;" cellpadding="0" cellspacing="0">
 
         <?php
                     $i = 0;
@@ -244,7 +238,7 @@
 
 	<input type="file" name="file" multiple>
 	<input type="hidden" name="id" value="<?php echo $log['id']; ?>" />
-	<a style="padding: 0px 0px 0px 20px;' href="<?php echo $base.'/'.$this->params['plugin'].'/'.$this->params['controller'].'/edit/'.$log['id'];?>">
+	<a style="padding: 0px 0px 0px 20px;" href="<?php echo $base.'/'.$this->params['plugin'].'/'.$this->params['controller'].'/edit/'.$log['id'];?>">
 	    <img border="0" src="<?php echo $base; ?>/img/blue-document--pencil.png" alt="edit">
 	</a>
     </form>
@@ -270,6 +264,9 @@
 <script type="text/javascript">
     $('#logbook').bind('change', function() {
         var logbookType = $('#logbook').val();
+	if(logbookType!=''){
+	    logbookType='logbook:'+logbookType;
+	}
 	<?php
 	$args = '';
 	foreach($this->params['named'] as $key=>$param){
@@ -278,11 +275,25 @@
 	  }
 	}
 	?>
-        window.location.replace('<?php echo $base.'/'.$this->params['plugin'].'/'.$this->params['controller'].'/'.$this->params['action'].'/logbook:'; ?>' + logbookType + '<?php echo $args; ?>');
+        window.location.replace('<?php echo $base.'/'.$this->params['plugin'].'/'.$this->params['controller'].'/'.$this->params['action'].'/'; ?>' + logbookType + '<?php echo $args; ?>');
     });
+    
     $('#timespan').bind('change', function() {
         var newTimeSpan = $('#timespan').val();
         window.location.replace('<?php echo $base.'/'.$this->params['plugin'].'/'.$this->params['controller']; ?>+ /timespanChange/' + newTimeSpan + '<?php echo $argumentString; ?>');
+    });
+    
+    $('#search').bind('enter', function() {
+        var search = $('#search').val();
+	<?php
+	$args = '';
+	foreach($this->params['named'] as $key=>$param){
+	  if($key !='search'){
+	    $args .= '/'.$key.':'.$param;
+	  }
+	}
+	?>
+        window.location.replace('<?php echo $base.'/'.$this->params['plugin'].'/'.$this->params['controller'].'/'.$this->params['action'].'/logbook:'; ?>' + search + '<?php echo $args; ?>');
     });
 </script>
 <?php
