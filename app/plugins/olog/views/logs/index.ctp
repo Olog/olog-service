@@ -79,9 +79,6 @@
 		    </script>
 		</div>
 	    </div>
-            <div id="addNewFile">
-                <a><img border="0" src="<?php echo $base; ?>/img/image--plus.png" alt="edit"></a>
-            </div>
             <div id='logFormSubmit'>
                 <?php echo $this->Form->end(__('Submit', true)); ?>
             </div>
