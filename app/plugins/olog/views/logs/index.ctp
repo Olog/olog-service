@@ -10,8 +10,8 @@
 //);
 ?>
  <div id='logsFormAdd' align='right' >
-    <a><img id="closeNewLog" style="display:none" src="<?php echo $base; ?>/img/blue-document--minus.png" alt="close new log"></a>
-    <a><img id="addNewLog" src="<?php echo $base; ?>/img/blue-document--plus.png" alt="add new log"></a>
+    <a><img id="closeNewLog" style="display:none" src="<?php echo $base; ?>/img/blue-document--minus.png" alt="close new log" class="NewLog_icons"></a>
+    <a><img id="addNewLog" src="<?php echo $base; ?>/img/blue-document--plus.png" alt="add new log" class="NewLog_icons"></a>
  </div>
     
 <?php echo $this->Html->script('addUpload.js'); ?>
@@ -35,7 +35,9 @@
                 <div id='logFormInfo'>
                     
                     <?php echo $this->Form->input('subject', array('type' => 'hidden')); ?>
-                    <div id='logFormDescription'><?php echo $this->Form->input('description', array('type' => 'textarea', 'rows' => '15')); ?></div>
+                    <div id='logFormDescription' style="resize: none">
+                        <?php echo $this->Form->input('description', array('type' => 'textarea', 'rows' => '15')); ?>
+                    </div>
                 </div>
                 <div id='logFormSelects'>
                     <div id='logFormLevels'><?php echo $this->Form->input('level'); ?></div>
@@ -77,7 +79,12 @@
 		    </script>
 		</div>
 	    </div>
-            <div id='logFormSubmit'><?php echo $this->Form->end(__('Submit', true)); ?></div>
+            <div id="addNewFile">
+                <a><img border="0" src="<?php echo $base; ?>/img/image--plus.png" alt="edit"></a>
+            </div>
+            <div id='logFormSubmit'>
+                <?php echo $this->Form->end(__('Submit', true)); ?>
+            </div>
         </fieldset>
     </div>
 
@@ -87,7 +94,6 @@
 	$('#addNewLog').hide();
 	$('#closeNewLog').show();
     });
-    
     $('#closeNewLog').click(function() {
 	$('#logForm').hide();
 	$('#closeNewLog').hide();
@@ -152,9 +158,9 @@
                         if(empty($logs['logs']['log'])){
                             //somehow say there are no logs
                         }else{
-                        $temp=$logs['logs']['log'];
-                        unset($logs);
-                        $logs['logs']['log'][0]=$temp;
+                            $temp=$logs['logs']['log'];
+                            unset($logs);
+                            $logs['logs']['log'][0]=$temp;
                         }
                     }
 
@@ -249,15 +255,23 @@
 	</a>
     </form>
 </div>
+    <script type="text/javascript" >
+    $('.edit_log').click(function() {
+	$('#logForm').show('fast');
+	$('#addNewLog').hide();
+	$('#closeNewLog').show();
+        $.getJSON(this.title);
+    });
+    </script>
 
                 </tr>
 <?php endforeach; ?>
             </table>
             <p>
 <?php
-                        echo $this->Paginator->counter(array(
-                            'format' => __('Page %page% of %pages%, showing %current% records out of %count% total, starting on record %start%, ending on %end%', true)
-                        ));
+    echo $this->Paginator->counter(array(
+        'format' => __('Page %page% of %pages%, showing %current% records out of %count% total, starting on record %start%, ending on %end%', true)
+        ));
 ?>	</p>
 
                     <div class="paging">
