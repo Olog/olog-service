@@ -1,1 +1,2 @@
+glob:app/tmp/*
 glob:olog/target/*
