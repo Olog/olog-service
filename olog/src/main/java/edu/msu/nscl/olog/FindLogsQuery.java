@@ -23,6 +23,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  *  JDBC query to retrieve logs from the directory .
@@ -260,15 +262,12 @@ public class FindLogsQuery {
     }
 
     /**
-     * Creates and executes a JDBC based query using subqueries for
-     * logbook and tag matches.
+     * Creates and executes the pagination subquery using GROUP BY.
      *
-     * @param con  connection to use
-     * @return result set with columns named <tt>log</tt>, <tt>logbook</tt>,
-     *         <tt>value</tt>, null if no results
-     * @throws CFException wrapping an SQLException
+     * @param con connection to use
+     * @return a set of log ids that match
      */
-    private ResultSet executeQuery(Connection con) throws CFException {
+    Set<Long> getIdsFromPagination(Connection con) throws CFException {
         StringBuilder query = new StringBuilder("SELECT log.*, t.*, level.name, prop.name, prop.value, "+
                                                 "(SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, "+
                                                 "(SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children "+
@@ -292,6 +291,7 @@ public class FindLogsQuery {
         List<Long> date_params = new ArrayList<Long>();
         Set<Long> tag_result = new HashSet<Long>();
         Set<Long> value_result = new HashSet<Long>();
+        Set<Long> returnIds = new HashSet<Long>();
 
         if (!tag_matches.isEmpty()) {
             Set<Long> ids = getIdsFromLogbookAndTagMatch(con);
@@ -395,7 +395,7 @@ public class FindLogsQuery {
             query.replace(query.length() - 4, query.length(), ")");
         }
 
-        query.append(" ORDER BY lt.log_id DESC, ifnull(parent_created,log.created) DESC, t.name");
+        query.append(" GROUP BY lt.log_id ORDER BY lt.log_id DESC, ifnull(parent_created,log.created) DESC, t.name");
 
         if (!logPaginate_matches.isEmpty()) {
             String limit = null, offset = null;
@@ -409,19 +409,14 @@ public class FindLogsQuery {
             }
             if(limit!=null && offset!=null){
                 Long longOffset = Long.valueOf(offset)*Long.valueOf(limit)-Long.valueOf(limit);
-                int first = query.indexOf("FROM `logs` as log ");
-                query.replace(first, first+19, "FROM (SELECT * FROM `logs` ORDER BY id DESC LIMIT ? OFFSET ?) as log ");
+                query.append(" LIMIT ? OFFSET ?");
                 paginate_params.add(Long.valueOf(limit));
                 paginate_params.add(longOffset);
-                // needs to be Long not string!!!!
             }
         }
         try {
             PreparedStatement ps = con.prepareStatement(query.toString());
             int i = 1;
-            for (long l : paginate_params) {
-                ps.setLong(i++, l);
-            }
             for (long q : date_params) {
                 ps.setLong(i++, q);
             }
@@ -430,6 +425,87 @@ public class FindLogsQuery {
             }
             for (String s : name_params) {
                 ps.setString(i++, s);
+            }
+            for (long l : paginate_params) {
+                ps.setLong(i++, l);
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                returnIds.add(rs.getLong(1));
+            }
+          //  StringBuilder returnString = new StringBuilder("{");
+          //  Log logger = LogFactory.getLog(FindLogsQuery.class);
+          //  for (long ir : returnIds) {
+          //      returnString.append(String.valueOf(ir)).append(",");
+          //  }
+          //  returnString.append("}");
+          //  logger.debug("SQL Result :"+returnString.toString());
+
+        } catch (SQLException e) {
+            
+            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "SQL Exception in logs query "+query.toString(), e);
+        }
+        return returnIds;
+    }
+
+    /**
+     * Creates and executes a JDBC based query using subqueries for
+     * logbook and tag matches.
+     *
+     * @param con  connection to use
+     * @return result set with columns named <tt>log</tt>, <tt>logbook</tt>,
+     *         <tt>value</tt>, null if no results
+     * @throws CFException wrapping an SQLException
+     */
+    private ResultSet executeQuery(Connection con) throws CFException {
+        StringBuilder query = new StringBuilder("SELECT log.*, t.*, level.name, prop.name, prop.value, "+
+                                                "(SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, "+
+                                                "(SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children "+
+                                                "FROM `logs` as log "+
+                                                "LEFT JOIN `logs` as parent ON log.id = parent.parent_id "+
+                                                "LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id "+
+                                                "LEFT JOIN logbooks as t ON lt.logbook_id = t.id "+
+                                                "LEFT JOIN levels as level ON log.level_id = level.id "+
+                                                "LEFT JOIN statuses as status ON log.status_id = status.id "+
+                                                "LEFT JOIN statuses as ltstatus ON lt.status_id = status.id "+
+                                                "LEFT JOIN statuses as tstatus ON t.status_id = status.id "+
+                                                "LEFT JOIN properties as prop ON log.id = prop.log_id "+
+                                                "WHERE (parent.parent_id IS NULL and log.parent_id IS NULL "+
+                                                "OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) "+
+                                                "AND status.name = 'Active' "+
+                                                "AND ltstatus.name = 'Active' "+
+                                                "AND tstatus.name = 'Active' ");
+        List<Long> id_params = new ArrayList<Long>();
+        Set<Long> paginate_result = new HashSet<Long>();
+
+        Set<Long> ids = getIdsFromPagination(con);
+        if (ids.isEmpty()) {
+              return null;
+        } else {
+             paginate_result.addAll(ids);
+        }
+        if (!paginate_result.isEmpty()) {
+            query.append(" AND (log.id IN (");
+            for (long i : paginate_result) {
+                query.append("?,");
+                id_params.add(i);
+            }
+            query.replace(query.length() - 1, query.length(), ") OR log.parent_id IN (");
+            for (long i : paginate_result) {
+                query.append("?,");
+                id_params.add(i);
+            }
+            query.replace(query.length() - 1, query.length(), ")) ");
+        }
+
+        query.append(" ORDER BY lt.log_id DESC, ifnull(parent_created,log.created) DESC, t.name");
+
+        try {
+            PreparedStatement ps = con.prepareStatement(query.toString());
+            int i = 1;
+            for (long p : id_params) {
+                ps.setLong(i++, p);
             }
 
             return ps.executeQuery();
