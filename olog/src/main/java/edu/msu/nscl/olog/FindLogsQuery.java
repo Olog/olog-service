@@ -480,7 +480,7 @@ public class FindLogsQuery {
         Set<Long> paginate_result = new HashSet<Long>();
 
         Set<Long> ids = getIdsFromPagination(con);
-        if (ids.isEmpty()) {
+        if (ids==null || ids.isEmpty()) {
               return null;
         } else {
              paginate_result.addAll(ids);
