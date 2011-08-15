@@ -141,7 +141,7 @@ public class FindLogsQuery {
         }
 
         query.replace(query.length() - 2, query.length(),
-                " GROUP BY lt.id HAVING COUNT(log.id) = ? ORDER BY lt.log_id DESC, ifnull(parent_created,log.created) DESC");
+                " GROUP BY lt.id HAVING COUNT(log.id) = ? ORDER BY ifnull(parent_created,log.created) DESC");
 
         try {
             PreparedStatement ps = con.prepareStatement(query.toString());
@@ -201,7 +201,7 @@ public class FindLogsQuery {
 
 
         query.replace(query.length() - 3, query.length(),
-                ") GROUP BY log.id HAVING COUNT(log.id) = ? ORDER BY lt.log_id DESC, ifnull(parent_created,log.created) DESC");
+                ") GROUP BY log.id HAVING COUNT(log.id) = ? ORDER BY ifnull(parent_created,log.created) DESC");
 
         try {
             PreparedStatement ps = con.prepareStatement(query.toString());
@@ -244,7 +244,7 @@ public class FindLogsQuery {
                        "AND status.name = 'Active' "+
                        "AND ltstatus.name = 'Active' "+
                        "AND tstatus.name = 'Active' "+
-                       "GROUP BY lt.id ORDER BY lt.log_id, ifnull(parent_created,log.created) DESC, t.name";
+                       "GROUP BY lt.id ORDER BY ifnull(parent_created,log.created) DESC, t.name";
         Set<Long> ids = new HashSet<Long>();
 
         try {
@@ -395,7 +395,7 @@ public class FindLogsQuery {
             query.replace(query.length() - 4, query.length(), ")");
         }
 
-        query.append(" GROUP BY lt.log_id ORDER BY lt.log_id DESC, ifnull(parent_created,log.created) DESC, t.name");
+        query.append(" GROUP BY lt.log_id ORDER BY ifnull(parent_created,log.created) DESC, t.name");
 
         if (!logPaginate_matches.isEmpty()) {
             String limit = null, offset = null;
@@ -499,7 +499,7 @@ public class FindLogsQuery {
             query.replace(query.length() - 1, query.length(), ")) ");
         }
 
-        query.append(" ORDER BY lt.log_id DESC, ifnull(parent_created,log.created) DESC, t.name");
+        query.append(" ORDER BY ifnull(parent_created,log.created) DESC, t.name");
 
         try {
             PreparedStatement ps = con.prepareStatement(query.toString());
