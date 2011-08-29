@@ -607,7 +607,7 @@ public class FindLogsQuery {
                     String thislogbook = rs.getString("t.name");
                     if(rs.getString("prop.name") != null)
                         properties.put(rs.getString("prop.name"), rs.getString("prop.value"));
-
+                    
                     if (!thislog.equals(lastlog) || rs.isFirst()) {
                         if (rs.getLong("log.parent_id")==0L || rs.getLong("log.id")==rs.getLong("log.parent_id")) {
                             xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
@@ -624,7 +624,7 @@ public class FindLogsQuery {
                         xmlLogs.addXmlLog(xmlLog);
                         lastlog = thislog;
                     }
-                    if(!thislog.equals(lastlogp) && !rs.isFirst() ){
+                    if(!thislog.equals(lastlogp) || !rs.isFirst() ){
                         addProperty(xmlLog,properties);
                         properties.clear();
                         lastlogp = thislog;
