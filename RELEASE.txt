@@ -1,21 +1,21 @@
 Olog_1-1-1 Bug Fix Release TBD
 	- Import php to quercus, or get php off intra
 	- Move from IRMIS sourceforge to new home
-	- Use Mantis or Sourceforge for bug reporting
+	- Use Mantis or Sourceforge for bug reporting 
 	- Make container elements for main page
 	- Jackrabbit derby to mysql
 	- Glassfish or JBoss to Linux (depends on derby task)
 	- Multiple logbook select view from index
 	- Operator shift report
-
-Olog_1-1-0 Enhancement Release	August 30, 2011 
-	- Allow newline in description field
-	- Authentication and Authorization change from openLDAP/NIS to AD/database
-	- IRMIS integration
-	- Drop general logbook group authorization (group logbkg)
-	- CSS plugin
-	- Paste from clipboard
 	- Search attachments through Jackrabbit (Lucene)
+	- CSS plugin
+	- Drop general logbook group authorization (group logbkg)
+	- Authentication and Authorization change from openLDAP/NIS to AD/database
+
+Olog_1-1-0 Enhancement Release	August 30, 2011
+	- Allow newline in description field
+	- IRMIS integration
+	- Paste from clipboard
 
 Olog_1-0-3 Bug Fix Release	August 10, 2011
 	- Fixed Unit test to pass
