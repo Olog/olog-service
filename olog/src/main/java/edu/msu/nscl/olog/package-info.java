@@ -8,8 +8,16 @@ package edu.msu.nscl.olog;
 /**
  * TODO
  * 1. The absence of the propertiesResource similar to logbooksResource and 
- * TagsResource.
+ * TagsResource. 
+ * The key, value pairing makes it different from simple tags/logbooks but we
+ * might like the ability to 
+ * - retrieve a list of all properties
+ * - delete a property completely from all logs
+ * - add/delete a property to a single log 
+ * all these can be implemented simply copying the tagsResources
  * 
+ * the operations which include setting the property value for multiple logs
+ * is what will require additional work.
  */
 
 /**
@@ -48,13 +56,13 @@ package edu.msu.nscl.olog;
  * MISSSING
  *  .../properties
  * GET      retrieving the list of properties in the database
- * POST     creating multiple properties
+ * POST     creating multiple properties(property value in payload)
  * 
  * MISSSING
  * .../properties/<propertyName>
  * GET      retrieve one propertyName
- * PUT      create/replace once property
- * POST     update a property
+ * PUT      create/replace once property(property value in payload)
+ * POST     update a property(property value in payload)
  * DELETE   delete one property
  * 
  * MISSSING
