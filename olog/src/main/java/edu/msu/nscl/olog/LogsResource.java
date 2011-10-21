@@ -65,15 +65,11 @@ public class LogsResource {
      */
     @GET
     @Produces({"application/xml", "application/json"})
-    public Response query() {
-        DbConnection db = DbConnection.getInstance();
+    public Response query() throws RepositoryException {
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
-            db.getConnection();
-            db.beginTransaction();
             XmlLogs result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
-            db.commit();
             Response r = Response.ok(result).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.getLogs().size() + " logs");
@@ -82,9 +78,7 @@ public class LogsResource {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() +  "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
-        }
+        } 
     }
 
     /**
@@ -98,7 +92,6 @@ public class LogsResource {
     @Consumes({"application/xml", "application/json"})
     @Produces({"application/xml", "application/json"})
     public Response add(@Context HttpHeaders headers,XmlLogs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         // TODO: make getInstance for ContentRepository; Shouldn't need to pass params
@@ -124,14 +117,11 @@ public class LogsResource {
             }
             data = data_temp;
             cm.checkValidSubjectAndOwner(data);
-            db.getConnection();
-            db.beginTransaction();
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
             
             XmlLogs result = cm.createOrReplaceLogs(hostAddress,data);
-            db.commit();
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLogs.toLog(data));
@@ -140,8 +130,6 @@ public class LogsResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlLogs.toLog(data) + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -155,15 +143,11 @@ public class LogsResource {
     @Path("{logId}")
     @Produces({"application/xml", "application/json"})
     public Response read(@PathParam("logId") Long logId) {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlLog result = null;
         try {
-            db.getConnection();
-            db.beginTransaction();
             result = cm.findLogById(logId);
-            db.commit();
             Response r;
             if (result == null) {
                 r = Response.status(Response.Status.NOT_FOUND).build();
@@ -176,8 +160,6 @@ public class LogsResource {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() +  "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -194,7 +176,6 @@ public class LogsResource {
     @Path("{logId}")
     @Consumes({"application/xml", "application/json"})
     public Response create(@Context HttpHeaders headers, @PathParam("logId") Long logId, XmlLog data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         //MessageContext mc = wsContext.getMessageContext();
@@ -205,14 +186,11 @@ public class LogsResource {
             data.setOwner(um.getUserName());
             cm.checkValidSubjectAndOwner(data);
             cm.checkIdMatchesPayload(logId, data);
-            db.getConnection();
-            db.beginTransaction();
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
             
             cm.createOrReplaceLog(hostAddress, logId, data);
-            db.commit();
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + XmlLog.toLog(data));
@@ -221,8 +199,6 @@ public class LogsResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlLog.toLog(data) + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -238,7 +214,6 @@ public class LogsResource {
     @Path("{logId}")
     @Consumes({"application/xml", "application/json"})
     public Response update(@Context HttpHeaders headers, @PathParam("logId") Long logId, XmlLog data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         //MessageContext mc = wsContext.getMessageContext();
@@ -248,15 +223,12 @@ public class LogsResource {
         try {
             data.setOwner(um.getUserName());
             cm.checkValidSubjectAndOwner(data);
-            db.getConnection();
-            db.beginTransaction();
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroupOfLog(um.getUserName(), logId);
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
             
             cm.updateLog(hostAddress, logId, data);
-            db.commit();
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLog.toLog(data));
@@ -265,8 +237,6 @@ public class LogsResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlLog.toLog(data) + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -280,18 +250,14 @@ public class LogsResource {
     @DELETE
     @Path("{logId}")
     public Response remove(@PathParam("logId") Long logId) {
-        DbConnection db = DbConnection.getInstance();
         UserManager um = UserManager.getInstance();
         OLogManager cm = OLogManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
-            db.getConnection();
-            db.beginTransaction();
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), cm.findLogById(logId));
             }
             cm.removeExistingLog(logId);
-            db.commit();
             Response r = Response.ok().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
@@ -299,8 +265,6 @@ public class LogsResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()
                     + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 }
