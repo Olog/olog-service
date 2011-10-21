@@ -3,7 +3,6 @@
  * Copyright (c) 2010 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
-
 package edu.msu.nscl.olog;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -16,12 +15,14 @@ import javax.xml.bind.annotation.XmlType;
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-@XmlType(propOrder = {"name","owner","xmlLogs"})
+@XmlType(propOrder = {"id", "name", "owner", "xmlLogs"})
 @XmlRootElement(name = "logbook")
 public class XmlLogbook {
+
     private String name = null;
     private String owner = null;
     private XmlLogs logs = null;
+    private Long id = null;
 
     /**
      * Creates a new instance of XmlLogbook.
@@ -39,6 +40,24 @@ public class XmlLogbook {
     public XmlLogbook(String name, String owner) {
         this.owner = owner;
         this.name = name;
+    }
+
+    /**
+     * Getter for logbook id.
+     *
+     * @return id logbook id
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * Setter for logbook id.
+     *
+     * @param name logbook id
+     */
+    public void setId(Long id) {
+        this.id = id;
     }
 
     /**
@@ -105,7 +124,7 @@ public class XmlLogbook {
      * @return string representation for log
      */
     public static String toLog(XmlLogbook data) {
-         if (data.logs == null) {
+        if (data.logs == null) {
             return data.getName() + "(" + data.getOwner() + ")";
         } else {
             return data.getName() + "(" + data.getOwner() + ")"
