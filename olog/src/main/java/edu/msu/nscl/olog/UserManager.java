@@ -27,7 +27,8 @@ public abstract class UserManager {
     private ThreadLocal<Boolean> hasAdminRole = new ThreadLocal<Boolean>();
     private ThreadLocal<Collection<String>> groups = new ThreadLocal<Collection<String>>();
     
-    private static final String defaultUserManager = "gov.bnl.olog.IDUserManager";
+    //private static final String defaultUserManager = "gov.bnl.olog.IDUserManager";
+    private static final String defaultUserManager = "edu.msu.nscl.olog.LDAPUserManager";
     private static final String userManager;
     private static UserManager instance;
     
