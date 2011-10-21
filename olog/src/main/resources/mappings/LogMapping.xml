@@ -30,7 +30,7 @@
   <!-- SELECT -->
     <select id="getIdsFromLogbookAndTagMatch" parameterType="HashMap" resultMap="logResultMap">
         <![CDATA[
-            SELECT log.*, t.*, level.name, (SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, log.id as entry_no,
+            SELECT log.id as entry_no, log.*, t.*, level.name, (SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, log.id as entry_no,
                 (SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children FROM `logs` as log 
                 LEFT JOIN `logs` as parent ON log.id = parent.parent_id LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id 
                 LEFT JOIN logbooks as t ON lt.logbook_id = t.id LEFT JOIN levels as level ON log.level_id = level.id 
@@ -51,7 +51,7 @@
     
     <select id="getIdsFromPropertiesMatch" parameterType="HashMap" resultMap="logResultMap">
         <![CDATA[
-            SELECT log.*, t.*, level.name, (SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, log.id as entry_no,
+            SELECT log.id as entry_no, log.*, t.*, level.name, (SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, log.id as entry_no,
                 (SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children FROM `logs` as log 
                 LEFT JOIN `logs` as parent ON log.id = parent.parent_id LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id 
                 LEFT JOIN logbooks as t ON lt.logbook_id = t.id LEFT JOIN levels as level ON log.level_id = level.id 
@@ -78,7 +78,7 @@
     
     <select id="getIdsFromTagMatch" parameterType="String" resultMap="logResultMap">
         <![CDATA[
-            SELECT log.id, (SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created FROM `logs` as log, log.id as entry_no,
+            SELECT log.id as entry_no, (SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created FROM `logs` as log, log.id as entry_no,
                 LEFT JOIN `logs` as parent ON log.id = parent.parent_id LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id 
                 LEFT JOIN logbooks as t ON lt.logbook_id = t.id LEFT JOIN statuses as status ON log.status_id = status.id 
                 LEFT JOIN statuses as ltstatus ON lt.status_id = status.id LEFT JOIN statuses as tstatus ON t.status_id = status.id 
@@ -91,7 +91,7 @@
     
     <select id="getIdsFromPagination" parameterType="HashMap" resultMap="logResultMap">
         <![CDATA[
-            SELECT log.*, t.*, level.name, prop.name, prop.value, 
+            SELECT log.id as entry_no, log.*, t.*, level.name, prop.name, prop.value, 
                 (SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, log.id as entry_no,
                 (SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children FROM `logs` as log 
                 LEFT JOIN `logs` as parent ON log.id = parent.parent_id LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id 
@@ -163,7 +163,7 @@
     
     <select id="getLogsFromIds" parameterType="List" resultMap="logResultMap">
         <![CDATA[
-            SELECT log.*, lbook.name as lbook_name, lbook.owner as lbook_owner, tag.name as tag_name, tag.*, level.name as level_name, 
+            SELECT log.id as entry_no, log.*, lbook.name as lbook_name, lbook.owner as lbook_owner, tag.name as tag_name, tag.*, level.name as level_name, 
                 prop.name as prop_name, prop.value as prop_value, 
                 (SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, 
                 ifnull((SELECT logs.created FROM logs WHERE log.parent_id=logs.id), log.created) as createdDate, 
@@ -206,7 +206,7 @@
     
     <select id="getChildrenIds" parameterType="List" resultMap="logResultMap">
         <![CDATA[
-            SELECT log.id FROM `logs` as log LEFT JOIN `logs` as parent ON log.id = parent.parent_id 
+            SELECT log.id as entry_no FROM `logs` as log LEFT JOIN `logs` as parent ON log.id = parent.parent_id 
             WHERE (parent.parent_id IS NULL and log.parent_id IS NULL 
             OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) 
             AND log.parent_id IN
@@ -220,13 +220,13 @@
     
     <select id="doesLogExist" parameterType="int" resultMap="logResultMap">
         <![CDATA[
-            SELECT id FROM logs WHERE id = #{id}
+            SELECT id as entry_no FROM logs WHERE id = #{id}
         ]]>
     </select>
     
     <select id="getPast10md5s" parameterType="int" resultMap="logResultMap">
         <![CDATA[
-            SELECT id, md5entry FROM logs WHERE id < #{logId} ORDER BY id DESC LIMIT 10 
+            SELECT id as entry_no, md5entry FROM logs WHERE id < #{logId} ORDER BY id DESC LIMIT 10 
         ]]>
     </select>
     
