@@ -5,13 +5,12 @@
  */
 package edu.msu.nscl.olog;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
 import javax.ws.rs.core.Response;
+import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
  * JDBC query to find logbooks/tags.
@@ -19,47 +18,10 @@ import javax.ws.rs.core.Response;
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 public class ListLogbooksQuery {
-    private String name;
+
+    private static SqlSessionFactory ssf = MyBatisSession.getSessionFactory();
 
     private ListLogbooksQuery() {
-    }
-
-    private ListLogbooksQuery(String name) {
-        this.name = name;
-    }
-
-    /**
-     * Creates and executes a JDBC based query returning logbooks or tags.
-     *
-     * @param con connection to use
-     * @return result set with columns named <tt>id</tt>, <tt>name</tt> or null if no result
-     * @throws CFException wrapping an SQLException
-     */
-    private ResultSet executeQuery(Connection con, boolean isTagQuery) throws CFException {
-        PreparedStatement ps;
-        List<String> name_params = new ArrayList<String>();
-
-        StringBuilder query = new StringBuilder("SELECT l.id, l.name, owner FROM logbooks l, statuses s ");
-
-        if (isTagQuery) {
-            query.append("WHERE l.is_tag = TRUE");
-        } else {
-            query.append("WHERE l.is_tag = FALSE");
-        }
-        if (name != null) {
-            query.append(" AND l.name = ?");
-        }
-        query.append(" AND l.status_id = s.id AND s.name = 'Active'");
-        try {
-            ps = con.prepareStatement(query.toString());
-            if (name != null) {
-                ps.setString(1, name);
-            }
-            return ps.executeQuery();
-        } catch (SQLException e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception during logbook/tag list query", e);
-        }
     }
 
     /**
@@ -69,19 +31,24 @@ public class ListLogbooksQuery {
      * @throws CFException wrapping an SQLException
      */
     public static XmlLogbooks getLogbooks() throws CFException {
-        XmlLogbooks result = new XmlLogbooks();
-        ListLogbooksQuery q = new ListLogbooksQuery();
+        SqlSession ss = ssf.openSession();
+
         try {
-            ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection(), false);
+            XmlLogbooks result = new XmlLogbooks();
+            ArrayList<XmlLogbook> rs = (ArrayList<XmlLogbook>) ss.selectList("mappings.LogbookMapping.allLogbooks");
             if (rs != null) {
-                while (rs.next()) {
-                    result.addXmlLogbook(new XmlLogbook(rs.getString("name"), rs.getString("owner")));
+                Iterator<XmlLogbook> iterator = rs.iterator();
+                while (iterator.hasNext()) {
+                    result.addXmlLogbook(iterator.next());
                 }
             }
+
             return result;
-        } catch (SQLException e) {
+        } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception scanning result of logbook list request", e);
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
         }
     }
 
@@ -92,19 +59,24 @@ public class ListLogbooksQuery {
      * @throws CFException wrapping an SQLException
      */
     public static XmlLogbook findLogbook(String name) throws CFException {
-        XmlLogbook result = null;
-        ListLogbooksQuery q = new ListLogbooksQuery(name);
+        SqlSession ss = ssf.openSession();
+
         try {
-            ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection(), false);
+            XmlLogbook result = null;
+            ArrayList<XmlLogbook> rs = (ArrayList<XmlLogbook>) ss.selectList("mappings.LogbookMapping.logbookByName", name);
             if (rs != null) {
-                while (rs.next()) {
-                    result = new XmlLogbook(rs.getString("name"), rs.getString("owner"));
+                Iterator<XmlLogbook> iterator = rs.iterator();
+                while (iterator.hasNext()) {
+                    result = iterator.next();
                 }
             }
+
             return result;
-        } catch (SQLException e) {
+        } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception scanning result of find logbook request", e);
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
         }
     }
 
@@ -115,19 +87,24 @@ public class ListLogbooksQuery {
      * @throws CFException wrapping an SQLException
      */
     public static XmlTags getTags() throws CFException {
-        XmlTags result = new XmlTags();
-        ListLogbooksQuery q = new ListLogbooksQuery();
+        SqlSession ss = ssf.openSession();
+
         try {
-            ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection(), true);
+            XmlTags result = new XmlTags();
+            ArrayList<XmlTag> rs = (ArrayList<XmlTag>) ss.selectList("mappings.TagMapping.allTags");
             if (rs != null) {
-                while (rs.next()) {
-                    result.addXmlTag(new XmlTag(rs.getString("name")));
+                Iterator<XmlTag> iterator = rs.iterator();
+                while (iterator.hasNext()) {
+                    result.addXmlTag(iterator.next());
                 }
             }
+
             return result;
-        } catch (SQLException e) {
+        } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception scanning result of tag list request", e);
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
         }
     }
 
@@ -138,19 +115,24 @@ public class ListLogbooksQuery {
      * @throws CFException wrapping an SQLException
      */
     public static XmlTag findTag(String name) throws CFException {
-        XmlTag result = null;
-        ListLogbooksQuery q = new ListLogbooksQuery(name);
+        SqlSession ss = ssf.openSession();
+
         try {
-            ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection(), true);
+            XmlTag result = null;
+            ArrayList<XmlTag> rs = (ArrayList<XmlTag>) ss.selectList("mappings.TagMapping.tagByName", name);
             if (rs != null) {
-                while (rs.next()) {
-                    result = new XmlTag(rs.getString("name"));
+                Iterator<XmlTag> iterator = rs.iterator();
+                while (iterator.hasNext()) {
+                    result = iterator.next();
                 }
             }
+            
             return result;
-        } catch (SQLException e) {
+        } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception scanning result of find tag request", e);
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
         }
     }
 }

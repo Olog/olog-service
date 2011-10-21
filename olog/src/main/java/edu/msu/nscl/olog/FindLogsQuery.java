@@ -7,8 +7,6 @@ package edu.msu.nscl.olog;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -16,15 +14,19 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ws.rs.core.MultivaluedMap;
+
+import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
  *  JDBC query to retrieve logs from the directory .
@@ -34,6 +36,7 @@ import org.apache.commons.logging.LogFactory;
 public class FindLogsQuery {
 
     private enum SearchType {
+
         LOG, TAG
     };
     private Multimap<String, String> value_matches = ArrayListMultimap.create();
@@ -43,16 +46,8 @@ public class FindLogsQuery {
     private List<Long> logId_matches = new ArrayList();
     private List<String> tag_matches = new ArrayList();
     private List<String> tag_patterns = new ArrayList();
-
-    private void addTagMatches(Collection<String> matches) {
-        for (String m : matches) {
-            if (m.contains("?") || m.contains("*")) {
-                tag_patterns.add(m);
-            } else {
-                tag_matches.add(m);
-            }
-        }
-    }
+    private List<Long> jcr_search_ids = new ArrayList();
+    private static SqlSessionFactory ssf = MyBatisSession.getSessionFactory();
 
     /**
      * Creates a new instance of FindLogsQuery, sorting the query parameters.
@@ -63,23 +58,25 @@ public class FindLogsQuery {
      *
      * @param matches  the map of matches to apply
      */
-    private FindLogsQuery(MultivaluedMap<String, String> matches) {
+    private FindLogsQuery(MultivaluedMap<String, String> matches) throws RepositoryException {
         for (Map.Entry<String, List<String>> match : matches.entrySet()) {
             String key = match.getKey().toLowerCase();
             if (key.equals("search")) {
                 log_matches.addAll(match.getValue());
+//                JcrSearch js = new JcrSearch();
+//                jcr_search_ids = js.searchForIds(match.getValue().toString());
             } else if (key.equals("tag")) {
                 addTagMatches(match.getValue());
-            } else if (key.equals("logbook")){
+            } else if (key.equals("logbook")) {
                 addTagMatches(match.getValue());
             } else if (key.equals("page")) {
-                logPaginate_matches.putAll(key,match.getValue());
+                logPaginate_matches.putAll(key, match.getValue());
             } else if (key.equals("limit")) {
-                logPaginate_matches.putAll(key,match.getValue());
-            } else if (key.equals("start")){
-                date_matches.putAll(key,match.getValue());
-            } else if (key.equals("end")){
-                date_matches.putAll(key,match.getValue());
+                logPaginate_matches.putAll(key, match.getValue());
+            } else if (key.equals("start")) {
+                date_matches.putAll(key, match.getValue());
+            } else if (key.equals("end")) {
+                date_matches.putAll(key, match.getValue());
             } else {
                 value_matches.putAll(key, match.getValue());
             }
@@ -108,6 +105,16 @@ public class FindLogsQuery {
         }
     }
 
+    private void addTagMatches(Collection<String> matches) {
+        for (String m : matches) {
+            if (m.contains("?") || m.contains("*")) {
+                tag_patterns.add(m);
+            } else {
+                tag_matches.add(m);
+            }
+        }
+    }
+
     /**
      * Creates and executes the logbook and tag string match subquery using GROUP.
      *
@@ -115,111 +122,85 @@ public class FindLogsQuery {
      * @return a set of log ids that match
      */
     //TODO:  need to add search params like olog; logs between dates, search all fields, files, etc.
-    private Set<Long> getIdsFromLogbookAndTagMatch(Connection con) throws CFException {
-        StringBuilder query = new StringBuilder("SELECT log.*, t.*, level.name, "+
-                                                "(SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, "+
-                                                "(SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children "+
-                                                "FROM `logs` as log "+
-                                                "LEFT JOIN `logs` as parent ON log.id = parent.parent_id "+
-                                                "LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id "+
-                                                "LEFT JOIN logbooks as t ON lt.logbook_id = t.id "+
-                                                "LEFT JOIN levels as level ON log.level_id = level.id "+
-                                                "LEFT JOIN statuses as status ON log.status_id = status.id "+
-                                                "LEFT JOIN statuses as ltstatus ON lt.status_id = status.id "+
-                                                "LEFT JOIN statuses as tstatus ON t.status_id = status.id "+
-                                                "WHERE (parent.parent_id IS NULL and log.parent_id IS NULL "+
-                                                "OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) "+
-                                                "AND status.name = 'Active' "+
-                                                "AND ltstatus.name = 'Active' "+
-                                                "AND tstatus.name = 'Active' AND");
-        Set<Long> ids = new HashSet<Long>();           // set of matching log ids
-        List<String> params = new ArrayList<String>(); // parameter list for this query
-
-        for (String tag : tag_matches) {
-            params.add(convertFileGlobToSQLPattern(tag).toLowerCase());
-            query.append(" LOWER(t.name) LIKE ? OR");
-        }
-
-        query.replace(query.length() - 2, query.length(),
-                " GROUP BY lt.id HAVING COUNT(log.id) = ? ORDER BY ifnull(parent_created,log.created) DESC");
+    private Set<Long> getIdsFromLogbookAndTagMatch() throws CFException {
+        SqlSession ss = ssf.openSession();
 
         try {
-            PreparedStatement ps = con.prepareStatement(query.toString());
-            int i = 1;
-            for (String p : params) {
-                ps.setString(i++, p);
+            Set<Long> ids = new HashSet<Long>();           // set of matching log ids
+            List<String> params = new ArrayList<String>(); // parameter list for this query
+
+            for (String tag : tag_matches) {
+                params.add(tag);
             }
-            ps.setLong(i++, tag_matches.size());
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                // Add key to list of matching log ids
-                ids.add(rs.getLong(1));
+            int size = tag_matches.size();
+
+            HashMap<String, Object> hm = new HashMap<String, Object>();
+            hm.put("list", params);
+            hm.put("size", size);
+
+            ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getIdsFromLogbookAndTagMatch", hm);
+            if (logs != null) {
+                Iterator<XmlLog> iterator = logs.iterator();
+                while (iterator.hasNext()) {
+                    XmlLog log = iterator.next();
+                    ids.add(log.getId());
+                }
             }
-        } catch (SQLException e) {
+
+            return ids;
+        } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while getting log ids in logbook match query: "+ query.toString(), e);
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
         }
-        return ids;
     }
- /**
+
+    /**
      * Creates and executes the properties string match subquery using GROUP.
      *
      * @param con connection to use
      * @return a set of log ids that match
      */
-    private Set<Long> getIdsFromPropertiesMatch(Connection con) throws CFException {
-        StringBuilder query = new StringBuilder("SELECT log.*, t.*, level.name, "+
-                                                "(SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, "+
-                                                "(SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children "+
-                                                "FROM `logs` as log "+
-                                                "LEFT JOIN `logs` as parent ON log.id = parent.parent_id "+
-                                                "LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id "+
-                                                "LEFT JOIN logbooks as t ON lt.logbook_id = t.id "+
-                                                "LEFT JOIN levels as level ON log.level_id = level.id "+
-                                                "LEFT JOIN statuses as status ON log.status_id = status.id "+
-                                                "LEFT JOIN statuses as ltstatus ON lt.status_id = status.id "+
-                                                "LEFT JOIN statuses as tstatus ON t.status_id = status.id "+
-                                                "LEFT JOIN properties as prop ON log.id = prop.log_id "+
-                                                "WHERE (parent.parent_id IS NULL and log.parent_id IS NULL "+
-                                                "OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) "+
-                                                "AND status.name = 'Active' "+
-                                                "AND ltstatus.name = 'Active' "+
-                                                "AND tstatus.name = 'Active' AND (");
-        Set<Long> ids = new HashSet<Long>();           // set of matching log ids
-        List<String> params = new ArrayList<String>(); // parameter list for this query
-
-        for (Map.Entry<String, Collection<String>> match : value_matches.asMap().entrySet()) {
-            StringBuilder valueList = new StringBuilder("prop.value LIKE ");
-            params.add(match.getKey().toLowerCase());
-            for (String value : match.getValue()) {
-                valueList.append("? OR prop.value LIKE ");
-                params.add(convertFileGlobToSQLPattern(value));
-            }
-            query.append("(LOWER(prop.name) = ? AND ( "
-                    + valueList.substring(0, valueList.length() - 20) + ")) OR ");
-        }
-
-
-        query.replace(query.length() - 3, query.length(),
-                ") GROUP BY log.id HAVING COUNT(log.id) = ? ORDER BY ifnull(parent_created,log.created) DESC");
+    private Set<Long> getIdsFromPropertiesMatch() throws CFException {
+        SqlSession ss = ssf.openSession();
 
         try {
-            PreparedStatement ps = con.prepareStatement(query.toString());
-            int i = 1;
-            for (String p : params) {
-                ps.setString(i++, p);
+            Set<Long> ids = new HashSet<Long>();           // set of matching log ids
+            List<String> values = new ArrayList<String>();
+            List<String> names = new ArrayList<String>();
+
+            for (Map.Entry<String, Collection<String>> match : value_matches.asMap().entrySet()) {
+                names.add(match.getKey().toLowerCase());
+                for (String value : match.getValue()) {
+                    values.add(convertFileGlobToSQLPattern(value));
+                }
             }
-            ps.setLong(i++, value_matches.asMap().size());
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                // Add key to list of matching log ids
-                ids.add(rs.getLong(1));
+            int size = value_matches.asMap().size();
+
+            HashMap<String, Object> hm = new HashMap<String, Object>();
+            hm.put("propNameList", names);
+            hm.put("propValueList", values);
+            hm.put("size", size);
+
+            ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getIdsFromPropertiesMatch", hm);
+            if (logs != null) {
+                Iterator<XmlLog> iterator = logs.iterator();
+                while (iterator.hasNext()) {
+                    XmlLog log = iterator.next();
+                    ids.add(log.getId());
+                }
             }
-        } catch (SQLException e) {
+
+            return ids;
+        } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while getting log ids in logbook match query: "+ query.toString(), e);
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
         }
-        return ids;
+
+
     }
 
     /**
@@ -228,37 +209,28 @@ public class FindLogsQuery {
      * @param con connection to use
      * @return a set of log ids that match
      */
-    private Set<Long> getIdsFromTagMatch(Connection con, String match) throws CFException {
-        String query = "SELECT log.id, "+
-                       "(SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created "+
-                       "FROM `logs` as log "+
-                       "LEFT JOIN `logs` as parent ON log.id = parent.parent_id "+
-                       "LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id "+
-                       "LEFT JOIN logbooks as t ON lt.logbook_id = t.id "+
-                       "LEFT JOIN statuses as status ON log.status_id = status.id "+
-                       "LEFT JOIN statuses as ltstatus ON lt.status_id = status.id "+
-                       "LEFT JOIN statuses as tstatus ON t.status_id = status.id "+
-                       "WHERE (parent.parent_id IS NULL and log.parent_id IS NULL "+
-                       "OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) "+
-                       "AND t.name LIKE ? "+
-                       "AND status.name = 'Active' "+
-                       "AND ltstatus.name = 'Active' "+
-                       "AND tstatus.name = 'Active' "+
-                       "GROUP BY lt.id ORDER BY ifnull(parent_created,log.created) DESC, t.name";
-        Set<Long> ids = new HashSet<Long>();
+    private Set<Long> getIdsFromTagMatch(String match) throws CFException {
+        SqlSession ss = ssf.openSession();
 
         try {
-            PreparedStatement ps = con.prepareStatement(query);
-            ps.setString(1, convertFileGlobToSQLPattern(match));
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                ids.add(rs.getLong(1));
+            Set<Long> ids = new HashSet<Long>();
+
+            ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getIdsFromTagMatch", match);
+            if (logs != null) {
+                Iterator<XmlLog> iterator = logs.iterator();
+                while (iterator.hasNext()) {
+                    XmlLog log = iterator.next();
+                    ids.add(log.getId());
+                }
             }
-        } catch (SQLException e) {
+
+            return ids;
+        } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while getting log ids in tag match query", e);
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
         }
-        return ids;
     }
 
     /**
@@ -267,186 +239,112 @@ public class FindLogsQuery {
      * @param con connection to use
      * @return a set of log ids that match
      */
-    Set<Long> getIdsFromPagination(Connection con) throws CFException {
-        StringBuilder query = new StringBuilder("SELECT log.*, t.*, level.name, prop.name, prop.value, "+
-                                                "(SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, "+
-                                                "(SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children "+
-                                                "FROM `logs` as log "+
-                                                "LEFT JOIN `logs` as parent ON log.id = parent.parent_id "+
-                                                "LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id "+
-                                                "LEFT JOIN logbooks as t ON lt.logbook_id = t.id "+
-                                                "LEFT JOIN levels as level ON log.level_id = level.id "+
-                                                "LEFT JOIN statuses as status ON log.status_id = status.id "+
-                                                "LEFT JOIN statuses as ltstatus ON lt.status_id = status.id "+
-                                                "LEFT JOIN statuses as tstatus ON t.status_id = status.id "+
-                                                "LEFT JOIN properties as prop ON log.id = prop.log_id "+
-                                                "WHERE (parent.parent_id IS NULL and log.parent_id IS NULL "+
-                                                "OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) "+
-                                                "AND status.name = 'Active' "+
-                                                "AND ltstatus.name = 'Active' "+
-                                                "AND tstatus.name = 'Active' ");
-        List<Long> id_params = new ArrayList<Long>();       // parameter lists for the outer query
-        List<String> name_params = new ArrayList<String>();
-        List<Long> paginate_params = new ArrayList<Long>();
-        List<Long> date_params = new ArrayList<Long>();
-        Set<Long> tag_result = new HashSet<Long>();
-        Set<Long> value_result = new HashSet<Long>();
-        Set<Long> returnIds = new HashSet<Long>();
+    Set<Long> getIdsFromPagination() throws CFException {
+        SqlSession ss = ssf.openSession();
 
-        if (!tag_matches.isEmpty()) {
-            Set<Long> ids = getIdsFromLogbookAndTagMatch(con);
-            if (ids.isEmpty()) {
-                return null;
-            }
-            tag_result.addAll(ids);
-        }
+        try {
+            Set<Long> idsList = new HashSet<Long>();
+            Set<String> valuesList = new HashSet<String>();
+            Set<Long> returnIds = new HashSet<Long>();
+            HashMap<String, Object> hm = new HashMap<String, Object>();
 
-        if (!value_matches.isEmpty()) {
-            Set<Long> ids = getIdsFromPropertiesMatch(con);
-            if (ids.isEmpty()) {
-                return null;
-            }
-            value_result.addAll(ids);
-        }
-
-        if (!tag_patterns.isEmpty()) {
-            for (String p : tag_patterns) {
-                Set<Long> ids = getIdsFromTagMatch(con, p);
+            if (!tag_matches.isEmpty()) {
+                Set<Long> ids = getIdsFromLogbookAndTagMatch();
                 if (ids.isEmpty()) {
                     return null;
                 }
-                if (tag_result.isEmpty()) {
-                    tag_result.addAll(ids);
-                } else {
-                    tag_result.retainAll(ids);
-                    if (tag_result.isEmpty()) {
+                idsList.addAll(ids);
+            }
+
+            if (!value_matches.isEmpty()) {
+                Set<Long> ids = getIdsFromPropertiesMatch();
+                if (ids.isEmpty()) {
+                    return null;
+                }
+                idsList.addAll(ids);
+            }
+
+            if (!tag_patterns.isEmpty()) {
+                for (String p : tag_patterns) {
+                    Set<Long> ids = getIdsFromTagMatch(p);
+                    if (ids.isEmpty()) {
                         return null;
                     }
+                    idsList.addAll(ids);
                 }
             }
-        }
-        if (!date_matches.isEmpty()) {
-            String start = null, end = null;
-            for (Map.Entry<String, Collection<String>> match : date_matches.asMap().entrySet()) {
-                if (match.getKey().toLowerCase().equals("start")){
-                    start = match.getValue().iterator().next();
+            if (!date_matches.isEmpty()) {
+                String start = null, end = null;
+                for (Map.Entry<String, Collection<String>> match : date_matches.asMap().entrySet()) {
+                    if (match.getKey().toLowerCase().equals("start")) {
+                        start = match.getValue().iterator().next();
+                    }
+                    if (match.getKey().toLowerCase().equals("end")) {
+                        end = match.getValue().iterator().next();
+                    }
                 }
-                if (match.getKey().toLowerCase().equals("end")){
-                    end = match.getValue().iterator().next();
+                if (start != null && end != null) {
+                    hm.put("start", Long.valueOf(start));
+                    hm.put("end", Long.valueOf(end));
                 }
             }
-            if(start!=null && end!=null){
-                query.append(" AND log.created > FROM_UNIXTIME(?) AND log.created <= FROM_UNIXTIME(?) ");
-                date_params.add(Long.valueOf(start));
-                date_params.add(Long.valueOf(end));
-                // needs to be Long not string!!!!
+            if (!logId_matches.isEmpty()) {
+                for (long i : logId_matches) {
+                    idsList.add(i);
+                }
             }
-        }
-        if (!logId_matches.isEmpty()) {
-            query.append(" AND (log.id IN (");
-            for (long i : logId_matches) {
-                query.append("?,");
-                id_params.add(i);
+            if (!log_matches.isEmpty()) {
+                for (String value : log_matches) {
+                    valuesList.add(convertFileGlobToSQLPattern(value));
+                }
             }
-            query.replace(query.length() - 1, query.length(), ") OR log.parent_id IN (");
-            for (long i : logId_matches) {
-                query.append("?,");
-                id_params.add(i);
-            }
-            query.replace(query.length() - 1, query.length(), ")) ");
-        }
-        if (!tag_result.isEmpty()) {
-            query.append(" AND (log.id IN (");
-            for (long i : tag_result) {
-                query.append("?,");
-                id_params.add(i);
-            }
-            query.replace(query.length() - 1, query.length(), ") OR log.parent_id IN (");
-            for (long i : tag_result) {
-                query.append("?,");
-                id_params.add(i);
-            }
-            query.replace(query.length() - 1, query.length(), ")) ");
-        }
-        if (!value_result.isEmpty()) {
-            query.append(" AND (log.id IN (");
-            for (long i : value_result) {
-                query.append("?,");
-                id_params.add(i);
-            }
-            query.replace(query.length() - 1, query.length(), ") OR log.parent_id IN (");
-            for (long i : value_result) {
-                query.append("?,");
-                id_params.add(i);
-            }
-            query.replace(query.length() - 1, query.length(), ")) ");
-        }
 
-        if (!log_matches.isEmpty()) {
-            query.append(" AND (");
-            for (String value : log_matches) {
-                query.append("log.subject LIKE ? OR ");
-                name_params.add(convertFileGlobToSQLPattern(value));
-                query.append("log.description LIKE ? OR ");
-                name_params.add(convertFileGlobToSQLPattern(value));
-                query.append("log.owner LIKE ? OR ");
-                name_params.add(convertFileGlobToSQLPattern(value));
-            }
-            query.replace(query.length() - 4, query.length(), ")");
-        }
-
-        query.append(" GROUP BY lt.log_id ORDER BY ifnull(parent_created,log.created) DESC, t.name");
-
-        if (!logPaginate_matches.isEmpty()) {
-            String limit = null, offset = null;
-            for (Map.Entry<String, Collection<String>> match : logPaginate_matches.asMap().entrySet()) {
-                if (match.getKey().toLowerCase().equals("limit")){
-                    limit = match.getValue().iterator().next();
-                }
-                if (match.getKey().toLowerCase().equals("page")){
-                    offset = match.getValue().iterator().next();
+            if (!jcr_search_ids.isEmpty()) {
+                for (long i : jcr_search_ids) {
+                    idsList.add(i);
                 }
             }
-            if(limit!=null && offset!=null){
-                Long longOffset = Long.valueOf(offset)*Long.valueOf(limit)-Long.valueOf(limit);
-                query.append(" LIMIT ? OFFSET ?");
-                paginate_params.add(Long.valueOf(limit));
-                paginate_params.add(longOffset);
-            }
-        }
-        try {
-            PreparedStatement ps = con.prepareStatement(query.toString());
-            int i = 1;
-            for (long q : date_params) {
-                ps.setLong(i++, q);
-            }
-            for (long p : id_params) {
-                ps.setLong(i++, p);
-            }
-            for (String s : name_params) {
-                ps.setString(i++, s);
-            }
-            for (long l : paginate_params) {
-                ps.setLong(i++, l);
-            }
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                returnIds.add(rs.getLong(1));
-            }
-          //  StringBuilder returnString = new StringBuilder("{");
-          //  Log logger = LogFactory.getLog(FindLogsQuery.class);
-          //  for (long ir : returnIds) {
-          //      returnString.append(String.valueOf(ir)).append(",");
-          //  }
-          //  returnString.append("}");
-          //  logger.debug("SQL Result :"+returnString.toString());
 
-        } catch (SQLException e) {
-            
+            if (!logPaginate_matches.isEmpty()) {
+                String limit = null, offset = null;
+                for (Map.Entry<String, Collection<String>> match : logPaginate_matches.asMap().entrySet()) {
+                    if (match.getKey().toLowerCase().equals("limit")) {
+                        limit = match.getValue().iterator().next();
+                    }
+                    if (match.getKey().toLowerCase().equals("page")) {
+                        offset = match.getValue().iterator().next();
+                    }
+                }
+                if (limit != null && offset != null) {
+                    Long longOffset = Long.valueOf(offset) * Long.valueOf(limit) - Long.valueOf(limit);
+                    hm.put("limit", Long.valueOf(limit));
+                    hm.put("offset", longOffset);
+                }
+            }
+
+            if (idsList.size() > 0) {
+                hm.put("idsList", idsList);
+            }
+            if (valuesList.size() > 0) {
+                hm.put("valuesList", valuesList);
+            }
+
+            ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getIdsFromPagination", hm);
+            if (logs != null) {
+                Iterator<XmlLog> iterator = logs.iterator();
+                while (iterator.hasNext()) {
+                    XmlLog log = iterator.next();
+                    returnIds.add(log.getId());
+                }
+            }
+
+            return returnIds;
+        } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception in logs query "+query.toString(), e);
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
         }
-        return returnIds;
     }
 
     /**
@@ -458,60 +356,34 @@ public class FindLogsQuery {
      *         <tt>value</tt>, null if no results
      * @throws CFException wrapping an SQLException
      */
-    private ResultSet executeQuery(Connection con) throws CFException {
-        StringBuilder query = new StringBuilder("SELECT log.*, t.*, level.name, prop.name, prop.value, "+
-                                                "(SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, "+
-                                                "(SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children "+
-                                                "FROM `logs` as log "+
-                                                "LEFT JOIN `logs` as parent ON log.id = parent.parent_id "+
-                                                "LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id "+
-                                                "LEFT JOIN logbooks as t ON lt.logbook_id = t.id "+
-                                                "LEFT JOIN levels as level ON log.level_id = level.id "+
-                                                "LEFT JOIN statuses as status ON log.status_id = status.id "+
-                                                "LEFT JOIN statuses as ltstatus ON lt.status_id = status.id "+
-                                                "LEFT JOIN statuses as tstatus ON t.status_id = status.id "+
-                                                "LEFT JOIN properties as prop ON log.id = prop.log_id "+
-                                                "WHERE (parent.parent_id IS NULL and log.parent_id IS NULL "+
-                                                "OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) "+
-                                                "AND status.name = 'Active' "+
-                                                "AND ltstatus.name = 'Active' "+
-                                                "AND tstatus.name = 'Active' ");
-        List<Long> id_params = new ArrayList<Long>();
-        Set<Long> paginate_result = new HashSet<Long>();
-
-        Set<Long> ids = getIdsFromPagination(con);
-        if (ids==null || ids.isEmpty()) {
-              return null;
-        } else {
-             paginate_result.addAll(ids);
-        }
-        if (!paginate_result.isEmpty()) {
-            query.append(" AND (log.id IN (");
-            for (long i : paginate_result) {
-                query.append("?,");
-                id_params.add(i);
-            }
-            query.replace(query.length() - 1, query.length(), ") OR log.parent_id IN (");
-            for (long i : paginate_result) {
-                query.append("?,");
-                id_params.add(i);
-            }
-            query.replace(query.length() - 1, query.length(), ")) ");
-        }
-
-        query.append(" ORDER BY ifnull(parent_created,log.created) DESC, t.name");
+    private ArrayList<XmlLog> executeQuery() throws CFException {
+        SqlSession ss = ssf.openSession();
 
         try {
-            PreparedStatement ps = con.prepareStatement(query.toString());
-            int i = 1;
-            for (long p : id_params) {
-                ps.setLong(i++, p);
+            List<Long> idsList = new ArrayList<Long>();
+            Set<Long> paginate_result = new HashSet<Long>();
+
+            Set<Long> ids = getIdsFromPagination();
+
+            if (ids == null || ids.isEmpty()) {
+                return null;
+            } else {
+                paginate_result.addAll(ids);
+            }
+            if (!paginate_result.isEmpty()) {
+                for (long i : paginate_result) {
+                    idsList.add(i);
+                }
             }
 
-            return ps.executeQuery();
-        } catch (SQLException e) {
+            ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getLogsFromIds", idsList);
+            
+            return logs;
+        } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception in logs query "+query.toString(), e);
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
         }
     }
 
@@ -540,7 +412,7 @@ public class FindLogsQuery {
         Matcher m = pat.matcher(in);
 
         while (m.find()) {
-            StringBuffer rep = new StringBuffer();
+            StringBuilder rep = new StringBuilder();
             if (m.group(1) != null) {
                 rep.append(m.group(1));
             }
@@ -557,91 +429,25 @@ public class FindLogsQuery {
     }
 
     /**
-     * Adds a logbook or tag to an XmlLog.
-     *
-     */
-    private static void addLogbook(XmlLog c, ResultSet rs) throws SQLException {
-        if (rs.getString("t.name") != null) {
-            if (rs.getBoolean("is_tag")) {
-                c.addXmlTag(new XmlTag(rs.getString("t.name")));
-            } else {
-                c.addXmlLogbook(new XmlLogbook(rs.getString("t.name"),
-                        rs.getString("t.owner")));
-            }
-        }
-    }
-
-    /**
-     * Adds a property to an XmlLog.
-     *
-     */
-    private static void addProperty(XmlLog c, HashMap<String, String> properties) throws SQLException {
-        if (!properties.isEmpty()) {
-                for( Map.Entry entry : properties.entrySet()){
-                    if(entry.getKey() != null || entry.getKey() != "")
-                        c.addXmlProperty(new XmlProperty(entry.getKey().toString(),
-                                                 entry.getValue().toString()));
-            }
-        }
-            }
-    /**
      * Finds logs by matching logbook/tag values and/or log and/or tag names.
      *
      * @param matches MultiMap of query parameters
      * @return XmlLogs container with all found logs and their logbooks/tags
      */
-    public static XmlLogs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws CFException {
+    public static XmlLogs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws CFException, RepositoryException {
         FindLogsQuery q = new FindLogsQuery(matches);
         XmlLogs xmlLogs = new XmlLogs();
-        XmlLog xmlLog = null;
-        try {
-            ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
-            Long lastlog = 0L;
-            Long lastlogp = 0L;
-            Long lastlogl = 0L;
-            String lastlogbook = null;
-            HashMap<String, String> properties = new HashMap();
-            if (rs != null) {
-                while (rs.next()) {
-                    Long thislog = rs.getLong("log.id");
-                    String thislogbook = rs.getString("t.name");
-                    if(rs.getString("prop.name") != null)
-                        properties.put(rs.getString("prop.name"), rs.getString("prop.value"));
-                    
-                    if (!thislog.equals(lastlog) || rs.isFirst()) {
-                        if (rs.getLong("log.parent_id")==0L || rs.getLong("log.id")==rs.getLong("log.parent_id")) {
-                            xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
-                            xmlLog.setCreatedDate(rs.getTimestamp("log.created"));
-                        } else {
-                            xmlLog = new XmlLog(rs.getLong("log.parent_id"), rs.getString("log.owner"));
-                            xmlLog.setVersion(rs.getInt("children"));
-                            xmlLog.setCreatedDate(rs.getTimestamp("parent_created"));
-                            xmlLog.setModifiedDate(rs.getTimestamp("log.created"));
-                        }
-                        xmlLog.setSubject(rs.getString("subject"));
-                        xmlLog.setDescription(rs.getString("description"));
-                        xmlLog.setLevel(rs.getString("level.name"));
-                        xmlLogs.addXmlLog(xmlLog);
-                        lastlog = thislog;
-                    }
-                    if(!thislog.equals(lastlogp) || !rs.isFirst() ){
-                        addProperty(xmlLog,properties);
-                        properties.clear();
-                        lastlogp = thislog;
-                    }
-                    if (!thislog.equals(lastlogl) || !thislogbook.equals(lastlogbook) || rs.isFirst()) {
-                        addLogbook(xmlLog, rs);
-                        lastlogbook = thislogbook;
-                        lastlogl = thislog;
-                }
-            }
 
+        ArrayList<XmlLog> logs = q.executeQuery();
+        if (logs != null) {
+            Iterator<XmlLog> iterator = logs.iterator();
+            while (iterator.hasNext()) {
+                xmlLogs.addXmlLog(iterator.next());
             }
-            return xmlLogs;
-        } catch (SQLException e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while parsing result of find logs request", e);
         }
+
+        return xmlLogs;
+
     }
 
     /**
@@ -653,55 +459,16 @@ public class FindLogsQuery {
     public static XmlLogs findLogsByLogbookName(String name) throws CFException {
         FindLogsQuery q = new FindLogsQuery(SearchType.TAG, name);
         XmlLogs xmlLogs = null;
-        XmlLog xmlLog = null;
-        try {
-            ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
 
-            Long lastlog = 0L;
-            Long lastlogp = 0L;
-            Long lastlogl = 0L;
-            String lastlogbook = null;
-            HashMap<String, String> properties = new HashMap();
-            if (rs != null) {
-                xmlLogs = new XmlLogs();
-                while (rs.next()) {
-                    Long thislog = rs.getLong("log.id");
-                    String thislogbook = rs.getString("t.name");
-                    if(rs.getString("prop.name") != null)
-                        properties.put(rs.getString("prop.name"), rs.getString("prop.value"));
-                    if (!thislog.equals(lastlog) || rs.isFirst()) {
-                        if (rs.getLong("log.parent_id")==0L || rs.getLong("log.id")==rs.getLong("log.parent_id")) {
-                            xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
-                            xmlLog.setCreatedDate(rs.getTimestamp("log.created"));
-                        } else {
-                            xmlLog = new XmlLog(rs.getLong("log.parent_id"), rs.getString("log.owner"));
-                            xmlLog.setVersion(rs.getInt("children"));
-                            xmlLog.setCreatedDate(rs.getTimestamp("parent_created"));
-                            xmlLog.setModifiedDate(rs.getTimestamp("log.created"));
-                        }
-                        xmlLog.setSubject(rs.getString("subject"));
-                        xmlLog.setDescription(rs.getString("description"));
-                        xmlLog.setLevel(rs.getString("level.name"));
-                        xmlLogs.addXmlLog(xmlLog);
-                        lastlog = thislog;
-                    }
-                    if(!thislog.equals(lastlogp) && !rs.isFirst() ){
-                        addProperty(xmlLog,properties);
-                        properties.clear();
-                        lastlogp = thislog;
-                    }
-                    if (!thislog.equals(lastlogl) || !thislogbook.equals(lastlogbook) || rs.isFirst()) {
-                        addLogbook(xmlLog, rs);
-                        lastlogbook = thislogbook;
-                        lastlogl = thislog;
-                }
+        ArrayList<XmlLog> logs = q.executeQuery();
+        if (logs != null) {
+            Iterator<XmlLog> iterator = logs.iterator();
+            while (iterator.hasNext()) {
+                xmlLogs.addXmlLog(iterator.next());
             }
-            }
-            return xmlLogs;
-        } catch (SQLException e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while parsing result of find logs by logbook name request", e);
         }
+
+        return xmlLogs;
     }
 
     /**
@@ -714,44 +481,15 @@ public class FindLogsQuery {
     public static XmlLog findLogById(Long logId) throws CFException {
         FindLogsQuery q = new FindLogsQuery(SearchType.LOG, logId);
         XmlLog xmlLog = null;
-        try {
-            ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
-            String lastlogbook = null;
-            HashMap<String, String> properties = new HashMap();
-            if (rs != null) {
-                while (rs.next()) {
-                    Long thislog = rs.getLong("log.id");
-                    String thislogbook = rs.getString("t.name");
-                    if(rs.getString("prop.name") != null)
-                        properties.put(rs.getString("prop.name"), rs.getString("prop.value"));
-                    if (rs.isFirst()) {
-                        if (rs.getLong("log.parent_id")==0 || rs.getLong("log.id")==rs.getLong("log.parent_id")) {
-                            xmlLog = new XmlLog(thislog, rs.getString("log.owner"));
-                            xmlLog.setCreatedDate(rs.getTimestamp("log.created"));
-                        } else {
-                            xmlLog = new XmlLog(rs.getLong("log.parent_id"), rs.getString("log.owner"));
-                            xmlLog.setVersion(rs.getInt("children"));
-                            xmlLog.setCreatedDate(rs.getTimestamp("parent_created"));
-                            xmlLog.setModifiedDate(rs.getTimestamp("log.created"));
-                        }
-                        xmlLog.setSubject(rs.getString("subject"));
-                        xmlLog.setDescription(rs.getString("description"));
-                        xmlLog.setLevel(rs.getString("level.name"));
-                    }
-                    if(rs.isLast() ){
-                        addProperty(xmlLog,properties);
-                        properties.clear();
-                    }
-                    if (!thislogbook.equals(lastlogbook) || rs.isFirst()) {
-                        addLogbook(xmlLog, rs);
-                        lastlogbook = thislogbook;
-                    }
-                }
+
+        ArrayList<XmlLog> logs = q.executeQuery();
+        if (logs != null) {
+            Iterator<XmlLog> iterator = logs.iterator();
+            while (iterator.hasNext()) {
+                xmlLog = iterator.next();
             }
-        } catch (SQLException e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while parsing result of single log search request", e);
         }
+
         return xmlLog;
     }
 }

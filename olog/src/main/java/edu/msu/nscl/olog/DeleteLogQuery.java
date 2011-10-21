@@ -5,11 +5,10 @@
  */
 package edu.msu.nscl.olog;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import javax.ws.rs.core.Response;
+import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
  * JDBC query to delete one log.
@@ -18,39 +17,9 @@ import javax.ws.rs.core.Response;
  */
 public class DeleteLogQuery {
 
-    private Long logId;
+    private static SqlSessionFactory ssf = MyBatisSession.getSessionFactory();
 
     private DeleteLogQuery(Long logId) {
-        this.logId = logId;
-    }
-
-    /**
-     * Creates and executes a JDBC based query for deleting one log.
-     *
-     * @param con db connection to use
-     * @param ignoreNoExist flag: true = do not generate an error if log does not exist
-     * @throws CFException wrapping an SQLException
-     */
-    private void executeQuery(Connection con, boolean ignoreNoExist) throws CFException {
-        String query;
-        PreparedStatement ps;
-        if (logId == null) {
-            return;
-        }
-        try {
-            query = "UPDATE logs, statuses SET logs.status_id = statuses.id WHERE (logs.id = ? OR parent_id = ?) AND statuses.name = 'Inactive';";
-            ps = con.prepareStatement(query);
-            ps.setLong(1, logId);
-            ps.setLong(2, logId);
-            int rows = ps.executeUpdate();
-            if (rows == 0 && !ignoreNoExist) {
-                throw new CFException(Response.Status.NOT_FOUND,
-                        "Log '" + logId + "' does not exist");
-            }
-        } catch (SQLException e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while deleting log '" + logId + "'", e);
-        }
     }
 
     /**
@@ -61,8 +30,21 @@ public class DeleteLogQuery {
      * @throws CFException on fail or wrapping an SQLException
      */
     public static void deleteLogFailNoexist(Long logId) throws CFException {
-        DeleteLogQuery q = new DeleteLogQuery(logId);
-        q.executeQuery(DbConnection.getInstance().getConnection(), false);
+        SqlSession ss = ssf.openSession();
+
+        try {
+            int rows = ss.update("mappings.LogMapping.deleteLog", logId);
+            if (rows == 0) {
+                throw new CFException(Response.Status.NOT_FOUND,
+                        "Log '" + logId + "' does not exist");
+            }
+            ss.commit();
+        } catch (PersistenceException e) {
+            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
+        }
     }
 
     /**
@@ -72,7 +54,16 @@ public class DeleteLogQuery {
      * @throws CFException wrapping an SQLException
      */
     public static void deleteLogIgnoreNoexist(Long logId) throws CFException {
-        DeleteLogQuery q = new DeleteLogQuery(logId);
-        q.executeQuery(DbConnection.getInstance().getConnection(), true);
+        SqlSession ss = ssf.openSession();
+
+        try {
+            ss.update("mappings.LogMapping.deleteLog", logId);
+            ss.commit();
+        } catch (PersistenceException e) {
+            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
+        }
     }
 }
