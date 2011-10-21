@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.jcr.RepositoryException;
 
 /**
  * Central business logic layer that implements all directory operations.
@@ -52,33 +53,33 @@ public class OLogManager {
         if(src.getLevel() != null)
             dest.setLevel(src.getLevel());
         src_logbooks:
-        for (XmlLogbook s : src.getXmlLogbooks().getLogbooks()) {
-            for (XmlLogbook d : dest.getXmlLogbooks().getLogbooks()) {
+        for (XmlLogbook s : src.getXmlLogbooks()) {
+            for (XmlLogbook d : dest.getXmlLogbooks()) {
                 if (d.getName().equals(s.getName())) {
                     continue src_logbooks;
                 }
             }
-            dest.getXmlLogbooks().addXmlLogbook(s);
+            dest.getXmlLogbooks().add(s);
         }
         src_tags:
-        for (XmlTag s : src.getXmlTags().getTags()) {
-            for (XmlTag d : dest.getXmlTags().getTags()) {
+        for (XmlTag s : src.getXmlTags()) {
+            for (XmlTag d : dest.getXmlTags()) {
                 if (d.getName().equals(s.getName())) {
 //TODO: here                   d.setState(s.getState());
                     continue src_tags;
                 }
             }
-            dest.getXmlTags().addXmlTag(s);
+            dest.getXmlTags().add(s);
         }
         src_properties:
-        for (XmlProperty s : src.getXmlProperties().getProperties()) {
-            for (XmlProperty d : dest.getXmlProperties().getProperties()) {
+        for (XmlProperty s : src.getXmlProperties()) {
+            for (XmlProperty d : dest.getXmlProperties()) {
                 if (d.getName().equals(s.getName())) {
                     d.setValue(s.getValue());
                     continue src_properties;
                 }
             }
-            dest.getXmlProperties().addXmlProperty(s);
+            dest.getXmlProperties().add(s);
         }
     }
 
@@ -112,7 +113,7 @@ public class OLogManager {
      * @return XmlLogs container with all found logs and their logbooks
      * @throws CFException wrapping an SQLException
      */
-    public XmlLogs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws CFException {
+    public XmlLogs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws CFException, RepositoryException {
         return FindLogsQuery.findLogsByMultiMatch(matches);
     }
 
