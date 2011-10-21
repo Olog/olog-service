@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+   
+    <settings>
+        <setting name="useGeneratedKeys" value="true"/>
+    </settings>
+     
+    <typeAliases> 
+        <typeAlias alias="Logbook" type="edu.msu.nscl.olog.XmlLogbook"/>
+        <typeAlias alias="Tag" type="edu.msu.nscl.olog.XmlTag"/>
+        <typeAlias alias="Log" type="edu.msu.nscl.olog.XmlLog"/>
+        <typeAlias alias="Property" type="edu.msu.nscl.olog.XmlProperty"/>
+        <typeAlias alias="Properties" type="edu.msu.nscl.olog.XmlProperties"/>
+    </typeAliases>
+   
+    <environments default="development">
+   
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="JNDI">
+                <property name="initial_context" value="java:comp/env"/>
+                <property name="data_source" value="jdbc/irmisDB-Elog"/>
+            </dataSource>
+        </environment>
+     
+    </environments>
+ 
+    <mappers>
+        <mapper resource="mappings/LogbookMapping.xml"/>
+        <mapper resource="mappings/TagMapping.xml"/>
+        <mapper resource="mappings/LogMapping.xml"/>
+        <mapper resource="mappings/PropertyMapping.xml"/>
+    </mappers>
+ 
+</configuration>

@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mappings.LogMapping">
+  
+    <resultMap id="logResultMap" type="Log">
+        <id property="id" column="entry_no" /> 
+        <result property="version" column="children" /> 
+        <result property="owner" column="owner" /> 
+        <result property="level" column="level_name" /> 
+        <result property="md5Entry" column="md5entry" /> 
+        <result property="md5Recent" column="md5recent" /> 
+        <result property="createdDate" column="createdDate" /> 
+        <result property="modifiedDate" column="modifiedDate" /> 
+        <result property="subject" column="subject" /> 
+        <result property="description" column="description" /> 
+        <collection property="properties" column="log_id" ofType="Property" javaType="ArrayList">
+            <id property="name" column="prop_name" /> 
+            <result property="value" column="prop_value" /> 
+        </collection>
+        <collection property="logbooks" ofType="Logbook" javaType="ArrayList">
+            <id property="name" column="lbook_name" /> 
+            <result property="owner" column="lbook_owner" /> 
+        </collection>
+        <collection property="tags" ofType="Tag" javaType="ArrayList">
+            <id property="name" column="tag_name" /> 
+        </collection>
+    </resultMap>
+   
+  <!-- SELECT -->
+    <select id="getIdsFromLogbookAndTagMatch" parameterType="HashMap" resultMap="logResultMap">
+        <![CDATA[
+            SELECT log.*, t.*, level.name, (SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, log.id as entry_no,
+                (SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children FROM `logs` as log 
+                LEFT JOIN `logs` as parent ON log.id = parent.parent_id LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id 
+                LEFT JOIN logbooks as t ON lt.logbook_id = t.id LEFT JOIN levels as level ON log.level_id = level.id 
+                LEFT JOIN statuses as status ON log.status_id = status.id LEFT JOIN statuses as ltstatus ON lt.status_id = status.id 
+                LEFT JOIN statuses as tstatus ON t.status_id = status.id WHERE (parent.parent_id IS NULL and log.parent_id IS NULL 
+                OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) AND status.name = 'Active' 
+                AND ltstatus.name = 'Active' AND tstatus.name = 'Active' AND
+        ]]>
+        <foreach item="item" index="index" collection="list" separator="OR">
+        <![CDATA[
+            LOWER(t.name) LIKE #{item}
+        ]]>
+        </foreach>
+        <![CDATA[
+            GROUP BY lt.id HAVING COUNT(log.id) = #{size} ORDER BY ifnull(parent_created,log.created) DESC
+        ]]>
+    </select>
+    
+    <select id="getIdsFromPropertiesMatch" parameterType="HashMap" resultMap="logResultMap">
+        <![CDATA[
+            SELECT log.*, t.*, level.name, (SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, log.id as entry_no,
+                (SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children FROM `logs` as log 
+                LEFT JOIN `logs` as parent ON log.id = parent.parent_id LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id 
+                LEFT JOIN logbooks as t ON lt.logbook_id = t.id LEFT JOIN levels as level ON log.level_id = level.id 
+                LEFT JOIN statuses as status ON log.status_id = status.id LEFT JOIN statuses as ltstatus ON lt.status_id = status.id 
+                LEFT JOIN statuses as tstatus ON t.status_id = status.id LEFT JOIN properties as prop ON log.id = prop.log_id 
+                WHERE (parent.parent_id IS NULL and log.parent_id IS NULL OR log.id IN (SELECT MAX(logs.id) FROM logs 
+                WHERE logs.parent_id=log.parent_id)) AND status.name = 'Active' AND ltstatus.name = 'Active' 
+                AND tstatus.name = 'Active' AND
+        ]]>
+        <foreach item="item" index="index" collection="propNameList" open="(" separator="OR" close=")">
+        <![CDATA[
+            LOWER(prop.name) = #{item} AND
+        ]]>
+            <foreach item="item" index="index" collection="propValueList" open="(" separator="OR" close=")">
+            <![CDATA[
+                prop.value LIKE #{item}
+            ]]>
+            </foreach>
+        </foreach>
+        <![CDATA[
+            OR GROUP BY log.id HAVING COUNT(log.id) = #{size} ORDER BY ifnull(parent_created,log.created) DESC
+        ]]>
+    </select>
+    
+    <select id="getIdsFromTagMatch" parameterType="String" resultMap="logResultMap">
+        <![CDATA[
+            SELECT log.id, (SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created FROM `logs` as log, log.id as entry_no,
+                LEFT JOIN `logs` as parent ON log.id = parent.parent_id LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id 
+                LEFT JOIN logbooks as t ON lt.logbook_id = t.id LEFT JOIN statuses as status ON log.status_id = status.id 
+                LEFT JOIN statuses as ltstatus ON lt.status_id = status.id LEFT JOIN statuses as tstatus ON t.status_id = status.id 
+                WHERE (parent.parent_id IS NULL and log.parent_id IS NULL OR log.id IN 
+                (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) AND t.name LIKE #{name} AND status.name = 'Active' 
+                AND ltstatus.name = 'Active' AND tstatus.name = 'Active' GROUP BY lt.id ORDER BY ifnull(parent_created,log.created)
+                DESC, t.name
+        ]]>
+    </select>
+    
+    <select id="getIdsFromPagination" parameterType="HashMap" resultMap="logResultMap">
+        <![CDATA[
+            SELECT log.*, t.*, level.name, prop.name, prop.value, 
+                (SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, log.id as entry_no,
+                (SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children FROM `logs` as log 
+                LEFT JOIN `logs` as parent ON log.id = parent.parent_id LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id 
+                LEFT JOIN logbooks as t ON lt.logbook_id = t.id LEFT JOIN levels as level ON log.level_id = level.id 
+                LEFT JOIN statuses as status ON log.status_id = status.id LEFT JOIN statuses as ltstatus ON lt.status_id = status.id 
+                LEFT JOIN statuses as tstatus ON t.status_id = status.id LEFT JOIN properties as prop ON log.id = prop.log_id 
+                WHERE (parent.parent_id IS NULL and log.parent_id IS NULL OR log.id IN (SELECT MAX(logs.id) FROM logs 
+                WHERE logs.parent_id=log.parent_id)) AND status.name = 'Active' AND ltstatus.name = 'Active' 
+                AND tstatus.name = 'Active'
+        ]]>
+        <if test="start != null">
+        <![CDATA[
+            AND log.created > FROM_UNIXTIME(#{start})
+        ]]>
+        </if>
+        <if test="end != null">
+        <![CDATA[
+            AND log.created <= FROM_UNIXTIME(#{end})
+        ]]>
+        </if>
+        <if test="idsList != null">
+            <![CDATA[
+                AND (log.id IN
+            ]]>
+            <foreach item="item" index="index" collection="idsList" open="(" separator="," close=")">
+                <![CDATA[
+                    #{item}
+                ]]>
+            </foreach>
+            <![CDATA[
+                OR log.parent_id IN
+            ]]>
+            <foreach item="item" index="index" collection="idsList" open="(" separator="," close=")">
+                <![CDATA[
+                    #{item}
+                ]]>
+            </foreach>
+            <![CDATA[
+                )
+            ]]>
+        </if>
+        <if test="valuesList != null">
+            <![CDATA[
+                AND (
+            ]]>
+            <foreach item="item" index="index" collection="valuesList" open="(" separator="OR" close=")">
+                <![CDATA[
+                    log.subject LIKE #{item} OR log.description LIKE #{item} OR log.owner LIKE #{item}
+                ]]>
+            </foreach>
+            <![CDATA[
+                )
+            ]]>
+        </if>
+        <![CDATA[
+            GROUP BY lt.log_id ORDER BY ifnull(parent_created,log.created) DESC, t.name
+        ]]>
+        <if test="limit != null">
+        <![CDATA[
+            LIMIT #{limit}
+        ]]>
+        </if>
+        <if test="offset != null">
+        <![CDATA[
+            OFFSET #{offset}
+        ]]>
+        </if>
+    </select>
+    
+    <select id="getLogsFromIds" parameterType="List" resultMap="logResultMap">
+        <![CDATA[
+            SELECT log.*, lbook.name as lbook_name, lbook.owner as lbook_owner, tag.name as tag_name, tag.*, level.name as level_name, 
+                prop.name as prop_name, prop.value as prop_value, 
+                (SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, 
+                ifnull((SELECT logs.created FROM logs WHERE log.parent_id=logs.id), log.created) as createdDate, 
+                if((SELECT logs.created FROM logs WHERE log.parent_id=logs.id), log.created, null) as modifiedDate,
+                ifnull(log.parent_id,log.id) as entry_no, 
+                (SELECT COUNT(id) FROM logs WHERE parent_id=log.parent_id GROUP BY parent_id) as children FROM `logs` as log
+                LEFT JOIN `logs` as parent ON log.id = parent.parent_id LEFT JOIN logs_logbooks as lt ON log.id = lt.log_id 
+                LEFT JOIN logbooks as t ON lt.logbook_id = t.id 
+                LEFT JOIN logbooks as lbook ON lt.logbook_id = lbook.id AND lbook.is_tag = FALSE
+                LEFT JOIN logbooks as tag ON lt.logbook_id = tag.id AND tag.is_tag = TRUE 
+                LEFT JOIN levels as level ON log.level_id = level.id 
+                LEFT JOIN statuses as status ON log.status_id = status.id LEFT JOIN statuses as ltstatus ON lt.status_id = status.id 
+                LEFT JOIN statuses as tstatus ON t.status_id = status.id LEFT JOIN properties as prop ON log.id = prop.log_id 
+                WHERE (parent.parent_id IS NULL and log.parent_id IS NULL OR log.id IN 
+                (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) AND status.name = 'Active' 
+                AND ltstatus.name = 'Active' AND tstatus.name = 'Active'
+        ]]>
+        <if test="list != null">
+            <![CDATA[
+                AND log.id IN
+            ]]>
+            <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+                <![CDATA[
+                    #{item}
+                ]]>
+            </foreach>
+            <![CDATA[
+                OR log.parent_id IN
+            ]]>
+            <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+                <![CDATA[
+                    #{item}
+                ]]>
+            </foreach>
+        </if>
+        <![CDATA[
+            ORDER BY ifnull(parent_created,log.created) DESC, t.name
+        ]]>
+    </select>
+    
+    <select id="getChildrenIds" parameterType="List" resultMap="logResultMap">
+        <![CDATA[
+            SELECT log.id FROM `logs` as log LEFT JOIN `logs` as parent ON log.id = parent.parent_id 
+            WHERE (parent.parent_id IS NULL and log.parent_id IS NULL 
+            OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) 
+            AND log.parent_id IN
+        ]]>
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+                <![CDATA[
+                    #{item}
+                ]]>
+        </foreach>
+    </select>
+    
+    <select id="doesLogExist" parameterType="int" resultMap="logResultMap">
+        <![CDATA[
+            SELECT id FROM logs WHERE id = #{id}
+        ]]>
+    </select>
+    
+    <select id="getPast10md5s" parameterType="int" resultMap="logResultMap">
+        <![CDATA[
+            SELECT id, md5entry FROM logs WHERE id < #{logId} ORDER BY id DESC LIMIT 10 
+        ]]>
+    </select>
+    
+    <select id="lastId" resultType="int">
+        <![CDATA[
+            SELECT LAST_INSERT_ID() as logId;
+        ]]>
+    </select>
+
+    
+  <!-- UPDATE -->
+    <update id="deleteLog" parameterType="int">
+        <![CDATA[
+            UPDATE logs, statuses SET logs.status_id = statuses.id WHERE (logs.id = #{id} OR parent_id = #{id}) 
+                AND statuses.name = 'Inactive'
+        ]]>
+    </update>
+    
+    <update id="updateMD5" parameterType="HashMap">
+        <![CDATA[
+            UPDATE logs SET md5entry = #{md5entry}, md5recent = #{md5recent}, parent_id = #{pid} where id = #{id}
+        ]]>
+    </update>
+    
+    <update id="updateAsInactive" parameterType="HashMap">
+        <![CDATA[
+            UPDATE logs_logbooks ll, statuses s SET ll.status_id=s.id WHERE s.name='Inactive' AND ll.logbook_id = #{pid}
+            AND ll.log_id NOT IN
+        ]]>
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+                <![CDATA[
+                    #{item}
+                ]]>
+        </foreach>
+    </update>
+
+    
+  <!-- INSERT -->
+    <insert id="createLog" parameterType="HashMap">
+        <![CDATA[
+            INSERT INTO logs (source, owner, level_id, status_id, subject, description, md5entry, md5recent, parent_id) 
+                VALUES (#{source}, #{owner}, (SELECT id from levels where name = #{level}), 
+                (SELECT id from statuses where name = 'Active'), #{subject}, #{description}, '', '', null)
+        ]]>
+    </insert>
+    
+    <insert id="logsLogbooksEntry" parameterType="HashMap">
+        <![CDATA[
+            INSERT INTO logs_logbooks (log_id, logbook_id, state) VALUES (#{logid}, #{logbookid}, #{state})
+        ]]>
+    </insert>
+    
+    <insert id="logsLogbooksEntryFromList" parameterType="HashMap">
+        <![CDATA[
+            INSERT INTO logs_logbooks (log_id, logbook_id, state) VALUES 
+        ]]>
+        <foreach item="item" index="index" collection="logidsList" separator=" ">
+                <![CDATA[
+                    (#{item}, #{logbookid}, #{state})
+                ]]>
+        </foreach>
+    </insert>
+
+  
+</mapper>
