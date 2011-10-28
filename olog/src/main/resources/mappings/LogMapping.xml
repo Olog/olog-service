@@ -37,13 +37,21 @@
                 LEFT JOIN statuses as status ON log.status_id = status.id LEFT JOIN statuses as ltstatus ON lt.status_id = status.id 
                 LEFT JOIN statuses as tstatus ON t.status_id = status.id WHERE (parent.parent_id IS NULL and log.parent_id IS NULL 
                 OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) AND status.name = 'Active' 
-                AND ltstatus.name = 'Active' AND tstatus.name = 'Active' AND
+                AND ltstatus.name = 'Active' AND tstatus.name = 'Active'
         ]]>
-        <foreach item="item" index="index" collection="list" separator="OR">
-        <![CDATA[
-            LOWER(t.name) LIKE #{item}
-        ]]>
-        </foreach>
+        <if test="list != null">
+            <![CDATA[
+                AND (
+            ]]>
+            <foreach item="item" index="index" collection="list" separator="OR">
+            <![CDATA[
+                LOWER(t.name) LIKE #{item}
+            ]]>
+            </foreach>
+            <![CDATA[ 
+                )
+            ]]>
+        </if>
         <![CDATA[
             GROUP BY lt.id HAVING COUNT(log.id) = #{size} ORDER BY ifnull(parent_created,log.created) DESC
         ]]>
@@ -163,7 +171,7 @@
     
     <select id="getLogsFromIds" parameterType="List" resultMap="logResultMap">
         <![CDATA[
-            SELECT log.id as entry_no, log.*, lbook.name as lbook_name, lbook.owner as lbook_owner, tag.name as tag_name, tag.*, level.name as level_name, 
+            SELECT log.*, lbook.name as lbook_name, lbook.owner as lbook_owner, tag.name as tag_name, tag.*, level.name as level_name, 
                 prop.name as prop_name, prop.value as prop_value, 
                 (SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, 
                 ifnull((SELECT logs.created FROM logs WHERE log.parent_id=logs.id), log.created) as createdDate, 
@@ -283,7 +291,7 @@
         <![CDATA[
             INSERT INTO logs_logbooks (log_id, logbook_id, state) VALUES 
         ]]>
-        <foreach item="item" index="index" collection="logidsList" separator=" ">
+        <foreach item="item" index="index" collection="logidsList" separator=",">
                 <![CDATA[
                     (#{item}, #{logbookid}, #{state})
                 ]]>
