@@ -16,6 +16,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.Response;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -60,11 +62,11 @@ public class CreateLogQuery {
                 hm.put("md5entry", getmd5Entry((long) logId, log));
                 hm.put("md5recent", getmd5Recent((long) logId));
                 hm.put("id", (long) logId);
-                if (logIdExists(log.getId())) {
+                if (logIdExists(log)) {
                     hm.put("pid", log.getId());
                 } else {
                     log.setId((long) logId);
-                    hm.put("pid", java.sql.Types.NULL);
+                    hm.put("pid", null);
                 }
 
                 ss.update("mappings.LogMapping.updateMD5", hm);
@@ -138,11 +140,16 @@ public class CreateLogQuery {
      *
      * @return TRUE if log exists
      */
-    private static boolean logIdExists(Long id) throws CFException {
+    private static boolean logIdExists(XmlLog log) throws CFException {
+
         SqlSession ss = ssf.openSession();
 
         try {
-            ArrayList<XmlLog> result = (ArrayList<XmlLog>) ss.selectList("mapping.LogMapping.doesLogExist", id);
+            if (log.getId() == null) {
+                return false;
+            }
+            
+            ArrayList<XmlLog> result = (ArrayList<XmlLog>) ss.selectList("mapping.LogMapping.doesLogExist", log.getId());
 
             if (result != null) {
                 return true;
