@@ -71,7 +71,7 @@ public class CreateLogbookQuery {
         SqlSession ss = ssf.openSession();
 
         try {
-            XmlTag tag = (XmlTag) ss.selectOne("mappings.TagMapping.tagByName", name);
+            XmlTag tag = (XmlTag) ss.selectOne("mappings.TagMapping.tagByNameAnyStatus", name);
             if (tag != null) {
                 ss.update("mappings.TagMapping.returnToActive", name);
             } else {
