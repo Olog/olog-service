@@ -21,6 +21,12 @@
         ]]>
     </select>
     
+    <select id="tagByNameAnyStatus" parameterType="String" resultMap="tagResultMap">
+        <![CDATA[
+            SELECT l.id, l.name FROM logbooks l WHERE l.is_tag = TRUE AND l.name = #{name}
+        ]]>
+    </select>
+    
   <!-- UPDATE -->
     <update id="updateTag" parameterType="HashMap">
         <![CDATA[

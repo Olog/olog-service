@@ -58,7 +58,7 @@
         ]]>
         </update>
     
-        <update id="deleteOneValues" parameterType="HashMap">
+        <update id="deleteOneValue" parameterType="HashMap">
         <![CDATA[
             UPDATE logs_logbooks ll, statuses s, logs l SET ll.status_id = s.id WHERE s.name = 'Inactive' AND ll.logbook_id = #{lid} 
                 AND ll.log_id = l.id AND (l.id = #{logid} OR l.parent_id = #{logid})
