@@ -5,15 +5,15 @@
  */
 package edu.msu.nscl.olog;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.Response;
+import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
  * JDBC query to find database ids for logbooks/tags.
@@ -22,55 +22,9 @@ import javax.ws.rs.core.Response;
  */
 public class FindLogbookIdsQuery {
 
-    private List<String> names = new ArrayList();
+    private static SqlSessionFactory ssf = MyBatisSession.getSessionFactory();
 
-    private FindLogbookIdsQuery(XmlLog data) {
-        for (XmlLogbook logbook : data.getXmlLogbooks().getLogbooks()) {
-            names.add(logbook.getName().toLowerCase());
-        }
-        for (XmlTag tag : data.getXmlTags().getTags()) {
-            names.add(tag.getName().toLowerCase());
-        }
-    }
-
-    private FindLogbookIdsQuery(String name) {
-        names.add(name.toLowerCase());
-    }
-
-    /**
-     * Creates and executes a JDBC based query returning ids and names.
-     *
-     * @param con connection to use
-     * @return result set with columns named <tt>id</tt>, <tt>name</tt> or null if no result
-     * @throws CFException wrapping an SQLException
-     */
-    private ResultSet executeQuery(Connection con) throws CFException {
-        PreparedStatement ps;
-        List<String> name_params = new ArrayList<String>();
-
-        StringBuilder query = new StringBuilder("SELECT id, name FROM logbooks");
-        for (String name : names) {
-            if (!query.toString().endsWith(" OR")) {
-                query.append(" WHERE");
-            }
-            query.append(" LOWER(name) = ? OR");
-            name_params.add(name);
-        }
-        if (query.toString().endsWith(" OR")) {
-            query.delete(query.length() - 3, query.length());
-        }
-
-        try {
-            ps = con.prepareStatement(query.toString());
-            int i = 1;
-            for (String s : name_params) {
-                ps.setString(i++, s);
-            }
-            return ps.executeQuery();
-        } catch (SQLException e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception during logbook id query", e);
-        }
+    private FindLogbookIdsQuery() {
     }
 
     /**
@@ -81,19 +35,27 @@ public class FindLogbookIdsQuery {
      * @throws CFException wrapping an SQLException
      */
     public static Map<String, Integer> getLogbookIdMap(XmlLog data) throws CFException {
-        Map<String, Integer> result = new HashMap<String, Integer>();
-        FindLogbookIdsQuery q = new FindLogbookIdsQuery(data);
+        SqlSession ss = ssf.openSession();
+
         try {
-            ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
-            if (rs != null) {
-                while (rs.next()) {
-                    result.put(rs.getString("name"), rs.getInt("id"));
+            Map<String, Integer> result = new HashMap<String, Integer>();
+            List<String> list = logbooksAndTagsToList(data);
+
+            ArrayList<XmlLogbook> logbooks = (ArrayList<XmlLogbook>) ss.selectList("mappings.LogbookMapping.logbookIds", list);
+            if (logbooks != null) {
+                Iterator<XmlLogbook> iterator = logbooks.iterator();
+                while (iterator.hasNext()) {
+                    XmlLogbook logbook = iterator.next();
+                    result.put(logbook.getName(), logbook.getId().intValue());
                 }
             }
+
             return result;
-        } catch (SQLException e) {
+        } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception scanning result of logbook id request", e);
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
         }
     }
 
@@ -102,20 +64,35 @@ public class FindLogbookIdsQuery {
      *
      * @param name the name to find
      * @return id
-     * @throws CFException wrapping an SQLException
      */
     public static Long getLogbookId(String name) throws CFException {
-        FindLogbookIdsQuery q = new FindLogbookIdsQuery(name);
+        SqlSession ss = ssf.openSession();
+
         try {
-            ResultSet rs = q.executeQuery(DbConnection.getInstance().getConnection());
-            if (rs != null && rs.first()) {
-                return rs.getLong("id");
+            XmlLogbook lb = (XmlLogbook) ss.selectOne("mappings.LogbookMapping.logbookId", name);
+            if (lb != null) {
+                return lb.getId();
             } else {
                 return null;
             }
-        } catch (SQLException e) {
+        } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception scanning result of single logbook id request", e);
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
         }
+    }
+
+    private static List<String> logbooksAndTagsToList(XmlLog data) {
+        List<String> list = new ArrayList();
+
+        for (XmlLogbook logbook : data.getXmlLogbooks()) {
+            list.add(logbook.getName().toLowerCase());
+        }
+        for (XmlTag tag : data.getXmlTags()) {
+            list.add(tag.getName().toLowerCase());
+        }
+
+        return list;
     }
 }

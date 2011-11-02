@@ -9,16 +9,18 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.Response;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
  * JDBC query to create one log.
@@ -27,148 +29,9 @@ import javax.ws.rs.core.Response;
  */
 public class CreateLogQuery {
 
-    private XmlLog log;
+    private static SqlSessionFactory ssf = MyBatisSession.getSessionFactory();
 
-    private CreateLogQuery(XmlLog log) {
-        this.log = log;
-    }
-
-    /**
-     * Executes a JDBC based query to add a log and its logbooks/tags.
-     *
-     * @param con database connection to use
-     * @throws CFException wrapping an SQLException
-     */
-    private XmlLog executeQuery(Connection con) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        List<List<String>> params = new ArrayList<List<String>>();
-        PreparedStatement ps;
-        int i;
-        long id;
-
-        // Insert log
-        StringBuilder query = new StringBuilder("INSERT INTO logs "+
-                "(source, owner, level_id, status_id, subject, description, md5entry, md5recent, parent_id) "+
-                "VALUE (?, ?, (SELECT id from levels where name = ?), (SELECT id from statuses where name = 'Active'), ?, ?, '', '', null)");
-        try {
-            ps = con.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, log.getSource());
-            ps.setString(2, log.getOwner());
-            ps.setString(3, log.getLevel());
-            ps.setString(4, log.getSubject());
-            ps.setString(5, log.getDescription());
-            ps.execute();
-            ResultSet rs = ps.getGeneratedKeys();
-            rs.first();
-            id = rs.getLong(1);
-        } catch (SQLException e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while adding log '" + log.getSubject() +"'", e);
-        }
-        query = new StringBuilder("UPDATE logs SET md5entry=?, md5recent=?, parent_id=? where id=?");
-        try {
-            ps = con.prepareStatement(query.toString());
-            ps.setString(1, getmd5Entry(id, con));
-            ps.setString(2, getmd5Recent(id, con));
-            if(logIdExists(con)){
-                ps.setLong(3, log.getId());
-            } else {
-                log.setId(id);
-                ps.setNull(3, java.sql.Types.NULL);
-            }
-            ps.setLong(4, id);
-            ps.execute();
-        } catch (SQLException e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while adding log '" + log.getSubject() +"'", e);
-        }
-        // Fetch the logbook/tag ids
-        Map<String, Integer> pids = FindLogbookIdsQuery.getLogbookIdMap(log);
-
-        // Insert logbook/tags
-        // Fail if there isn't at least one logbook
-        if (this.log.getXmlLogbooks().getLogbooks().isEmpty()) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "Must add to at least one logbook '" + log.getSubject() +"'");
-        }
-        if (this.log.getXmlLogbooks().getLogbooks().size() > 0
-                || this.log.getXmlTags().getTags().size() > 0) {
-            params.clear();
-            query.setLength(0);
-            query.append("INSERT INTO logs_logbooks (log_id, logbook_id, state) VALUES ");
-            for (XmlLogbook logbook : this.log.getXmlLogbooks().getLogbooks()) {
-                if (pids.get(logbook.getName()) == null) {
-                    throw new CFException(Response.Status.NOT_FOUND,
-                    "Logbook '" + logbook.getName() + "' does not exist");
-                }
-                query.append("(?,?,?),");
-                ArrayList<String> par = new ArrayList<String>();
-                par.add(logbook.getName());
-                par.add(null);
-                params.add(par);
-            }
-            for (XmlTag tag : this.log.getXmlTags().getTags()) {
-                if (pids.get(tag.getName()) == null) {
-                    throw new CFException(Response.Status.NOT_FOUND,
-                    "Tag '" + tag.getName() + "' does not exist");
-                }
-                query.append("(?,?,?),");
-                ArrayList<String> par = new ArrayList<String>();
-                par.add(tag.getName());
-                par.add(null);
-                params.add(par);
-            }
-            try {
-                ps = con.prepareStatement(query.substring(0, query.length() - 1));
-                i = 1;
-                for (List<String> par : params) {
-                    ps.setLong(i++, id);
-                    ps.setLong(i++, pids.get(par.get(0)));
-                    if (par.get(1) == null) {
-                        ps.setNull(i++, java.sql.Types.NULL);
-                    } else {
-                        ps.setString(i++, par.get(1));
-                    }
-                }
-                ps.executeUpdate();
-            } catch (SQLException e) {
-                throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                        "SQL Exception while adding logbooks/tags for log '" + log.getSubject() + "'", e);
-            }
-        }
-        if (this.log.getXmlProperties().getProperties().size() > 0) {
-            params.clear();
-            query.setLength(0);
-            query.append("INSERT INTO properties (log_id, name, value) VALUES ");
-            for (XmlProperty property : this.log.getXmlProperties().getProperties()) {
-                if (property.getName().isEmpty() || property.getName() == null) {
-                    throw new CFException(Response.Status.NOT_FOUND,
-                    "Property name (key) can not be null ");
-                }
-                query.append("(?,?,?),");
-                ArrayList<String> par = new ArrayList<String>();
-                par.add(property.getName());
-                par.add(property.getValue());
-                params.add(par);
-            }
-            try {
-                ps = con.prepareStatement(query.substring(0, query.length() - 1));
-                i = 1;
-                for (List<String> par : params) {
-                    ps.setLong(i++, id);
-                    ps.setString(i++, par.get(0));
-                    if (par.get(1) == null) {
-                        ps.setNull(i++, java.sql.Types.NULL);
-                    } else {
-                        ps.setString(i++, par.get(1));
-                    }
-                }
-                ps.executeUpdate();
-            } catch (SQLException e) {
-                throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                        "SQL Exception while adding properties for log '" + log.getSubject() + "' "+ps.toString(), e);
-            }
-        }
-        return log;
+    private CreateLogQuery() {
     }
 
     /**
@@ -178,8 +41,98 @@ public class CreateLogQuery {
      * @throws CFException wrapping an SQLException
      */
     public static XmlLog createLog(XmlLog log) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        CreateLogQuery q = new CreateLogQuery(log);
-        return q.executeQuery(DbConnection.getInstance().getConnection());
+        SqlSession ss = ssf.openSession();
+
+        try {
+
+            HashMap<String, Object> hm = new HashMap<String, Object>();
+
+            hm.put("source", log.getSource());
+            hm.put("owner", log.getOwner());
+            hm.put("level", log.getLevel());
+            hm.put("subject", log.getSubject());
+            hm.put("description", log.getDescription());
+
+            ss.insert("mappings.LogMapping.createLog", hm);
+            int logId = (Integer) ss.selectOne("mappings.LogMapping.lastId");
+            if (logId > 0) {
+
+                hm.clear();
+
+                hm.put("md5entry", getmd5Entry((long) logId, log));
+                hm.put("md5recent", getmd5Recent((long) logId));
+                hm.put("id", (long) logId);
+                if (logIdExists(log)) {
+                    hm.put("pid", log.getId());
+                } else {
+                    log.setId((long) logId);
+                    hm.put("pid", null);
+                }
+
+                ss.update("mappings.LogMapping.updateMD5", hm);
+
+                // Fetch the logbook/tag ids
+                Map<String, Integer> pids = FindLogbookIdsQuery.getLogbookIdMap(log);
+
+                // Insert logbook/tags
+                // Fail if there isn't at least one logbook
+                if (log.getXmlLogbooks().isEmpty()) {
+                    throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                            "Must add to at least one logbook '" + log.getSubject() + "'");
+                }
+                if (log.getXmlLogbooks().size() > 0 || log.getXmlTags().size() > 0) {
+                    for (XmlLogbook logbook : log.getXmlLogbooks()) {
+                        if (pids.get(logbook.getName()) == null) {
+                            throw new CFException(Response.Status.NOT_FOUND,
+                                    "Logbook '" + logbook.getName() + "' does not exist");
+                        }
+
+                        hm.clear();
+                        hm.put("logid", logId);
+                        hm.put("logbookid", FindLogbookIdsQuery.getLogbookId(logbook.getName()));
+                        hm.put("state", java.sql.Types.NULL);
+                        ss.insert("mappings.LogMapping.logsLogbooksEntry", hm);
+
+                    }
+                    for (XmlTag tag : log.getXmlTags()) {
+                        if (pids.get(tag.getName()) == null) {
+                            throw new CFException(Response.Status.NOT_FOUND,
+                                    "Tag '" + tag.getName() + "' does not exist");
+                        }
+                        hm.clear();
+                        hm.put("logid", logId);
+                        hm.put("logbookid", FindLogbookIdsQuery.getLogbookId(tag.getName()));
+                        hm.put("state", java.sql.Types.NULL);
+                        ss.insert("mappings.LogMapping.logsLogbooksEntry", hm);
+                    }
+                }
+                if (log.getXmlProperties().size() > 0) {
+                    for (XmlProperty property : log.getXmlProperties()) {
+                        if (property.getName().isEmpty() || property.getName() == null) {
+                            throw new CFException(Response.Status.NOT_FOUND,
+                                    "Property name (key) can not be null ");
+                        }
+                        hm.clear();
+                        hm.put("lid", logId);
+                        hm.put("name", property.getName());
+                        hm.put("value", property.getValue());
+                        ss.insert("mappings.PropertyMapping.addProperty", hm);
+                    }
+                }
+            } else {
+                throw new CFException(Response.Status.NOT_FOUND,
+                        "Log could not be created");
+            }
+
+            ss.commit();
+        } catch (PersistenceException e) {
+            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
+        }
+
+        return log;
     }
 
     /**
@@ -187,25 +140,31 @@ public class CreateLogQuery {
      *
      * @return TRUE if log exists
      */
-    private boolean logIdExists(Connection con) throws CFException {
-        String query = "SELECT id " +
-                       "FROM logs " +
-                       "WHERE id = ?";
-        if(log.getId() == null)
-            return false;
+    private static boolean logIdExists(XmlLog log) throws CFException {
+
+        SqlSession ss = ssf.openSession();
+
         try {
-            PreparedStatement ps = con.prepareStatement(query);
-            ps.setLong(1, log.getId());
-            ResultSet rs = ps.executeQuery();
-            if(rs.next()){
+            if (log.getId() == null) {
+                return false;
+            }
+            
+            ArrayList<XmlLog> result = (ArrayList<XmlLog>) ss.selectList("mapping.LogMapping.doesLogExist", log.getId());
+
+            if (result != null) {
                 return true;
             } else {
                 return false;
             }
-        } catch (SQLException e) {
+
+        } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while checking if log id exists", e);
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
         }
+
+
     }
 
     /**
@@ -215,26 +174,30 @@ public class CreateLogQuery {
      *
      * @return md5Recent String of the last 10 md5Entries
      */
-    private String getmd5Recent(Long logId, Connection con) throws CFException {
-        String md5Recent = "";
-        String query = "SELECT id, md5entry " +
-                       "FROM logs " +
-                       "WHERE id < ? " +
-                       "ORDER BY id DESC " +
-                       "LIMIT 10";
+    private static String getmd5Recent(Long logId) throws CFException {
+        SqlSession ss = ssf.openSession();
 
         try {
-            PreparedStatement ps = con.prepareStatement(query);
-            ps.setLong(1, logId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                md5Recent += rs.getString(1)+" "+rs.getString(2)+"\n";
+            String md5Recent = "";
+
+            ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getPast10md5s", logId);
+            if (logs != null) {
+                Iterator<XmlLog> iterator = logs.iterator();
+                while (iterator.hasNext()) {
+                    XmlLog log = iterator.next();
+                    md5Recent += log.getId() + " " + log.getMD5Entry() + "\n";
+                }
             }
-        } catch (SQLException e) {
+
+            return md5Recent;
+        } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "SQL Exception while getting recent md5 entries: "+query, e);
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
         }
-        return md5Recent;
+
+
     }
 
     /**
@@ -243,26 +206,28 @@ public class CreateLogQuery {
      * @return md5Entry String MD5 encoded XmlLog Object
      * @todo Move this to LogEnt as a private function
      */
-     private String getmd5Entry(Long logId, Connection con) throws UnsupportedEncodingException, NoSuchAlgorithmException, CFException {
+    private static String getmd5Entry(Long logId, XmlLog log) throws UnsupportedEncodingException, NoSuchAlgorithmException, CFException {
         String entry;
         String explodeRecent = "";
         List<String> explodeRecentArray = new ArrayList<String>();
-        explodeRecentArray = Arrays.asList(getmd5Recent(logId, con).split("\n"));
+        explodeRecentArray = Arrays.asList(getmd5Recent(logId).split("\n"));
 
         for (String line : explodeRecentArray) {
-            if ( (line == null ? "" == null : line.equals("")) || (line == null ? "\n" == null : line.equals("\n")) ) continue;
+            if ((line == null ? "" == null : line.equals("")) || (line == null ? "\n" == null : line.equals("\n"))) {
+                continue;
+            }
             explodeRecent += "md5_recent:" + line + "\n";
         }
 
-        entry = "id:"           + logId                 + "\n" +
-                "level:"        + log.getLevel()        + "\n" +
-                "subject:"      + log.getSubject()      + "\n" +
-                "description:"  + log.getDescription()  + "\n" +
-                "created:"      + log.getCreatedDate()  + "\n" +
-                "modified"      + log.getModifiedDate() + "\n" +
-                "source:"       + log.getSource()       + "\n" +
-                "owner:"        + log.getOwner()        + "\n" +
-                explodeRecent;
+        entry = "id:" + logId + "\n"
+                + "level:" + log.getLevel() + "\n"
+                + "subject:" + log.getSubject() + "\n"
+                + "description:" + log.getDescription() + "\n"
+                + "created:" + log.getCreatedDate() + "\n"
+                + "modified" + log.getModifiedDate() + "\n"
+                + "source:" + log.getSource() + "\n"
+                + "owner:" + log.getOwner() + "\n"
+                + explodeRecent;
 
         byte[] bytesOfMessage = entry.getBytes("UTF-8");
         MessageDigest md = MessageDigest.getInstance("MD5");

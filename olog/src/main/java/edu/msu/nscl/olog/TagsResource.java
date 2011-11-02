@@ -48,15 +48,11 @@ public class TagsResource {
     @GET
     @Produces({"application/xml", "application/json"})
     public Response list() {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlTags result = null;
         try {
-            db.getConnection();
-            db.beginTransaction();
             result = cm.listTags();
-            db.commit();
             Response r = Response.ok(result).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.getTags().size() + " tags");
@@ -65,8 +61,6 @@ public class TagsResource {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() +  "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -80,16 +74,12 @@ public class TagsResource {
     @POST
     @Consumes({"application/xml", "application/json"})
     public Response add(XmlTags data) throws IOException {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             cm.checkValidNameAndOwner(data);
-            db.getConnection();
-            db.beginTransaction();
             cm.createOrReplaceTags(data);
-            db.commit();
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlTags.toLog(data));
@@ -98,8 +88,6 @@ public class TagsResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlTags.toLog(data) + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -114,15 +102,11 @@ public class TagsResource {
     @Path("{tagName}")
     @Produces({"application/xml", "application/json"})
     public Response read(@PathParam("tagName") String tag) {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlTag result = null;
         try {
-            db.getConnection();
-            db.beginTransaction();
             result = cm.findTagByName(tag);
-            db.commit();
             Response r;
             if (result == null) {
                 r = Response.status(Response.Status.NOT_FOUND).build();
@@ -135,8 +119,6 @@ public class TagsResource {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() +  "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -154,17 +136,13 @@ public class TagsResource {
     @Path("{tagName}")
     @Consumes({"application/xml", "application/json"})
     public Response create(@PathParam("tagName") String tag, XmlTag data) {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             cm.checkValidNameAndOwner(data);
             cm.checkNameMatchesPayload(tag, data);
-            db.getConnection();
-            db.beginTransaction();
             cm.createOrReplaceTag(tag, data);
-            db.commit();
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + XmlTag.toLog(data));
@@ -173,8 +151,6 @@ public class TagsResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlTag.toLog(data) + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -192,15 +168,11 @@ public class TagsResource {
     @Path("{tagName}")
     @Consumes({"application/xml", "application/json"})
     public Response update(@PathParam("tagName") String tag, XmlTag data) {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
-            db.getConnection();
-            db.beginTransaction();
             cm.updateTag(tag, data);
-            db.commit();
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlTag.toLog(data));
@@ -209,8 +181,6 @@ public class TagsResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlTag.toLog(data) + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -224,15 +194,11 @@ public class TagsResource {
     @DELETE
     @Path("{tagName}")
     public Response remove(@PathParam("tagName") String tag) {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
-            db.getConnection();
-            db.beginTransaction();
             cm.removeExistingLogbook(tag);
-            db.commit();
             Response r = Response.ok().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
@@ -240,8 +206,6 @@ public class TagsResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()
                     + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -258,16 +222,12 @@ public class TagsResource {
     @Path("{tagName}/{logId}")
     @Consumes({"application/xml", "application/json"})
     public Response addSingle(@PathParam("tagName") String tag, @PathParam("logId")Long logId, XmlTag data) {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             cm.checkNameMatchesPayload(tag, data);
-            db.getConnection();
-            db.beginTransaction();
             cm.addSingleTag(tag, logId);
-            db.commit();
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + XmlTag.toLog(data));
@@ -276,8 +236,6 @@ public class TagsResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlTag.toLog(data) + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -292,15 +250,11 @@ public class TagsResource {
     @DELETE
     @Path("{tagName}/{logId}")
     public Response removeSingle(@PathParam("tagName") String tag, @PathParam("logId")Long logId) {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
-            db.getConnection();
-            db.beginTransaction();
             cm.removeSingleTag(tag, logId);
-            db.commit();
             Response r = Response.ok().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
@@ -308,8 +262,6 @@ public class TagsResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()
                     + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 }

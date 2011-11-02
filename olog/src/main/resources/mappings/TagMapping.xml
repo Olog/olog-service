@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mappings.TagMapping">
+  
+    <resultMap id="tagResultMap" type="Tag">
+        <id property="name" column="name" /> 
+    </resultMap>
+   
+   <!-- SELECT -->
+    <select id="allTags" resultMap="tagResultMap">
+        <![CDATA[
+            SELECT l.id, l.name, l.owner FROM logbooks l, statuses s WHERE l.is_tag = TRUE AND l.status_id = s.id AND s.name = 'Active'
+        ]]>
+    </select>
+    
+    <select id="tagByName" parameterType="String" resultMap="tagResultMap">
+        <![CDATA[
+            SELECT l.id, l.name FROM logbooks l, statuses s WHERE l.is_tag = TRUE AND l.status_id = s.id AND s.name = 'Active'
+                AND l.name = #{name}
+        ]]>
+    </select>
+    
+    <select id="tagByNameAnyStatus" parameterType="String" resultMap="tagResultMap">
+        <![CDATA[
+            SELECT l.id, l.name FROM logbooks l WHERE l.is_tag = TRUE AND l.name = #{name}
+        ]]>
+    </select>
+    
+  <!-- UPDATE -->
+    <update id="updateTag" parameterType="HashMap">
+        <![CDATA[
+            UPDATE logbooks SET name = #{name} WHERE id = #{id}    
+        ]]>
+    </update>  
+    
+    <update id="returnToActive" parameterType="String">
+        <![CDATA[
+            UPDATE logbooks l, statuses s SET l.name = #{name}, l.is_tag = TRUE, l.status_id = s.id WHERE l.name = #{name} 
+                AND s.name = 'Active'
+        ]]>
+    </update>
+    
+  <!-- INSERT -->
+    <insert id="createTag" parameterType="String">
+        <![CDATA[
+            INSERT INTO logbooks (name, is_tag) VALUE (#{name}, TRUE)
+        ]]>
+    </insert>
+  
+</mapper>

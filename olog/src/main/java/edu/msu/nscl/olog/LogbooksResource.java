@@ -48,15 +48,11 @@ public class LogbooksResource {
     @GET
     @Produces({"application/xml", "application/json"})
     public Response list() {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlLogbooks result = null;
         try {
-            db.getConnection();
-            db.beginTransaction();
             result = cm.listLogbooks();
-            db.commit();
             Response r = Response.ok(result).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.getLogbooks().size() + " logbooks");
@@ -65,9 +61,7 @@ public class LogbooksResource {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() +  "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
-        }
+        } 
     }
 
     /**
@@ -80,19 +74,15 @@ public class LogbooksResource {
     @POST
     @Consumes({"application/xml", "application/json"})
     public Response add(XmlLogbooks data) throws IOException {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             cm.checkValidNameAndOwner(data);
-            db.getConnection();
-            db.beginTransaction();
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
             cm.createOrReplaceLogbooks(data);
-            db.commit();
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLogbooks.toLog(data));
@@ -101,8 +91,6 @@ public class LogbooksResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlLogbooks.toLog(data) + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -117,15 +105,11 @@ public class LogbooksResource {
     @Path("{logbookName}")
     @Produces({"application/xml", "application/json"})
     public Response read(@PathParam("logbookName") String logbook) {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlLogbook result = null;
         try {
-            db.getConnection();
-            db.beginTransaction();
             result = cm.findLogbookByName(logbook);
-            db.commit();
             Response r;
             if (result == null) {
                 r = Response.status(Response.Status.NOT_FOUND).build();
@@ -138,8 +122,6 @@ public class LogbooksResource {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() +  "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -158,20 +140,16 @@ public class LogbooksResource {
     @Path("{logbookName}")
     @Consumes({"application/xml", "application/json"})
     public Response create(@PathParam("logbookName") String logbook, XmlLogbook data) {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             cm.checkValidNameAndOwner(data);
             cm.checkNameMatchesPayload(logbook, data);
-            db.getConnection();
-            db.beginTransaction();
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
             cm.createOrReplaceLogbook(logbook, data);
-            db.commit();
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + XmlLogbook.toLog(data));
@@ -180,8 +158,6 @@ public class LogbooksResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlLogbook.toLog(data) + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -199,19 +175,15 @@ public class LogbooksResource {
     @Path("{logbookName}")
     @Consumes({"application/xml", "application/json"})
     public Response update(@PathParam("logbookName") String logbook, XmlLogbook data) {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
-            db.getConnection();
-            db.beginTransaction();
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroupOfLogbook(um.getUserName(), logbook);
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
             cm.updateLogbook(logbook, data);
-            db.commit();
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLogbook.toLog(data));
@@ -220,8 +192,6 @@ public class LogbooksResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlLogbook.toLog(data) + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -235,18 +205,14 @@ public class LogbooksResource {
     @DELETE
     @Path("{logbookName}")
     public Response remove(@PathParam("logbookName") String logbook) {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
-            db.getConnection();
-            db.beginTransaction();
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), cm.findLogbookByName(logbook));
             }
             cm.removeExistingLogbook(logbook);
-            db.commit();
             Response r = Response.ok().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
@@ -254,8 +220,6 @@ public class LogbooksResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()
                     + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -272,19 +236,15 @@ public class LogbooksResource {
     @Path("{logbookName}/{logId}")
     @Consumes({"application/xml", "application/json"})
     public Response addSingle(@PathParam("logbookName") String logbook, @PathParam("logId") Long logId, XmlLogbook data) {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             cm.checkNameMatchesPayload(logbook, data);
-            db.getConnection();
-            db.beginTransaction();
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
             cm.addSingleLogbook(logbook, logId, data);
-            db.commit();
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + XmlLogbook.toLog(data));
@@ -293,8 +253,6 @@ public class LogbooksResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlLogbook.toLog(data) + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 
@@ -309,18 +267,14 @@ public class LogbooksResource {
     @DELETE
     @Path("{logbookName}/{logId}")
     public Response removeSingle(@PathParam("logbookName") String logbook, @PathParam("logId") Long logId) {
-        DbConnection db = DbConnection.getInstance();
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
-            db.getConnection();
-            db.beginTransaction();
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), cm.findLogbookByName(logbook));
             }
             cm.removeSingleLogbook(logbook, logId);
-            db.commit();
             Response r = Response.ok().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
@@ -328,8 +282,6 @@ public class LogbooksResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()
                     + "|cause=" + e);
             return e.toResponse();
-        } finally {
-            db.releaseConnection();
         }
     }
 }
