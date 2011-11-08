@@ -67,20 +67,25 @@
                 LEFT JOIN statuses as tstatus ON t.status_id = status.id LEFT JOIN properties as prop ON log.id = prop.log_id 
                 WHERE (parent.parent_id IS NULL and log.parent_id IS NULL OR log.id IN (SELECT MAX(logs.id) FROM logs 
                 WHERE logs.parent_id=log.parent_id)) AND status.name = 'Active' AND ltstatus.name = 'Active' 
-                AND tstatus.name = 'Active' AND
+                AND tstatus.name = 'Active'
         ]]>
-        <foreach item="item" index="index" collection="propNameList" open="(" separator="OR" close=")">
+        <if test="propNameList != null">
+            <![CDATA[
+            AND
+            ]]>
+            <foreach item="item" index="index" collection="propNameList" open="(" separator="OR" close=")">
         <![CDATA[
             LOWER(prop.name) = #{item} AND
         ]]>
-            <foreach item="item" index="index" collection="propValueList" open="(" separator="OR" close=")">
-            <![CDATA[
-                prop.value LIKE #{item}
-            ]]>
+                <foreach item="item" index="index" collection="propValueList" open="(" separator="OR" close=")">
+                    <![CDATA[
+                        prop.value LIKE #{item}
+                    ]]>
+                </foreach>
             </foreach>
-        </foreach>
+        </if>
         <![CDATA[
-            OR GROUP BY log.id HAVING COUNT(log.id) = #{size} ORDER BY ifnull(parent_created,log.created) DESC
+            GROUP BY log.id HAVING COUNT(log.id) = #{size} ORDER BY ifnull(parent_created,log.created) DESC
         ]]>
     </select>
     
