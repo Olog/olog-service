@@ -14,8 +14,8 @@
         <result property="modifiedDate" column="modifiedDate" /> 
         <result property="subject" column="subject" /> 
         <result property="description" column="description" /> 
-        <collection property="properties" column="log_id" ofType="Property" javaType="ArrayList">
-            <id property="name" column="prop_name" /> 
+        <collection property="properties" ofType="Property" javaType="ArrayList">
+            <result property="name" column="prop_name" /> 
             <result property="value" column="prop_value" /> 
         </collection>
         <collection property="logbooks" ofType="Logbook" javaType="ArrayList">
