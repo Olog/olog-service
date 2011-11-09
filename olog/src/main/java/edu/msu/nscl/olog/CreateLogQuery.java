@@ -90,7 +90,7 @@ public class CreateLogQuery {
                         hm.clear();
                         hm.put("logid", logId);
                         hm.put("logbookid", FindLogbookIdsQuery.getLogbookId(logbook.getName()));
-                        hm.put("state", java.sql.Types.NULL);
+                        hm.put("state", null);
                         ss.insert("mappings.LogMapping.logsLogbooksEntry", hm);
 
                     }
@@ -102,7 +102,7 @@ public class CreateLogQuery {
                         hm.clear();
                         hm.put("logid", logId);
                         hm.put("logbookid", FindLogbookIdsQuery.getLogbookId(tag.getName()));
-                        hm.put("state", java.sql.Types.NULL);
+                        hm.put("state", null);
                         ss.insert("mappings.LogMapping.logsLogbooksEntry", hm);
                     }
                 }
