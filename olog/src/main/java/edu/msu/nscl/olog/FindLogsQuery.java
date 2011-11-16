@@ -18,6 +18,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ws.rs.core.MultivaluedMap;
@@ -44,6 +46,7 @@ public class FindLogsQuery {
     private Multimap<String, String> date_matches = ArrayListMultimap.create();
     private List<String> log_matches = new ArrayList();
     private List<Long> logId_matches = new ArrayList();
+    private List<String> logbook_matches = new ArrayList();
     private List<String> tag_matches = new ArrayList();
     private List<String> tag_patterns = new ArrayList();
     private List<Long> jcr_search_ids = new ArrayList();
@@ -68,7 +71,7 @@ public class FindLogsQuery {
             } else if (key.equals("tag")) {
                 addTagMatches(match.getValue());
             } else if (key.equals("logbook")) {
-                addTagMatches(match.getValue());
+                addLogbookMatches(match.getValue());
             } else if (key.equals("page")) {
                 logPaginate_matches.putAll(key, match.getValue());
             } else if (key.equals("limit")) {
@@ -102,6 +105,12 @@ public class FindLogsQuery {
     private FindLogsQuery(SearchType type, Long logId) {
         if (type == SearchType.LOG) {
             logId_matches.add(logId);
+        }
+    }
+
+    private void addLogbookMatches(Collection<String> matches) {
+        for (String m : matches) {
+            logbook_matches.add(m);
         }
     }
 
@@ -234,6 +243,35 @@ public class FindLogsQuery {
     }
 
     /**
+     * Creates and executes the logbook string match subquery using GROUP.
+     *
+     * @return a set of log ids that match
+     */
+    private Set<Long> getIdsFromLogbookMatch(String match) throws CFException {
+        SqlSession ss = ssf.openSession();
+
+        try {
+            Set<Long> ids = new HashSet<Long>();
+
+            ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getIdsFromLogbookMatch", match);
+            if (logs != null) {
+                Iterator<XmlLog> iterator = logs.iterator();
+                while (iterator.hasNext()) {
+                    XmlLog log = iterator.next();
+                    ids.add(log.getId());
+                }
+            }
+
+            return ids;
+        } catch (PersistenceException e) {
+            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
+        }
+    }
+
+    /**
      * Creates and executes the pagination subquery using GROUP BY.
      *
      * @param con connection to use
@@ -249,11 +287,13 @@ public class FindLogsQuery {
             HashMap<String, Object> hm = new HashMap<String, Object>();
 
             if (!tag_matches.isEmpty()) {
-                Set<Long> ids = getIdsFromLogbookAndTagMatch();
-                if (ids.isEmpty()) {
-                    return null;
+                for (String tag : tag_matches) {
+                    Set<Long> ids = getIdsFromTagMatch(tag);
+                    if (ids.isEmpty()) {
+                        return null;
+                    }
+                    idsList.addAll(ids);
                 }
-                idsList.addAll(ids);
             }
 
             if (!value_matches.isEmpty()) {
@@ -273,6 +313,36 @@ public class FindLogsQuery {
                     idsList.addAll(ids);
                 }
             }
+
+            if (!logbook_matches.isEmpty()) {
+                if (idsList.isEmpty()) {
+                    for (String logbook : logbook_matches) {
+                        Set<Long> ids = getIdsFromLogbookMatch(logbook);
+                        if (ids.isEmpty()) {
+                            return null;
+                        }
+                        idsList.addAll(ids);
+                    }
+                } else {
+                    Set<Long> id_results = new HashSet<Long>();
+                    for (String logbook : logbook_matches) {
+                        Set<Long> ids = getIdsFromLogbookMatch(logbook);
+                        if (ids.isEmpty()) {
+                            return null;
+                        }
+                        id_results.addAll(ids);
+                    }
+                    Set<Long> temp_set = new HashSet<Long>();
+                    for (Long id : idsList) {
+                        if (id_results.contains(id)) {
+                            temp_set.add(id);
+                        }
+                    }
+                    idsList.clear();
+                    idsList.addAll(temp_set);
+                }
+            }
+
             if (!date_matches.isEmpty()) {
                 String start = null, end = null;
                 for (Map.Entry<String, Collection<String>> match : date_matches.asMap().entrySet()) {
@@ -377,7 +447,7 @@ public class FindLogsQuery {
             }
 
             ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getLogsFromIds", idsList);
-            
+
             return logs;
         } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
