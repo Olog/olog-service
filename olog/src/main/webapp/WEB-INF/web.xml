@@ -9,7 +9,7 @@
         <!-- Releases all Derby resources when the webapp is undeployed.  -->
         <!-- See https://issues.apache.org/jira/browse/JCR-1301           -->
         <listener-class>
-            org.apache.jackrabbit.j2ee.DerbyShutdown
+                org.apache.jackrabbit.j2ee.DerbyShutdown
         </listener-class>
     </listener>
     <listener>
