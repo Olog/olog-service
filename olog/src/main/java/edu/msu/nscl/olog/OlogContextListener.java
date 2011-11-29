@@ -10,42 +10,49 @@ package edu.msu.nscl.olog;
  * @author berryman
  */
 
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletContextEvent;
 import javax.servlet.*;
-import javax.jcr.Repository;
-import org.apache.jackrabbit.servlet.ServletRepository;
 
 public  class OlogContextListener implements ServletContextListener {
-  private ServletContext context = null;
-  private ContentRepository jcr;
+  
+  private static OlogContextListener instance = new OlogContextListener();
+  private static ServletContext context;
+ 
 
+  public static OlogContextListener getInstance() {
+      return instance;
+  }
+  
+  public static ServletContext getContext() {
+      return context;
+  }
   /*This method is invoked when the Web Application has been removed
   and is no longer able to accept requests
   */
 
+  @Override
   public void contextDestroyed(ServletContextEvent event) {
     //Output a simple message to the server's console
+ //  ((RepositoryImpl) jcr).shutdown();
     System.out.println("Olog JCR Sessions have been removed");
-    this.context = null;
-   // if(this.jcr.getSession()!=null)
-   //     this.jcr.cleanJcrSessions();
-    this.jcr = null;
+
   }
 
 
   //This method is invoked when the Web Application
   //is ready to service requests
 
+  @Override
   public void contextInitialized(ServletContextEvent event) {
-      this.context = event.getServletContext();
-      //this.jcr = ContentRepository.getInstance();
-
-
+     context = event.getServletContext();
+     if (context==null) {
+        	System.out.println("Couldn't get servlet context.");
+     } else {
+        	System.out.println("servlet context fetched from ServiceContext.");
+     }
 
     //Output a simple message to the server's console
-    System.out.println("Olog JCR has been initialized");
+    System.out.println("Olog JCR has been initialized: ");
 
   }
-
+  
 }

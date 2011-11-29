@@ -3,15 +3,8 @@
     <servlet>
         <servlet-name>ServletAdaptor</servlet-name>
         <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-        <load-on-startup>1</load-on-startup>
+        <load-on-startup>4</load-on-startup>
     </servlet>
-    <listener>
-        <!-- Releases all Derby resources when the webapp is undeployed.  -->
-        <!-- See https://issues.apache.org/jira/browse/JCR-1301           -->
-        <listener-class>
-                org.apache.jackrabbit.j2ee.DerbyShutdown
-        </listener-class>
-    </listener>
     <listener>
   	<listener-class>
   		edu.msu.nscl.olog.OlogContextListener
@@ -88,7 +81,7 @@
             <param-value>org.apache.jackrabbit.core.jndi.provider.DummyInitialContextFactory</param-value>
         </init-param>
         -->
-        <load-on-startup>2</load-on-startup>
+        <load-on-startup>1</load-on-startup>
     </servlet>
     <!-- ====================================================================== -->
     <!-- R E P O S I T O R Y   S E R V L E T                                    -->
@@ -98,7 +91,7 @@
         <servlet-class>org.apache.jackrabbit.j2ee.RepositoryAccessServlet</servlet-class>
         <init-param>
             <param-name>bootstrap-config</param-name>
-            <param-value>jackrabbit/bootstrap.properties</param-value>
+            <param-value>/WEB-INF/bootstrap.properties</param-value>
         </init-param>
         <init-param>
           <param-name>repository.context.attribute.name</param-name>
@@ -131,7 +124,7 @@
             <param-value>///jackrabbit.repository</param-value>
         </init-param>
 
-        <load-on-startup>3</load-on-startup>
+        <load-on-startup>2</load-on-startup>
     </servlet>
     <!-- ====================================================================== -->
     <!-- W E B D A V  S E R V L E T                                              -->
@@ -184,7 +177,7 @@
             <param-name>resource-config</param-name>
             <param-value>/WEB-INF/config.xml</param-value>
         </init-param>
-        <load-on-startup>4</load-on-startup>
+        <load-on-startup>3</load-on-startup>
     </servlet>
     <!-- ====================================================================== -->
     <!-- S E R V L E T   M A P P I N G                                          -->

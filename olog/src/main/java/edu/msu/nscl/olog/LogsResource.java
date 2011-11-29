@@ -9,15 +9,12 @@ package edu.msu.nscl.olog;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import java.util.logging.Logger;
-import javax.annotation.Resource;
 import javax.jcr.Node;
+import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response;
@@ -31,8 +28,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.HttpHeaders;
-import javax.xml.ws.WebServiceContext;
-import javax.xml.ws.handler.MessageContext;
+import org.apache.jackrabbit.servlet.ServletRepository;
 
 /**
  * Top level Jersey HTTP methods for the .../logs URL
@@ -69,6 +65,12 @@ public class LogsResource {
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
+        Repository jcr = ContentRepository.getRepository();
+        Session scr = jcr.login();
+            Node root = scr.getRootNode();
+
+        log.info("Success !!!"+root.getName());
+        log.info("logged in as user: " + scr.getUserID());
             XmlLogs result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
             Response r = Response.ok(result).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()

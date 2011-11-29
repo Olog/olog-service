@@ -7,8 +7,6 @@ package edu.msu.nscl.olog;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,8 +64,8 @@ public class FindLogsQuery {
             String key = match.getKey().toLowerCase();
             if (key.equals("search")) {
                 log_matches.addAll(match.getValue());
-//                JcrSearch js = new JcrSearch();
-//                jcr_search_ids = js.searchForIds(match.getValue().toString());
+                JcrSearch js = new JcrSearch();
+                jcr_search_ids = js.searchForIds(match.getValue().get(0));
             } else if (key.equals("tag")) {
                 addTagMatches(match.getValue());
             } else if (key.equals("logbook")) {
@@ -282,6 +280,7 @@ public class FindLogsQuery {
 
         try {
             Set<Long> idsList = new HashSet<Long>();
+            Set<Long> idsSearchList = new HashSet<Long>();
             Set<String> valuesList = new HashSet<String>();
             Set<Long> returnIds = new HashSet<Long>();
             HashMap<String, Object> hm = new HashMap<String, Object>();
@@ -371,7 +370,7 @@ public class FindLogsQuery {
 
             if (!jcr_search_ids.isEmpty()) {
                 for (long i : jcr_search_ids) {
-                    idsList.add(i);
+                    idsSearchList.add(i);
                 }
             }
 
@@ -390,6 +389,10 @@ public class FindLogsQuery {
                     hm.put("limit", Long.valueOf(limit));
                     hm.put("offset", longOffset);
                 }
+            }
+            
+            if (idsSearchList.size() > 0) {
+                hm.put("idsSearchList", idsSearchList);
             }
 
             if (idsList.size() > 0) {
