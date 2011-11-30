@@ -10,18 +10,20 @@ import javax.servlet.ServletContext;
 import org.apache.jackrabbit.j2ee.RepositoryAccessServlet;
 
 public class ContentRepository extends OlogContextListener {
-
+    private static ServletContext ctx;
 
     /**
-     * Create an instance of OlogManager
+     * Create an instance of ContentRepository
      */
     private ContentRepository() {
+        //TODO: Should create session with login.
+        
     }
     
-    
+    //TODO: Add getSession()
     public static Repository getRepository() {
         //return instance.jcr;
-        ServletContext ctx = OlogContextListener.getContext();
+        ctx = OlogContextListener.getContext();
         return RepositoryAccessServlet.getRepository(ctx);
     }
     

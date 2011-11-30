@@ -65,12 +65,6 @@ public class LogsResource {
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
-        Repository jcr = ContentRepository.getRepository();
-        Session scr = jcr.login();
-            Node root = scr.getRootNode();
-
-        log.info("Success !!!"+root.getName());
-        log.info("logged in as user: " + scr.getUserID());
             XmlLogs result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
             Response r = Response.ok(result).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
@@ -96,19 +90,6 @@ public class LogsResource {
     public Response add(@Context HttpHeaders headers,XmlLogs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
-        // TODO: make getInstance for ContentRepository; Shouldn't need to pass params
-        //ContentRepository jcr = ContentRepository.getInstance();
-        //Session scr = jcr.getSession();
-            //Node root = scr.getRootNode();
-            // Store content
-            //Node hello = root.addNode("hello");
-            //Node world = hello.addNode("world");
-            //world.setProperty("message", "Hello, World!");
-            //scr.save();
-        //audit.info("<h1>Success</h1>");
-       // audit.info("logged in as user: " + scr.getUserID());
-        //MessageContext mc = wsContext.getMessageContext();
-        //HttpServletRequest req = (HttpServletRequest)mc.get(MessageContext.SERVLET_REQUEST);
         String hostAddress = "0.0.0.0";//req.getRemoteAddr();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
