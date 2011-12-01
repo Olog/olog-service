@@ -31,8 +31,6 @@ public  class OlogContextListener implements ServletContextListener {
 
   @Override
   public void contextDestroyed(ServletContextEvent event) {
-    //Output a simple message to the server's console
- //  ((RepositoryImpl) jcr).shutdown();
     System.out.println("Olog JCR Sessions have been removed");
 
   }
@@ -47,11 +45,9 @@ public  class OlogContextListener implements ServletContextListener {
      if (context==null) {
         	System.out.println("Couldn't get servlet context.");
      } else {
-        	System.out.println("servlet context fetched from ServiceContext.");
+        	System.out.println("Servlet context fetched from ServiceContext.");
      }
-
-    //Output a simple message to the server's console
-    System.out.println("Olog JCR has been initialized: ");
+     System.out.println("Olog JCR has been initialized: ");
 
   }
   
