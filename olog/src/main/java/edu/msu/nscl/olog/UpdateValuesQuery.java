@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import javax.ws.rs.core.Response;
 import java.util.logging.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -217,23 +219,22 @@ public class UpdateValuesQuery {
         try {
             List<Long> newestVersionIds = new ArrayList<Long>();
             List<Long> ids = new ArrayList<Long>();
+            
+            XmlLogs logs = new XmlLogs(new XmlLog(logId));
 
-            // Get logbook id
+            // Get log id
             Long pid = FindLogbookIdsQuery.getLogbookId(tag);
+            
+            Log logger = LogFactory.getLog(UpdateValuesQuery.class);
 
-            XmlTag t = ListLogbooksQuery.findTag(tag);
-
-            if (t.getXmlLogs() == null) {
+            if (logs == null) {
                 return;
             }
-            if (t.getXmlLogs().getLogs().isEmpty()) {
+            if (logs.getLogs().isEmpty()) {
                 return;
             }
-            if (t.getXmlLogs().getLogs().iterator().next().getSubject() == null) {
-                return;
-            }
-
-            for (XmlLog log : t.getXmlLogs().getLogs()) {
+            
+            for (XmlLog log : logs.getLogs()) {
                 if (log.getVersion() > 0) {
                     newestVersionIds.add(log.getId());
                 } else {
@@ -242,13 +243,13 @@ public class UpdateValuesQuery {
             }
 
             if (!newestVersionIds.isEmpty()) {
-                ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getChildrenIds", newestVersionIds);
-                if (logs.isEmpty()) {
+                ArrayList<XmlLog> logs_returned = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getChildrenIds", newestVersionIds);
+                if (logs_returned.isEmpty()) {
                     throw new CFException(Response.Status.NOT_FOUND,
                             "Logs do not exist in getChildrenIds query");
                 }
 
-                for (XmlLog log : logs) {
+                for (XmlLog log : logs_returned) {
                     ids.add(log.getId());
                 }
             }
