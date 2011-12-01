@@ -8,6 +8,7 @@ package edu.msu.nscl.olog;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -109,6 +110,11 @@ public class FindLogsQuery {
     private void addLogbookMatches(Collection<String> matches) {
         for (String m : matches) {
             logbook_matches.add(m);
+        }
+        if (logbook_matches.size() == 1) {
+            String match = logbook_matches.get(0);
+            logbook_matches.clear();
+            logbook_matches.addAll(Arrays.asList(match.split(",")));
         }
     }
 
