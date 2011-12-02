@@ -159,40 +159,74 @@
                 )
             ]]>
         </if>
-        <if test="valuesList != null">
+        <choose>
+            <when test="valuesList != null and idsSearchList != null">
             <![CDATA[
                 AND ((
             ]]>
-            <foreach item="item" index="index" collection="valuesList" open="(" separator="OR" close=")">
+                <foreach item="item" index="index" collection="valuesList" open="(" separator="OR" close=")">
                 <![CDATA[
                     log.subject LIKE #{item} OR log.description LIKE #{item} OR log.owner LIKE #{item}
                 ]]>
-            </foreach>
+                </foreach>
             <![CDATA[
                 )
             ]]>
-        </if>
-        <if test="idsSearchList != null">
             <![CDATA[
                 OR (log.id IN
             ]]>
-            <foreach item="item" index="index" collection="idsSearchList" open="(" separator="," close=")">
+                <foreach item="item" index="index" collection="idsSearchList" open="(" separator="," close=")">
                 <![CDATA[
                     #{item}
                 ]]>
-            </foreach>
+                </foreach>
             <![CDATA[
                 OR log.parent_id IN
             ]]>
-            <foreach item="item" index="index" collection="idsSearchList" open="(" separator="," close=")">
+                <foreach item="item" index="index" collection="idsSearchList" open="(" separator="," close=")">
                 <![CDATA[
                     #{item}
                 ]]>
-            </foreach>
+                </foreach>
             <![CDATA[
                 ))
             ]]>
-        </if>
+            </when>
+            <when test="valuesList != null">
+            <![CDATA[
+                AND (
+            ]]>
+                <foreach item="item" index="index" collection="valuesList" open="(" separator="OR" close=")">
+                <![CDATA[
+                    log.subject LIKE #{item} OR log.description LIKE #{item} OR log.owner LIKE #{item}
+                ]]>
+                </foreach>
+            <![CDATA[
+                )
+            ]]>
+            </when>
+            <when test="idsSearchList != null">
+            <![CDATA[
+                OR (log.id IN
+            ]]>
+                <foreach item="item" index="index" collection="idsSearchList" open="(" separator="," close=")">
+                <![CDATA[
+                    #{item}
+                ]]>
+                </foreach>
+            <![CDATA[
+                OR log.parent_id IN
+            ]]>
+                <foreach item="item" index="index" collection="idsSearchList" open="(" separator="," close=")">
+                <![CDATA[
+                    #{item}
+                ]]>
+                </foreach>
+            <![CDATA[
+                )
+            ]]>
+            </when>
+        </choose>
         <![CDATA[
             GROUP BY lt.log_id ORDER BY ifnull(parent_created,log.created) DESC, t.name
         ]]>
