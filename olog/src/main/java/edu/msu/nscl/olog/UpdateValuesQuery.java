@@ -224,8 +224,6 @@ public class UpdateValuesQuery {
 
             // Get log id
             Long pid = FindLogbookIdsQuery.getLogbookId(tag);
-            
-            Log logger = LogFactory.getLog(UpdateValuesQuery.class);
 
             if (logs == null) {
                 return;
@@ -260,12 +258,12 @@ public class UpdateValuesQuery {
             }
 
             HashMap<String, Object> hm = new HashMap<String, Object>();
-            hm.put("pid", pid);
-            hm.put("list", ids);
-
-            ss.update("mappings.LogMapping.updateAsInactive", hm);
-
-            hm.clear();
+//            hm.put("pid", pid);
+//            hm.put("list", ids);
+//
+//            ss.update("mappings.LogMapping.updateAsInactive", hm);
+//
+//            hm.clear();
 
             hm.put("logidsList", ids);
             hm.put("logbookid", pid);
