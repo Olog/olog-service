@@ -221,20 +221,18 @@ public class TagsResource {
     @PUT
     @Path("{tagName}/{logId}")
     @Consumes({"application/xml", "application/json"})
-    public Response addSingle(@PathParam("tagName") String tag, @PathParam("logId")Long logId, XmlTag data) {
+    public Response addSingle(@PathParam("tagName") String tag, @PathParam("logId")Long logId) {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
-            cm.checkNameMatchesPayload(tag, data);
             cm.addSingleTag(tag, logId);
             Response r = Response.noContent().build();
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
-                    + "|data=" + XmlTag.toLog(data));
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
             return r;
         } catch (CFException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + XmlTag.toLog(data) + "|cause=" + e);
+                    + "|cause=" + e);
             return e.toResponse();
         }
     }
