@@ -77,10 +77,11 @@ public class TagsResource {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
+        XmlTags result = null;
         try {
             cm.checkValidNameAndOwner(data);
-            cm.createOrReplaceTags(data);
-            Response r = Response.noContent().build();
+            result = cm.createOrReplaceTags(data);
+            Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlTags.toLog(data));
             return r;
@@ -139,11 +140,12 @@ public class TagsResource {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
+        XmlTag result = null;
         try {
             cm.checkValidNameAndOwner(data);
             cm.checkNameMatchesPayload(tag, data);
-            cm.createOrReplaceTag(tag, data);
-            Response r = Response.noContent().build();
+            result = cm.createOrReplaceTag(tag, data);
+            Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + XmlTag.toLog(data));
             return r;
@@ -171,9 +173,10 @@ public class TagsResource {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
+        XmlTag result = null;
         try {
-            cm.updateTag(tag, data);
-            Response r = Response.noContent().build();
+            result = cm.updateTag(tag, data);
+            Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlTag.toLog(data));
             return r;
@@ -225,9 +228,10 @@ public class TagsResource {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
+        XmlTag result = null;
         try {
-            cm.addSingleTag(tag, logId);
-            Response r = Response.noContent().build();
+            result = cm.addSingleTag(tag, logId);
+            Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
             return r;
         } catch (CFException e) {

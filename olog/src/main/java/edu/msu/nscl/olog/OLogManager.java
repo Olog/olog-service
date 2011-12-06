@@ -289,8 +289,8 @@ public class OLogManager {
      * @param data XmlTag with list of all logs to add tag to
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public void updateTag(String tag, XmlTag data) throws CFException {
-        UpdateValuesQuery.updateTag(tag, data);
+    public XmlTag updateTag(String tag, XmlTag data) throws CFException {
+        return UpdateValuesQuery.updateTag(tag, data);
     }
 
     /**
@@ -304,10 +304,10 @@ public class OLogManager {
      * @param data XmlTag container with all logs to add tag to
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public void createOrReplaceTag(String tag, XmlTag data) throws CFException {
+    public XmlTag createOrReplaceTag(String tag, XmlTag data) throws CFException {
         DeleteLogbookQuery.removeLogbook(tag);
         CreateLogbookQuery.createTag(data.getName());
-        UpdateValuesQuery.updateTag(data.getName(), data);
+        return UpdateValuesQuery.updateTag(data.getName(), data);
     }
 
     /**
@@ -316,11 +316,13 @@ public class OLogManager {
      * @param data XmlTags data
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public void createOrReplaceTags(XmlTags data) throws CFException {
+    public XmlTags createOrReplaceTags(XmlTags data) throws CFException {
+        XmlTags xmlTags = null;
         for (XmlTag tag : data.getTags()) {
             removeTag(tag.getName());
-            createOrReplaceTag(tag.getName(), tag);
+            xmlTags.addXmlTag(createOrReplaceTag(tag.getName(), tag));
         }
+        return xmlTags;
     }
 
     /**
@@ -330,8 +332,8 @@ public class OLogManager {
      * @param logId
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public void addSingleTag(String tag,Long logId) throws CFException {
-        UpdateValuesQuery.updateTag(tag, logId);
+    public XmlTag addSingleTag(String tag,Long logId) throws CFException {
+        return UpdateValuesQuery.updateTag(tag, logId);
     }
 
     /**

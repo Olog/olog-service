@@ -171,7 +171,7 @@ public class UpdateValuesQuery {
      * @param tag XmlTag
      * @throws CFException wrapping an SQLException
      */
-    public static void updateTag(String name, XmlTag tag) throws CFException {
+    public static XmlTag updateTag(String name, XmlTag tag) throws CFException {
         SqlSession ss = ssf.openSession();
 
         try {
@@ -191,10 +191,10 @@ public class UpdateValuesQuery {
             }
 
             if (tag.getXmlLogs() == null) {
-                return;
+                return null;
             }
             if (tag.getXmlLogs().getLogs().isEmpty()) {
-                return;
+                return null;
             }
             
             for (XmlLog log : tag.getXmlLogs().getLogs()) {
@@ -237,6 +237,9 @@ public class UpdateValuesQuery {
             ss.insert("mappings.LogMapping.logsLogbooksEntryFromList", hm);
 
             ss.commit();
+            
+            // Return new tag now that the logs have been added
+            return ListLogbooksQuery.findTag(tag.getName());
         } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "MyBatis exception: " + e);
@@ -252,7 +255,7 @@ public class UpdateValuesQuery {
      * @param logId id of log to add tag to
      * @throws CFException wrapping an SQLException
      */
-    public static void updateTag(String tag, Long logId) throws CFException {
+    public static XmlTag updateTag(String tag, Long logId) throws CFException {
         SqlSession ss = ssf.openSession();
 
         try {
@@ -265,10 +268,10 @@ public class UpdateValuesQuery {
             Long pid = FindLogbookIdsQuery.getLogbookId(tag);
 
             if (logs == null) {
-                return;
+                return null;
             }
             if (logs.getLogs().isEmpty()) {
-                return;
+                return null;
             }
             
             for (XmlLog log : logs.getLogs()) {
@@ -297,12 +300,6 @@ public class UpdateValuesQuery {
             }
 
             HashMap<String, Object> hm = new HashMap<String, Object>();
-//            hm.put("pid", pid);
-//            hm.put("list", ids);
-//
-//            ss.update("mappings.LogMapping.updateAsInactive", hm);
-//
-//            hm.clear();
 
             hm.put("logidsList", ids);
             hm.put("logbookid", pid);
@@ -311,6 +308,9 @@ public class UpdateValuesQuery {
             ss.insert("mappings.LogMapping.logsLogbooksEntryFromList", hm);
 
             ss.commit();
+            
+            // Return new tag now that the new log have been added
+            return ListLogbooksQuery.findTag(tag);
         } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "MyBatis exception: " + e);
