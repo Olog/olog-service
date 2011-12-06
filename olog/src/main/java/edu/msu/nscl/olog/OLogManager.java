@@ -172,8 +172,8 @@ public class OLogManager {
      * @param data XmlLogbook data with all logs
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public void updateLogbook(String logbook, XmlLogbook data) throws CFException {
-        UpdateValuesQuery.updateLogbook(logbook, data);
+    public XmlLogbook updateLogbook(String logbook, XmlLogbook data) throws CFException {
+        return UpdateValuesQuery.updateLogbook(logbook, data);
     }
 
     /**
@@ -185,10 +185,10 @@ public class OLogManager {
      * @param data XmlLogbook container with all logs to add logbook to
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public void createOrReplaceLogbook(String logbook, XmlLogbook data) throws CFException {
+    public XmlLogbook createOrReplaceLogbook(String logbook, XmlLogbook data) throws CFException {
         DeleteLogbookQuery.removeLogbook(logbook);
         CreateLogbookQuery.createLogbook(data.getName(), data.getOwner());
-        UpdateValuesQuery.updateLogbook(data.getName(), data);
+        return UpdateValuesQuery.updateLogbook(data.getName(), data);
     }
 
 
@@ -198,11 +198,13 @@ public class OLogManager {
      * @param data XmlLogbooks data
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public void createOrReplaceLogbooks(XmlLogbooks data) throws CFException {
+    public XmlLogbooks createOrReplaceLogbooks(XmlLogbooks data) throws CFException {
+        XmlLogbooks xmlLogbooks = null;
         for (XmlLogbook logbook : data.getLogbooks()) {
             removeLogbook(logbook.getName());
-            createOrReplaceLogbook(logbook.getName(), logbook);
+            xmlLogbooks.addXmlLogbook(createOrReplaceLogbook(logbook.getName(), logbook));
         }
+        return xmlLogbooks;
     }
 
     /**
@@ -216,8 +218,8 @@ public class OLogManager {
      * @param data XmlLogbook
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public void addSingleLogbook(String logbook, Long logId) throws CFException {
-        UpdateValuesQuery.updateLogbookWithLog(logbook, logId);
+    public XmlLogbook addSingleLogbook(String logbook, Long logId) throws CFException {
+        return UpdateValuesQuery.updateLogbookWithLog(logbook, logId);
     }
 
     /**

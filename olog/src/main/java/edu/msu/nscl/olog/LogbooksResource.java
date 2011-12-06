@@ -77,13 +77,14 @@ public class LogbooksResource {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
+        XmlLogbooks result = null;
         try {
             cm.checkValidNameAndOwner(data);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
-            cm.createOrReplaceLogbooks(data);
-            Response r = Response.noContent().build();
+            result = cm.createOrReplaceLogbooks(data);
+            Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLogbooks.toLog(data));
             return r;
@@ -143,14 +144,15 @@ public class LogbooksResource {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
+        XmlLogbook result = null;
         try {
             cm.checkValidNameAndOwner(data);
             cm.checkNameMatchesPayload(logbook, data);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
-            cm.createOrReplaceLogbook(logbook, data);
-            Response r = Response.noContent().build();
+            result = cm.createOrReplaceLogbook(logbook, data);
+            Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + XmlLogbook.toLog(data));
             return r;
@@ -178,13 +180,14 @@ public class LogbooksResource {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
+        XmlLogbook result = null;
         try {
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroupOfLogbook(um.getUserName(), logbook);
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
-            cm.updateLogbook(logbook, data);
-            Response r = Response.noContent().build();
+            result = cm.updateLogbook(logbook, data);
+            Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLogbook.toLog(data));
             return r;
@@ -240,13 +243,14 @@ public class LogbooksResource {
         UserManager um = UserManager.getInstance();
         XmlLogbook data = null;
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
+        XmlLogbook result = null;
         try {
             data = ListLogbooksQuery.findLogbook(logbook);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
-            cm.addSingleLogbook(logbook, logId);
-            Response r = Response.noContent().build();
+            result = cm.addSingleLogbook(logbook, logId);
+            Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + XmlLogbook.toLog(data));
             return r;

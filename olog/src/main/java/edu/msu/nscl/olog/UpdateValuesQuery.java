@@ -39,7 +39,7 @@ public class UpdateValuesQuery {
      * @param logId Long the log to add to logbook
      * @throws CFException wrapping an SQLException
      */
-    public static void updateLogbookWithLog(String name, Long logId) throws CFException {
+    public static XmlLogbook updateLogbookWithLog(String name, Long logId) throws CFException {
         SqlSession ss = ssf.openSession();
 
         try {
@@ -68,6 +68,9 @@ public class UpdateValuesQuery {
             ss.insert("mappings.LogMapping.logsLogbooksEntryFromList", hm);
 
             ss.commit();
+            
+            // Return the logbook now that the new log has been added
+            return ListLogbooksQuery.findLogbook(name);
         } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "MyBatis exception: " + e);
@@ -82,7 +85,7 @@ public class UpdateValuesQuery {
      * @param logbook XmlLogbook
      * @throws CFException wrapping an SQLException
      */
-    public static void updateLogbook(String name, XmlLogbook logbook) throws CFException {
+    public static XmlLogbook updateLogbook(String name, XmlLogbook logbook) throws CFException {
         SqlSession ss = ssf.openSession();
 
         try {
@@ -108,7 +111,7 @@ public class UpdateValuesQuery {
             }
             
             if (logbook.getXmlLogs() == null) {
-                return;
+                return null;
             }
 
             for (XmlLog log : logbook.getXmlLogs().getLogs()) {
@@ -151,6 +154,9 @@ public class UpdateValuesQuery {
             ss.insert("mappings.LogMapping.logsLogbooksEntryFromList", hm);
 
             ss.commit();
+            
+            // Return the logbook now that all the changes have been made
+            return ListLogbooksQuery.findLogbook(logbook.getName());
         } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "MyBatis exception: " + e);
