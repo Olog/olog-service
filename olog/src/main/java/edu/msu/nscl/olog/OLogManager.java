@@ -362,10 +362,10 @@ public class OLogManager {
      * @param data XmlLog data
      * @throws CFException on ownership or name mismatch, or wrapping an SQLException
      */
-    public void createOrReplaceLog(String hostAddress, Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public XmlLog createOrReplaceLog(String hostAddress, Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         data.setSource(hostAddress);
         DeleteLogQuery.deleteLogIgnoreNoexist(logId);
-        CreateLogQuery.createLog(data);
+        return CreateLogQuery.createLog(data);
     }
 
     /**
@@ -401,7 +401,7 @@ public class OLogManager {
      * @param data XmlLog data containing logbooks and tags
      * @throws CFException on name or owner mismatch, or wrapping an SQLException
      */
-    public void updateLog(String hostAddress, Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public XmlLog updateLog(String hostAddress, Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         XmlLog dest = findLogById(logId);
         if (dest == null) {
             throw new CFException(Response.Status.NOT_FOUND,
@@ -411,7 +411,7 @@ public class OLogManager {
         dest.setId(data.getId());
         dest.setOwner(data.getOwner());
         mergeXmlLogs(dest, data);
-        createOrReplaceLog(hostAddress, logId, dest);
+        return createOrReplaceLog(hostAddress, logId, dest);
     }
 
     /**

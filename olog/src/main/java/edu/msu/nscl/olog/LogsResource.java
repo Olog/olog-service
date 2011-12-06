@@ -165,6 +165,7 @@ public class LogsResource {
         //HttpServletRequest req = (HttpServletRequest)mc.get(MessageContext.SERVLET_REQUEST);
         String hostAddress = "0.0.0.0";//req.getRemoteAddr();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
+        XmlLog result = null;
         try {
             data.setOwner(um.getUserName());
             cm.checkValidSubjectAndOwner(data);
@@ -173,8 +174,8 @@ public class LogsResource {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
             
-            cm.createOrReplaceLog(hostAddress, logId, data);
-            Response r = Response.noContent().build();
+            result = cm.createOrReplaceLog(hostAddress, logId, data);
+            Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + XmlLog.toLog(data));
             return r;
@@ -203,6 +204,7 @@ public class LogsResource {
         //HttpServletRequest req = (HttpServletRequest)mc.get(MessageContext.SERVLET_REQUEST);
         String hostAddress = "0.0.0.0";//req.getRemoteAddr();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
+        XmlLog result = null;
         try {
             data.setOwner(um.getUserName());
             cm.checkValidSubjectAndOwner(data);
@@ -211,8 +213,8 @@ public class LogsResource {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
             
-            cm.updateLog(hostAddress, logId, data);
-            Response r = Response.noContent().build();
+            result = cm.updateLog(hostAddress, logId, data);
+            Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLog.toLog(data));
             return r;
