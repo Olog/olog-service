@@ -235,16 +235,17 @@ public class LogbooksResource {
     @PUT
     @Path("{logbookName}/{logId}")
     @Consumes({"application/xml", "application/json"})
-    public Response addSingle(@PathParam("logbookName") String logbook, @PathParam("logId") Long logId, XmlLogbook data) {
+    public Response addSingle(@PathParam("logbookName") String logbook, @PathParam("logId") Long logId) {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
+        XmlLogbook data = null;
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
-            cm.checkNameMatchesPayload(logbook, data);
+            data = ListLogbooksQuery.findLogbook(logbook);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
-            cm.addSingleLogbook(logbook, logId, data);
+            cm.addSingleLogbook(logbook, logId);
             Response r = Response.noContent().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + XmlLogbook.toLog(data));
