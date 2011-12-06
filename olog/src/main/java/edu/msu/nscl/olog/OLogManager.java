@@ -216,8 +216,8 @@ public class OLogManager {
      * @param data XmlLogbook
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public void addSingleLogbook(String logbook,Long logId, XmlLogbook data) throws CFException {
-        UpdateValuesQuery.updateLogbook(logbook, data);
+    public void addSingleLogbook(String logbook, Long logId) throws CFException {
+        UpdateValuesQuery.updateLogbookWithLog(logbook, logId);
     }
 
     /**
