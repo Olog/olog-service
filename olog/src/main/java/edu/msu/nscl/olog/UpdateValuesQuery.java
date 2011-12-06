@@ -190,9 +190,6 @@ public class UpdateValuesQuery {
             if (tag.getXmlLogs().getLogs().isEmpty()) {
                 return;
             }
-            if (tag.getXmlLogs().getLogs().iterator().next().getSubject() == null) {
-                return;
-            }
             
             for (XmlLog log : tag.getXmlLogs().getLogs()) {
                 if (log.getVersion() > 0) {
