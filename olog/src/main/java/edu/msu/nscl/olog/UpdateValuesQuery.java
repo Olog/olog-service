@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import javax.ws.rs.core.Response;
 import java.util.logging.Logger;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -32,6 +30,50 @@ public class UpdateValuesQuery {
      * @param data logbook data (containing logs to add logbook to)
      */
     private UpdateValuesQuery() {
+    }
+    
+    /**
+     * Updates a logbook in the database with an incoming log
+     *
+     * @param name String the name of the logbook
+     * @param logId Long the log to add to logbook
+     * @throws CFException wrapping an SQLException
+     */
+    public static void updateLogbookWithLog(String name, Long logId) throws CFException {
+        SqlSession ss = ssf.openSession();
+
+        try {
+            List<Long> ids = new ArrayList<Long>();
+
+            // Get logbook id
+            Long pid = FindLogbookIdsQuery.getLogbookId(name);
+
+            if (pid == null) {
+                throw new CFException(Response.Status.NOT_FOUND, "A logbook named '" + name + "' does not exist");
+            }
+            
+            // Add incoming id
+            ids.add(logId);
+
+            if (ids.isEmpty()) {
+                throw new CFException(Response.Status.NOT_FOUND,
+                        "Logs specified in Logbook update do not exist");
+            }
+
+            HashMap<String, Object> hm = new HashMap<String, Object>();
+            hm.put("logidsList", ids);
+            hm.put("logbookid", pid);
+            hm.put("state", null);
+
+            ss.insert("mappings.LogMapping.logsLogbooksEntryFromList", hm);
+
+            ss.commit();
+        } catch (PersistenceException e) {
+            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
+        }
     }
 
     /**
@@ -64,14 +106,8 @@ public class UpdateValuesQuery {
                 hm.put("id", pid);
                 ss.update("mappings.LogbookMapper.updateLogbook", hm);
             }
-
+            
             if (logbook.getXmlLogs() == null) {
-                return;
-            }
-            if (logbook.getXmlLogs().getLogs().isEmpty()) {
-                return;
-            }
-            if (logbook.getXmlLogs().getLogs().iterator().next().getSubject() == null) {
                 return;
             }
 
