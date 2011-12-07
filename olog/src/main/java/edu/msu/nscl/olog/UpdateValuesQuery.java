@@ -111,7 +111,7 @@ public class UpdateValuesQuery {
             }
             
             if (logbook.getXmlLogs() == null) {
-                return null;
+                return ListLogbooksQuery.findLogbook(logbook.getName());
             }
 
             for (XmlLog log : logbook.getXmlLogs().getLogs()) {
@@ -180,8 +180,10 @@ public class UpdateValuesQuery {
 
             // Get logbook id
             Long pid = FindLogbookIdsQuery.getLogbookId(tag.getName());
-
-            XmlTag t = ListLogbooksQuery.findTag(tag.getName());
+            
+            if (pid == null) {
+                throw new CFException(Response.Status.NOT_FOUND, "A tag named '" + tag.getName() + "' does not exist");
+            }
 
             if (name != null && !name.equals(tag.getName())) {
                 HashMap<String, Object> hm = new HashMap<String, Object>();
@@ -189,12 +191,17 @@ public class UpdateValuesQuery {
                 hm.put("id", pid);
                 ss.update("mappings.TagMapper.updateTag", hm);
             }
-
-            if (tag.getXmlLogs() == null) {
+            
+            XmlTag t = ListLogbooksQuery.findTag(tag.getName());
+            if(t == null){
                 return null;
             }
+            
+            if (tag.getXmlLogs() == null) {
+                return t;
+            }
             if (tag.getXmlLogs().getLogs().isEmpty()) {
-                return null;
+                return t;
             }
             
             for (XmlLog log : tag.getXmlLogs().getLogs()) {
@@ -249,7 +256,7 @@ public class UpdateValuesQuery {
     }
 
     /**
-     * Updates the <tt>tag</tt> in the database, adding it to the single log <tt>chan</tt>.
+     * Updates the <tt>tag</tt> in the database, adding it to the single log <tt>logId</tt>.
      *
      * @param tag name of tag to add
      * @param logId id of log to add tag to
@@ -266,7 +273,10 @@ public class UpdateValuesQuery {
 
             // Get log id
             Long pid = FindLogbookIdsQuery.getLogbookId(tag);
-
+            if (pid == null) {
+                throw new CFException(Response.Status.NOT_FOUND, "A tag named '" + tag + "' does not exist");
+            }
+             
             if (logs == null) {
                 return null;
             }
