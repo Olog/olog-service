@@ -130,7 +130,7 @@
         ]]>
         <if test="start != null">
         <![CDATA[
-            AND log.created > FROM_UNIXTIME(#{start})
+            AND log.created >= FROM_UNIXTIME(#{start})
         ]]>
         </if>
         <if test="end != null">
