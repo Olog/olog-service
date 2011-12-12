@@ -9,6 +9,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -358,7 +359,16 @@ public class FindLogsQuery {
                         end = match.getValue().iterator().next();
                     }
                 }
-                if (start != null && end != null) {
+                
+                if (start != null && end == null) {
+                    hm.put("start", Long.valueOf(start));
+                    hm.put("end", Long.valueOf(Calendar.getInstance().getTime().getTime() / 1000L));
+                }
+                else if (start == null && end != null) {
+                    hm.put("start", 0L);
+                    hm.put("end", Long.valueOf(end));
+                }
+                else {
                     hm.put("start", Long.valueOf(start));
                     hm.put("end", Long.valueOf(end));
                 }
