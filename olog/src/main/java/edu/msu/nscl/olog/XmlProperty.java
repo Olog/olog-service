@@ -4,7 +4,7 @@
  * All rights reserved. Use is subject to license terms and conditions.
  */
 
-package edu.msu.nscl.olog.api;
+package edu.msu.nscl.olog;
 
 import java.util.Collection;
 import java.util.Collections;
