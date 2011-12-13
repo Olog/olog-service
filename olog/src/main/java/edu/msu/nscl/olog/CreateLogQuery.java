@@ -113,7 +113,7 @@ public class CreateLogQuery {
                         hm.clear();
                         hm.put("lid", logId);
                         hm.put("name", property.getName());
-                        hm.put("value", property.getValue());
+                        hm.put("value", property.getAttributes().toString());
                         ss.insert("mappings.PropertyMapping.addProperty", hm);
                     }
                 }

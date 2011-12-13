@@ -75,7 +75,7 @@ public class OLogManager {
         for (XmlProperty s : src.getXmlProperties()) {
             for (XmlProperty d : dest.getXmlProperties()) {
                 if (d.getName().equals(s.getName())) {
-                    d.setValue(s.getValue());
+                    d.setAttributes(s.getAttributes());
                     continue src_properties;
                 }
             }
