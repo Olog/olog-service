@@ -113,8 +113,23 @@ public class CreateLogQuery {
                         hm.clear();
                         hm.put("lid", logId);
                         hm.put("name", property.getName());
-                        hm.put("value", property.getAttributes().toString());
                         ss.insert("mappings.PropertyMapping.addProperty", hm);
+
+                        int propId = (Integer) ss.selectOne("mappings.PropertyMapping.lastId");
+                        if (propId > 0) {
+                            hm.clear();
+                            hm.put("pid", propId);
+                            Map<String, String> attributes = property.getAttributes();
+                            Iterator attribute = attributes.entrySet().iterator();
+                            while (attribute.hasNext()) {
+                                Map.Entry e = (Map.Entry) attribute.next();
+                                hm.put("name", e.getKey());
+                                hm.put("value", e.getValue());
+                                ss.insert("mappings.PropertyMapping.addPropertyAttribute", hm);
+                            }
+                        } else {
+                            throw new CFException(Response.Status.NOT_FOUND, "Property attributes could not be created");
+                        }
                     }
                 }
             } else {
@@ -146,7 +161,7 @@ public class CreateLogQuery {
             if (log.getId() == null) {
                 return false;
             }
-            
+
             ArrayList<XmlLog> result = (ArrayList<XmlLog>) ss.selectList("mapping.LogMapping.doesLogExist", log.getId());
 
             if (result != null) {

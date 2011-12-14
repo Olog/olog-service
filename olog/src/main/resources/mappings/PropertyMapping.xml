@@ -6,10 +6,20 @@
     <resultMap id="propertyResultMap" type="Property">
         <id property="id" column="id" /> 
         <result property="name" column="name" /> 
-        <result property="value" column="value" /> 
+        <collection property="attributes" ofType="HashMap" resultMap="attributesResultMap" />
+    </resultMap>
+    
+    <resultMap id="attributesResultMap" type="HashMap">
+        <result property="key" column="attr_name" />
+        <result property="value" column="attr_value" />
     </resultMap>
    
   <!-- SELECT -->
+  <select id="lastId" resultType="int">
+        <![CDATA[
+            SELECT LAST_INSERT_ID() as propId;
+        ]]>
+    </select>
   
     
   <!-- UPDATE -->
@@ -18,7 +28,13 @@
   <!-- INSERT -->
     <insert id="addProperty" parameterType="HashMap">
         <![CDATA[
-            INSERT INTO properties (log_id, name, value) VALUES (#{lid}, #{name}, #{value})
+            INSERT INTO properties (log_id, name) VALUES (#{lid}, #{name})
+        ]]>
+    </insert>
+    
+    <insert id="addPropertyAttribute" parameterType="HashMap">
+        <![CDATA[
+            INSERT INTO attributes (property_id, name, value) VALUES (#{pid}, #{name}, #{value})
         ]]>
     </insert>
 
