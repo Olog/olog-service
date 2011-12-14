@@ -142,7 +142,6 @@ CREATE TABLE `properties` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `log_id` int(11) NOT NULL,
   `name` varchar(200) NOT NULL,
-  `value` varchar(200),
   PRIMARY KEY (`id`),
   KEY `properties_log_id_fk` (`log_id`),
   CONSTRAINT `properties_log_id_fk` FOREIGN KEY (`log_id`) REFERENCES `logs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
@@ -154,6 +153,21 @@ CREATE TABLE `properties` (
 
 /*!40000 ALTER TABLE `properties` DISABLE KEYS */;
 /*!40000 ALTER TABLE `properties` ENABLE KEYS */;
+
+--
+-- Definition of table `attributes`
+--
+
+DROP TABLE IF EXISTS `ologdb4`.`attributes`;
+CREATE TABLE  `ologdb4`.`attributes` (
+`id` int(11) NOT NULL AUTO_INCREMENT,
+`property_id` int(11) NOT NULL,
+`name` varchar(200) NOT NULL,
+`value` varchar(200) DEFAULT NULL,
+PRIMARY KEY (`id`),
+KEY `attributes_property_id_fk` (`property_id`),
+CONSTRAINT `attributes_property_id_fk` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB;
 
 
 --
