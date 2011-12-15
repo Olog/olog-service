@@ -28,8 +28,8 @@
     </resultMap>
     
     <resultMap id="attributesResultMap" type="HashMap">
-        <result property="key" column="attr_name" />
-        <result property="value" column="attr_value" />
+        <result property="attr_value" column="attr_value" />
+        <result property="attr_name" column="attr_name" />
     </resultMap>
    
   <!-- SELECT -->

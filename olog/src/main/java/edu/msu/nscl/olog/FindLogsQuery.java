@@ -26,6 +26,8 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -466,6 +468,29 @@ public class FindLogsQuery {
             }
 
             ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getLogsFromIds", idsList);
+            for (XmlLog log : logs) {
+                Collection<XmlProperty> props = log.getXmlProperties();
+                Map<String, String> attributes = new HashMap<String, String>();
+                for (XmlProperty prop : props) {
+                    Iterator p = prop.getAttributes().entrySet().iterator();
+                    String key = "";
+                    String value = "";
+                    while (p.hasNext()) {
+                        Map.Entry e = (Map.Entry) p.next();
+                        String temp = (String) e.getKey();
+                        if ("attr_value".equals(temp)) {
+                            value = (String) e.getValue();
+                        }
+                        if ("attr_name".equals(temp)) {
+                            key = (String) e.getValue();
+                            attributes.put(key, value);
+                            key = "";
+                            value = "";
+                        }
+                    }
+                    prop.setAttributes(attributes);
+                }
+            }
 
             return logs;
         } catch (PersistenceException e) {
