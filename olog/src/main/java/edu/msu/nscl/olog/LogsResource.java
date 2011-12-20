@@ -55,8 +55,7 @@ public class LogsResource {
 
     /**
      * GET method for retrieving a collection of Log instances,
-     * based on a multi-parameter query specifying patterns for tags, logbooks,
-     * and logs subjects, details to match against.
+     * based on a multi-parameter query specifying patterns for tag and logbook details to match against.
      *
      * @return HTTP Response
      */
@@ -100,7 +99,7 @@ public class LogsResource {
                 data_temp.addXmlLog(datum);
             }
             data = data_temp;
-            cm.checkValidSubjectAndOwner(data);
+            cm.checkValidOwner(data);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
@@ -167,7 +166,7 @@ public class LogsResource {
         XmlLog result = null;
         try {
             data.setOwner(um.getUserName());
-            cm.checkValidSubjectAndOwner(data);
+            cm.checkValidOwner(data);
             cm.checkIdMatchesPayload(logId, data);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
@@ -204,7 +203,7 @@ public class LogsResource {
         XmlLog result = null;
         try {
             data.setOwner(um.getUserName());
-            cm.checkValidSubjectAndOwner(data);
+            cm.checkValidOwner(data);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroupOfLog(um.getUserName(), logId);
                 cm.checkUserBelongsToGroup(um.getUserName(), data);

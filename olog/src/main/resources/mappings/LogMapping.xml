@@ -13,7 +13,7 @@
         <result property="md5Recent" column="md5recent" /> 
         <result property="createdDate" column="createdDate" /> 
         <result property="modifiedDate" column="modifiedDate" /> 
-        <result property="subject" column="subject" /> 
+<!--        <result property="subject" column="subject" /> -->
         <result property="description" column="description" /> 
         <collection property="properties" ofType="Property" javaType="ArrayList">
             <result property="name" column="prop_name" /> 
@@ -174,7 +174,7 @@
             ]]>
                 <foreach item="item" index="index" collection="valuesList" open="(" separator="OR" close=")">
                 <![CDATA[
-                    log.subject LIKE #{item} OR log.description LIKE #{item} OR log.owner LIKE #{item}
+                    log.description LIKE #{item} OR log.owner LIKE #{item}
                 ]]>
                 </foreach>
             <![CDATA[
@@ -206,7 +206,7 @@
             ]]>
                 <foreach item="item" index="index" collection="valuesList" open="(" separator="OR" close=")">
                 <![CDATA[
-                    log.subject LIKE #{item} OR log.description LIKE #{item} OR log.owner LIKE #{item}
+                    log.description LIKE #{item} OR log.owner LIKE #{item}
                 ]]>
                 </foreach>
             <![CDATA[
@@ -357,9 +357,9 @@
   <!-- INSERT -->
     <insert id="createLog" parameterType="HashMap">
         <![CDATA[
-            INSERT INTO logs (source, owner, level_id, status_id, subject, description, md5entry, md5recent, parent_id) 
+            INSERT INTO logs (source, owner, level_id, status_id, description, md5entry, md5recent, parent_id) 
                 VALUES (#{source}, #{owner}, (SELECT id from levels where name = #{level}), 
-                (SELECT id from statuses where name = 'Active'), #{subject}, #{description}, '', '', null)
+                (SELECT id from statuses where name = 'Active'), #{description}, '', '', null)
         ]]>
     </insert>
     

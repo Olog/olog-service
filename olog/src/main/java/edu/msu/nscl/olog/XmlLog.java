@@ -33,7 +33,7 @@ public class XmlLog {
     private String md5Recent;
     private Date createdDate;
     private Date modifiedDate;
-    private String subject;
+//    private String subject;
     private String description;
     private Collection<XmlProperty> properties = new ArrayList<XmlProperty>();
     private Collection<XmlLogbook> logbooks = new ArrayList<XmlLogbook>();
@@ -58,9 +58,9 @@ public class XmlLog {
      *
      * @param subject log subject
      */
-    public XmlLog(String subject) {
-        this.subject = subject;
-    }
+//    public XmlLog(String subject) {
+//        this.subject = subject;
+//    }
 
     /**
      * Creates a new instance of XmlLog.
@@ -68,8 +68,8 @@ public class XmlLog {
      * @param subject log subject
      * @param owner log owner
      */
-    public XmlLog(String subject, String owner) {
-        this.subject = subject;
+    public XmlLog(/*String subject, */String owner) {
+//        this.subject = subject;
         this.owner = owner;
     }
 
@@ -222,19 +222,19 @@ public class XmlLog {
      *
      * @return subject
      */
-    @XmlElement(name = "subject")
-    public String getSubject() {
-        return subject;
-    }
+//    @XmlElement(name = "subject")
+//    public String getSubject() {
+//        return subject;
+//    }
 
     /**
      * Setter for log subject.
      *
      * @param subject the value to set
      */
-    public void setSubject(String subject) {
-        this.subject = subject;
-    }
+//    public void setSubject(String subject) {
+//        this.subject = subject;
+//    }
 
     /**
      * Getter for log description.
@@ -401,7 +401,7 @@ public class XmlLog {
         XmlTags xt = new XmlTags();
         xt.setTags(data.tags);
         
-        return data.getId() + "-v." + data.getVersion() + " : " + data.getSubject() + "(" + data.getOwner() + "):["
+        return data.getId() + "-v." + data.getVersion() + " : " + /*data.getSubject() +*/ "(" + data.getOwner() + "):["
                 + XmlLogbooks.toLog(xl)
                 + XmlTags.toLog(xt)
                 + XmlAttachments.toLog(data.attachments)

@@ -46,8 +46,8 @@ public class OLogManager {
      * @param src source log
      */
     public static void mergeXmlLogs(XmlLog dest, XmlLog src) {
-        if(src.getSubject() != null)
-            dest.setSubject(src.getSubject());
+//        if(src.getSubject() != null)
+//            dest.setSubject(src.getSubject());
         if(src.getDescription() !=null )
             dest.setDescription(src.getDescription());
         if(src.getLevel() != null)
@@ -106,7 +106,7 @@ public class OLogManager {
     }
 
     /**
-     * Returns logs found by matching logbook names, tag names, log subject/description.
+     * Returns logs found by matching logbook names, tag names, log description.
      *
      * @param matches multivalued map of logbook, tag, log names and patterns to match
      * their values against.
@@ -435,16 +435,16 @@ public class OLogManager {
     }
 
     /**
-     * Check the log in <tt>data</tt> for valid subject/owner data.
+     * Check the log in <tt>data</tt> for valid owner data.
      *
      * @param data XmlLog data to check
      * @throws CFException on error
      */
-    public void checkValidSubjectAndOwner(XmlLog data) throws CFException {
-        if (data.getSubject() == null || data.getSubject().isEmpty()) {
-            throw new CFException(Response.Status.BAD_REQUEST,
-                    "Invalid log subject (null or empty string)");
-        }
+    public void checkValidOwner(XmlLog data) throws CFException {
+//        if (data.getSubject() == null || data.getSubject().isEmpty()) {
+//            throw new CFException(Response.Status.BAD_REQUEST,
+//                    "Invalid log subject (null or empty string)");
+//        }
         if (data.getOwner() == null || data.getOwner().equals("")) {
             throw new CFException(Response.Status.BAD_REQUEST,
                     "Invalid log owner (null or empty string) for '" + data.getId() + "'");
@@ -452,15 +452,15 @@ public class OLogManager {
     }
 
     /**
-     * Check all logs in <tt>data</tt> for valid subject/owner data.
+     * Check all logs in <tt>data</tt> for valid owner data.
      *
      * @param data XmlLogs data to check
      * @throws CFException on error
      */
-    public void checkValidSubjectAndOwner(XmlLogs data) throws CFException {
+    public void checkValidOwner(XmlLogs data) throws CFException {
         if (data == null || data.getLogs() == null) return;
         for (XmlLog c : data.getLogs()) {
-            checkValidSubjectAndOwner(c);
+            checkValidOwner(c);
         }
     }
 

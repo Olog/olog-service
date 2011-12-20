@@ -48,7 +48,7 @@ public class CreateLogQuery {
             hm.put("source", log.getSource());
             hm.put("owner", log.getOwner());
             hm.put("level", log.getLevel());
-            hm.put("subject", log.getSubject());
+            //hm.put("subject", log.getSubject());
             hm.put("description", log.getDescription());
 
             ss.insert("mappings.LogMapping.createLog", hm);
@@ -63,7 +63,7 @@ public class CreateLogQuery {
                 // Fail if there isn't at least one logbook
                 if (log.getXmlLogbooks().isEmpty()) {
                     throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                            "Must add to at least one logbook '" + log.getSubject() + "'");
+                            "There is no logbook associated with log: " + log.getId());
                 }
                 if (log.getXmlLogbooks().size() > 0 || log.getXmlTags().size() > 0) {
                     for (XmlLogbook logbook : log.getXmlLogbooks()) {
@@ -235,7 +235,7 @@ public class CreateLogQuery {
 
         entry = "id:" + logId + "\n"
                 + "level:" + log.getLevel() + "\n"
-                + "subject:" + log.getSubject() + "\n"
+                //+ "subject:" + log.getSubject() + "\n"
                 + "description:" + log.getDescription() + "\n"
                 + "created:" + log.getCreatedDate() + "\n"
                 + "modified:" + log.getModifiedDate() + "\n"
