@@ -7,6 +7,8 @@ package edu.msu.nscl.olog;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -361,16 +363,14 @@ public class FindLogsQuery {
                         end = match.getValue().iterator().next();
                     }
                 }
-                
+
                 if (start != null && end == null) {
                     hm.put("start", Long.valueOf(start));
                     hm.put("end", Long.valueOf(Calendar.getInstance().getTime().getTime() / 1000L));
-                }
-                else if (start == null && end != null) {
+                } else if (start == null && end != null) {
                     hm.put("start", 0L);
                     hm.put("end", Long.valueOf(end));
-                }
-                else {
+                } else {
                     hm.put("start", Long.valueOf(start));
                     hm.put("end", Long.valueOf(end));
                 }
@@ -408,7 +408,7 @@ public class FindLogsQuery {
                     hm.put("offset", longOffset);
                 }
             }
-            
+
             if (idsSearchList.size() > 0) {
                 hm.put("idsSearchList", idsSearchList);
             }
@@ -468,29 +468,29 @@ public class FindLogsQuery {
             }
 
             ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getLogsFromIds", idsList);
-            for (XmlLog log : logs) {
-                Collection<XmlProperty> props = log.getXmlProperties();
-                Map<String, String> attributes = new HashMap<String, String>();
-                for (XmlProperty prop : props) {
-                    Iterator p = prop.getAttributes().entrySet().iterator();
-                    String key = "";
-                    String value = "";
-                    while (p.hasNext()) {
-                        Map.Entry e = (Map.Entry) p.next();
-                        String temp = (String) e.getKey();
-                        if ("attr_value".equals(temp)) {
-                            value = (String) e.getValue();
-                        }
-                        if ("attr_name".equals(temp)) {
-                            key = (String) e.getValue();
-                            attributes.put(key, value);
-                            key = "";
-                            value = "";
-                        }
-                    }
-                    prop.setAttributes(attributes);
-                }
-            }
+//            for (XmlLog log : logs) {
+//                Collection<XmlProperty> props = log.getXmlProperties();
+//                Map<String, String> attributes = new HashMap<String, String>();
+//                for (XmlProperty prop : props) {
+//                    Iterator p = prop.getAttributes().entrySet().iterator();
+//                    String key = "";
+//                    String value = "";
+//                    while (p.hasNext()) {
+//                        Map.Entry e = (Map.Entry) p.next();
+//                        String temp = (String) e.getKey();
+//                        if ("attr_value".equals(temp)) {
+//                            value = (String) e.getValue();
+//                        }
+//                        if ("attr_name".equals(temp)) {
+//                            key = (String) e.getValue();
+//                            attributes.put(key, value);
+//                            key = "";
+//                            value = "";
+//                        }
+//                    }
+//                    prop.setAttributes(attributes);
+//                }
+//            }
 
             return logs;
         } catch (PersistenceException e) {
@@ -548,7 +548,7 @@ public class FindLogsQuery {
      * @param matches MultiMap of query parameters
      * @return XmlLogs container with all found logs and their logbooks/tags
      */
-    public static XmlLogs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws CFException, RepositoryException {
+    public static XmlLogs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws CFException, RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
         FindLogsQuery q = new FindLogsQuery(matches);
         XmlLogs xmlLogs = new XmlLogs();
 
@@ -556,7 +556,10 @@ public class FindLogsQuery {
         if (logs != null) {
             Iterator<XmlLog> iterator = logs.iterator();
             while (iterator.hasNext()) {
-                xmlLogs.addXmlLog(iterator.next());
+                XmlLog log = iterator.next();
+                if (log.getMD5Entry().equals(CreateLogQuery.getmd5Entry(log.getId(), log))) {
+                    xmlLogs.addXmlLog(log);
+                }
             }
         }
 
@@ -592,7 +595,32 @@ public class FindLogsQuery {
      * @return XmlLog with found log and its logbooks
      * @throws CFException on SQLException
      */
-    public static XmlLog findLogById(Long logId) throws CFException {
+    public static XmlLog findLogById(Long logId) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        FindLogsQuery q = new FindLogsQuery(SearchType.LOG, logId);
+        XmlLog xmlLog = null;
+
+        ArrayList<XmlLog> logs = q.executeQuery();
+        if (logs != null) {
+            Iterator<XmlLog> iterator = logs.iterator();
+            while (iterator.hasNext()) {
+                XmlLog log = iterator.next();
+                if (log.getMD5Entry().equals(CreateLogQuery.getmd5Entry(log.getId(), log))) {
+                    xmlLog = log;
+                }
+            }
+        }
+
+        return xmlLog;
+    }
+
+    /**
+     * Return single log found by log id without checking for md5
+     *
+     * @param logId id to look for
+     * @return XmlLog with found log and its logbooks
+     * @throws CFException on SQLException
+     */
+    public static XmlLog findLogByIdNoMD5(Long logId) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         FindLogsQuery q = new FindLogsQuery(SearchType.LOG, logId);
         XmlLog xmlLog = null;
 

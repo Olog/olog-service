@@ -62,7 +62,7 @@ public class LogsResource {
      */
     @GET
     @Produces({"application/xml", "application/json"})
-    public Response query() throws RepositoryException {
+    public Response query() throws RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
@@ -126,7 +126,7 @@ public class LogsResource {
     @GET
     @Path("{logId}")
     @Produces({"application/xml", "application/json"})
-    public Response read(@PathParam("logId") Long logId) {
+    public Response read(@PathParam("logId") Long logId) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlLog result = null;
@@ -231,7 +231,7 @@ public class LogsResource {
      */
     @DELETE
     @Path("{logId}")
-    public Response remove(@PathParam("logId") Long logId) {
+    public Response remove(@PathParam("logId") Long logId) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         UserManager um = UserManager.getInstance();
         OLogManager cm = OLogManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));

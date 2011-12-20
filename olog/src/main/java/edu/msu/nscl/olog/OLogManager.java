@@ -90,7 +90,7 @@ public class OLogManager {
      * @return XmlLog with found log and its logbooks
      * @throws CFException on SQLException
      */
-    public XmlLog findLogById(Long logId) throws CFException {
+    public XmlLog findLogById(Long logId) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         return FindLogsQuery.findLogById(logId);
     }
 
@@ -113,7 +113,7 @@ public class OLogManager {
      * @return XmlLogs container with all found logs and their logbooks
      * @throws CFException wrapping an SQLException
      */
-    public XmlLogs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws CFException, RepositoryException {
+    public XmlLogs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws CFException, RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
         return FindLogsQuery.findLogsByMultiMatch(matches);
     }
 
@@ -559,7 +559,7 @@ public class OLogManager {
      * @param logId name of log to check ownership for
      * @throws CFException on name mismatch
      */
-    public void checkUserBelongsToGroupOfLog(String user,Long logId) throws CFException {
+    public void checkUserBelongsToGroupOfLog(String user,Long logId) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         if (logId == 0) return;
         checkUserBelongsToGroup(user, FindLogsQuery.findLogById(logId));
     }

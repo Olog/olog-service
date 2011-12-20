@@ -53,21 +53,8 @@ public class CreateLogQuery {
 
             ss.insert("mappings.LogMapping.createLog", hm);
             int logId = (Integer) ss.selectOne("mappings.LogMapping.lastId");
+
             if (logId > 0) {
-
-                hm.clear();
-
-                hm.put("md5entry", getmd5Entry((long) logId, log));
-                hm.put("md5recent", getmd5Recent((long) logId));
-                hm.put("id", (long) logId);
-                if (logIdExists(log)) {
-                    hm.put("pid", log.getId());
-                } else {
-                    log.setId((long) logId);
-                    hm.put("pid", null);
-                }
-
-                ss.update("mappings.LogMapping.updateMD5", hm);
 
                 // Fetch the logbook/tag ids
                 Map<String, Integer> pids = FindLogbookIdsQuery.getLogbookIdMap(log);
@@ -130,8 +117,22 @@ public class CreateLogQuery {
                         } else {
                             throw new CFException(Response.Status.NOT_FOUND, "Property attributes could not be created");
                         }
+
                     }
                 }
+                
+                ss.commit();
+
+                // Get log object directly from db so all information is filled in and we can update the md5
+                log = FindLogsQuery.findLogByIdNoMD5((long) logId);
+
+                hm.clear();
+
+                hm.put("md5entry", getmd5Entry((long) logId, log));
+                hm.put("md5recent", getmd5Recent((long) logId));
+                hm.put("id", (long) logId);
+
+                ss.update("mappings.LogMapping.updateMD5", hm);
             } else {
                 throw new CFException(Response.Status.NOT_FOUND,
                         "Log could not be created");
@@ -219,7 +220,7 @@ public class CreateLogQuery {
      * @return md5Entry String MD5 encoded XmlLog Object
      * @todo Move this to LogEnt as a private function
      */
-    private static String getmd5Entry(Long logId, XmlLog log) throws UnsupportedEncodingException, NoSuchAlgorithmException, CFException {
+    public static String getmd5Entry(Long logId, XmlLog log) throws UnsupportedEncodingException, NoSuchAlgorithmException, CFException {
         String entry;
         String explodeRecent = "";
         List<String> explodeRecentArray = new ArrayList<String>();
@@ -237,7 +238,7 @@ public class CreateLogQuery {
                 + "subject:" + log.getSubject() + "\n"
                 + "description:" + log.getDescription() + "\n"
                 + "created:" + log.getCreatedDate() + "\n"
-                + "modified" + log.getModifiedDate() + "\n"
+                + "modified:" + log.getModifiedDate() + "\n"
                 + "source:" + log.getSource() + "\n"
                 + "owner:" + log.getOwner() + "\n"
                 + explodeRecent;

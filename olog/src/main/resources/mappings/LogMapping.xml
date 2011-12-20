@@ -8,6 +8,7 @@
         <result property="version" column="children" /> 
         <result property="owner" column="owner" /> 
         <result property="level" column="level_name" /> 
+        <result property="source" column="source" /> 
         <result property="md5Entry" column="md5entry" /> 
         <result property="md5Recent" column="md5recent" /> 
         <result property="createdDate" column="createdDate" /> 
@@ -336,7 +337,7 @@
     
     <update id="updateMD5" parameterType="HashMap">
         <![CDATA[
-            UPDATE logs SET md5entry = #{md5entry}, md5recent = #{md5recent}, parent_id = #{pid} where id = #{id}
+            UPDATE logs SET md5entry = #{md5entry}, md5recent = #{md5recent} where id = #{id}
         ]]>
     </update>
     
