@@ -91,7 +91,7 @@ public class LogsResource {
     public Response add(@Context HttpServletRequest req, @Context HttpHeaders headers,XmlLogs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
-        String hostAddress = req.getHeader("X-Forwarded-For");
+        String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             XmlLogs data_temp = new XmlLogs();
@@ -162,7 +162,7 @@ public class LogsResource {
     public Response create(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, XmlLog data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
-        String hostAddress = req.getHeader("X-Forwarded-For");
+        String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         XmlLog result = null;
         try {
@@ -199,7 +199,7 @@ public class LogsResource {
     public Response update(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, XmlLog data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
-        String hostAddress = req.getHeader("X-Forwarded-For");
+        String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         XmlLog result = null;
         try {
