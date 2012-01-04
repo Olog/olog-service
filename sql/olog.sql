@@ -140,11 +140,8 @@ CREATE TABLE `logs_logbooks` (
 DROP TABLE IF EXISTS `properties`;
 CREATE TABLE `properties` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `log_id` int(11) NOT NULL,
   `name` varchar(200) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `properties_log_id_fk` (`log_id`),
-  CONSTRAINT `properties_log_id_fk` FOREIGN KEY (`log_id`) REFERENCES `logs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -163,12 +160,27 @@ CREATE TABLE  `ologdb4`.`attributes` (
 `id` int(11) NOT NULL AUTO_INCREMENT,
 `property_id` int(11) NOT NULL,
 `name` varchar(200) NOT NULL,
-`value` varchar(200) DEFAULT NULL,
 PRIMARY KEY (`id`),
 KEY `attributes_property_id_fk` (`property_id`),
 CONSTRAINT `attributes_property_id_fk` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB;
 
+--
+-- Definition of table `logs_attributes`
+--
+
+DROP TABLE IF EXISTS `ologdb4`.`logs_attributes`;
+CREATE TABLE  `ologdb4`.`logs_attributes` (
+`id` int(11) NOT NULL AUTO_INCREMENT,
+`log_id` int(11) NOT NULL,
+`attribute_id` int(11) NOT NULL,
+`value` varchar(200) NOT NULL,
+PRIMARY KEY (`id`),
+KEY `logs_attributes_attribute_id_fk` (`attribute_id`),
+KEY `logs_attributes_log_id_fk` (`log_id`),
+CONSTRAINT `logs_attributes_attribute_id_fk` FOREIGN KEY (`attribute_id`) REFERENCES `attributes` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+CONSTRAINT `logs_attributes_log_id_fk` FOREIGN KEY (`log_id`) REFERENCES `logs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB;
 
 --
 -- Definition of table `statuses`
