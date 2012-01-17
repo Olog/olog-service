@@ -451,6 +451,7 @@ public class FindLogsQuery {
         SqlSession ss = ssf.openSession();
 
         try {
+
             List<Long> idsList = new ArrayList<Long>();
             Set<Long> paginate_result = new HashSet<Long>();
 
@@ -468,29 +469,29 @@ public class FindLogsQuery {
             }
 
             ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getLogsFromIds", idsList);
-//            for (XmlLog log : logs) {
-//                Collection<XmlProperty> props = log.getXmlProperties();
-//                Map<String, String> attributes = new HashMap<String, String>();
-//                for (XmlProperty prop : props) {
-//                    Iterator p = prop.getAttributes().entrySet().iterator();
-//                    String key = "";
-//                    String value = "";
-//                    while (p.hasNext()) {
-//                        Map.Entry e = (Map.Entry) p.next();
-//                        String temp = (String) e.getKey();
-//                        if ("attr_value".equals(temp)) {
-//                            value = (String) e.getValue();
-//                        }
-//                        if ("attr_name".equals(temp)) {
-//                            key = (String) e.getValue();
-//                            attributes.put(key, value);
-//                            key = "";
-//                            value = "";
-//                        }
-//                    }
-//                    prop.setAttributes(attributes);
-//                }
-//            }
+            for (XmlLog log : logs) {
+                Collection<XmlProperty> props = log.getXmlProperties();
+                Map<String, String> attributes = new HashMap<String, String>();
+                for (XmlProperty prop : props) {
+                    Iterator p = prop.getAttributes().entrySet().iterator();
+                    String key = "";
+                    String value = "";
+                    while (p.hasNext()) {
+                        Map.Entry e = (Map.Entry) p.next();
+                        String temp = (String) e.getKey();
+                        if ("attr_value".equals(temp)) {
+                            value = (String) e.getValue();
+                        }
+                        if ("attr_name".equals(temp)) {
+                            key = (String) e.getValue();
+                            attributes.put(key, value);
+                            key = "";
+                            value = "";
+                        }
+                    }
+                    prop.setAttributes(attributes);
+                }
+            }
 
             return logs;
         } catch (PersistenceException e) {
