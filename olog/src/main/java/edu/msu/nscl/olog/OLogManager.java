@@ -7,10 +7,9 @@ package edu.msu.nscl.olog;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.jcr.RepositoryException;
@@ -48,10 +47,12 @@ public class OLogManager {
     public static void mergeXmlLogs(XmlLog dest, XmlLog src) {
 //        if(src.getSubject() != null)
 //            dest.setSubject(src.getSubject());
-        if(src.getDescription() !=null )
+        if (src.getDescription() != null) {
             dest.setDescription(src.getDescription());
-        if(src.getLevel() != null)
+        }
+        if (src.getLevel() != null) {
             dest.setLevel(src.getLevel());
+        }
         src_logbooks:
         for (XmlLogbook s : src.getXmlLogbooks()) {
             for (XmlLogbook d : dest.getXmlLogbooks()) {
@@ -191,7 +192,6 @@ public class OLogManager {
         return UpdateValuesQuery.updateLogbook(data.getName(), data);
     }
 
-
     /**
      * Create or replace logbooks specified in <tt>data</tt>.
      *
@@ -250,7 +250,7 @@ public class OLogManager {
      * @param logId log to delete it from
      * @throws CFException wrapping an SQLException
      */
-    public void removeSingleLogbook(String logbook,Long logId) throws CFException {
+    public void removeSingleLogbook(String logbook, Long logId) throws CFException {
         DeleteLogbookQuery.deleteOneValue(logbook, logId);
     }
 
@@ -332,7 +332,7 @@ public class OLogManager {
      * @param logId
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public XmlTag addSingleTag(String tag,Long logId) throws CFException {
+    public XmlTag addSingleTag(String tag, Long logId) throws CFException {
         return UpdateValuesQuery.updateTag(tag, logId);
     }
 
@@ -353,8 +353,106 @@ public class OLogManager {
      * @param logId log to delete it from
      * @throws CFException wrapping an SQLException
      */
-    public void removeSingleTag(String tag,Long logId) throws CFException {
+    public void removeSingleTag(String tag, Long logId) throws CFException {
         DeleteLogbookQuery.deleteOneValue(tag, logId);
+    }
+
+    /**
+     * Return a list of all properties
+     *
+     * @param 
+     * @throws CFException wrapping an SQLException
+     */
+    public XmlProperties listProperties() throws CFException {
+        return ListPropertiesQuery.getProperties();
+    }
+
+    /**
+     * Adds a new property.
+     *
+     * @param String newProperty name of the new property
+     * @param XmlProperty data incoming payload
+     * @param boolean destructive is this action to be destructive (true) or not
+     * @throws CFException wrapping an SQLException
+     */
+    XmlProperty addProperty(String newProperty, XmlProperty data, boolean destructive) throws CFException {
+        return CreatePropertyQuery.addProperty(newProperty, data, destructive);
+    }
+
+    /**
+     * Adds a new property attribute to a log entry.
+     *
+     * @param String hostAddress IP from where the call is coming from
+     * @param String property name of the property
+     * @param Long logId log that the property attribute will be associated with
+     * @param XmlProperty data incoming payload
+     * @throws CFException wrapping an SQLException
+     */
+    XmlLog addAttribute(String hostAddress, String property, Long logId, XmlProperty data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        XmlLog currentLog = findLogById(logId);
+
+        Collection<XmlProperty> currentProperties = currentLog.getXmlProperties();
+        if (currentProperties.size() > 0) {
+            for (XmlProperty prop : currentProperties) {
+                if (prop.getName().equals(data.getName())) {
+                    Map<String, String> attributes = prop.getAttributes();
+                    Set<String> incomingAttributes = data.getAttributes().keySet();
+                    for (String attr : incomingAttributes) {
+                        attributes.put(attr, data.getAttributes().get(attr));
+
+                    }
+                    prop.setAttributes(attributes);
+                }
+            }
+        }
+        else {
+            currentProperties.add(data);
+        }
+        
+        currentLog.setXmlProperties(currentProperties);
+
+        return createOrReplaceLog(hostAddress, logId, currentLog);
+    }
+
+    /**
+     * Remove a property.
+     *
+     * @param String property name of the property to be removed
+     * @throws CFException wrapping an SQLException
+     */
+    void removeProperty(String property, XmlProperty data) throws CFException {
+        DeletePropertyQuery.removeProperty(property, data);
+    }
+
+    /**
+     * Removes a properties attribute from a log entry.
+     *
+     * @param String hostAddress IP from where the call is coming from
+     * @param String property name of the property
+     * @param XmlProperty data incoming payload
+     * @throws CFException wrapping an SQLException
+     */
+    XmlLog removeAttribute(String hostAddress, String property, Long logId, XmlProperty data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        XmlLog currentLog = findLogById(logId);
+
+        // Remove attributes from incoming payload from the current log
+        Collection<XmlProperty> currentProperties = currentLog.getXmlProperties();
+        for (XmlProperty prop : currentProperties) {
+            if (prop.getName().equals(data.getName())) {
+                Map<String, String> attributes = prop.getAttributes();
+                Set<String> attributesToDelete = data.getAttributes().keySet();
+                for (String attr : attributesToDelete) {
+                    if (attributes.containsKey(attr)) {
+                        attributes.remove(attr);
+                    }
+                }
+                prop.setAttributes(attributes);
+            }
+        }
+        currentLog.setXmlProperties(currentProperties);
+
+        // Create new log with the correct properties removed
+        return createOrReplaceLog(hostAddress, logId, currentLog);
     }
 
     /**
@@ -427,11 +525,11 @@ public class OLogManager {
      */
     //TODO: fix this
     public void checkIdMatchesPayload(Long logId, XmlLog data) throws CFException {
-    //    if (!logId.equals(data.getId())) {
-    //        throw new CFException(Response.Status.BAD_REQUEST,
-    //                "Specified log id '" + logId
-     //               + "' and payload log id '" + data.getId() + "' do not match");
-     //   }
+        //    if (!logId.equals(data.getId())) {
+        //        throw new CFException(Response.Status.BAD_REQUEST,
+        //                "Specified log id '" + logId
+        //               + "' and payload log id '" + data.getId() + "' do not match");
+        //   }
     }
 
     /**
@@ -458,7 +556,9 @@ public class OLogManager {
      * @throws CFException on error
      */
     public void checkValidOwner(XmlLogs data) throws CFException {
-        if (data == null || data.getLogs() == null) return;
+        if (data == null || data.getLogs() == null) {
+            return;
+        }
         for (XmlLog c : data.getLogs()) {
             checkValidOwner(c);
         }
@@ -472,7 +572,9 @@ public class OLogManager {
      * @throws CFException on name mismatch
      */
     public void checkNameMatchesPayload(String name, XmlTag data) throws CFException {
-        if (data == null) return;
+        if (data == null) {
+            return;
+        }
         if (!name.equals(data.getName())) {
             throw new CFException(Response.Status.BAD_REQUEST,
                     "Specified tag name '" + name
@@ -494,13 +596,29 @@ public class OLogManager {
     }
 
     /**
+     * Check the property name in <tt>data</tt> with the property name in the URL.
+     *
+     * @param propertyName name coming from the URL
+     * @param data XmlProperty data
+     * @throws CFException on name mismatch
+     */
+    public void checkPropertyName(String propertyName, XmlProperty data) throws CFException {
+        if (data.getName() == null || !data.getName().equals(propertyName)) {
+            throw new CFException(Response.Status.BAD_REQUEST,
+                    "The property name in the URL does not match the property name in the payload.");
+        }
+    }
+
+    /**
      * Check all tags in <tt>data</tt> for valid name data.
      *
      * @param data XmlTags data to check
      * @throws CFException on error
      */
     public void checkValidNameAndOwner(XmlTags data) throws CFException {
-        if (data == null || data.getTags() == null) return;
+        if (data == null || data.getTags() == null) {
+            return;
+        }
         for (XmlTag t : data.getTags()) {
             checkValidNameAndOwner(t);
         }
@@ -545,7 +663,9 @@ public class OLogManager {
      * @throws CFException on error
      */
     public void checkValidNameAndOwner(XmlLogbooks data) throws CFException {
-        if (data == null || data.getLogbooks() == null) return;
+        if (data == null || data.getLogbooks() == null) {
+            return;
+        }
         for (XmlLogbook p : data.getLogbooks()) {
             checkValidNameAndOwner(p);
         }
@@ -559,8 +679,10 @@ public class OLogManager {
      * @param logId name of log to check ownership for
      * @throws CFException on name mismatch
      */
-    public void checkUserBelongsToGroupOfLog(String user,Long logId) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        if (logId == 0) return;
+    public void checkUserBelongsToGroupOfLog(String user, Long logId) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        if (logId == 0) {
+            return;
+        }
         checkUserBelongsToGroup(user, FindLogsQuery.findLogById(logId));
     }
 
@@ -573,10 +695,11 @@ public class OLogManager {
      * @throws CFException on name mismatch
      */
     public void checkUserBelongsToGroupOfLogbook(String user, String logbook) throws CFException {
-        if (logbook == null || logbook.equals("")) return;
+        if (logbook == null || logbook.equals("")) {
+            return;
+        }
         checkUserBelongsToGroup(user, ListLogbooksQuery.findLogbook(logbook));
     }
-
 
     /**
      * Check that <tt>user</tt> belongs to the owner group specified in the
@@ -587,7 +710,9 @@ public class OLogManager {
      * @throws CFException on name mismatch
      */
     public void checkUserBelongsToGroup(String user, XmlLog data) throws CFException {
-        if (data == null) return;
+        if (data == null) {
+            return;
+        }
         UserManager um = UserManager.getInstance();
         if (!um.userIsInGroup(data.getOwner())) {
             throw new CFException(Response.Status.FORBIDDEN,
@@ -605,7 +730,9 @@ public class OLogManager {
      * @throws CFException on name mismatch
      */
     public void checkUserBelongsToGroup(String user, XmlLogs data) throws CFException {
-        if (data == null || data.getLogs() == null) return;
+        if (data == null || data.getLogs() == null) {
+            return;
+        }
         for (XmlLog log : data.getLogs()) {
             checkUserBelongsToGroup(user, log);
         }
@@ -620,7 +747,9 @@ public class OLogManager {
      * @throws CFException on name mismatch
      */
     public void checkUserBelongsToGroup(String user, XmlLogbook data) throws CFException {
-        if (data == null) return;
+        if (data == null) {
+            return;
+        }
         UserManager um = UserManager.getInstance();
         if (!um.userIsInGroup(data.getOwner())) {
             throw new CFException(Response.Status.FORBIDDEN,
@@ -638,7 +767,9 @@ public class OLogManager {
      * @throws CFException on name mismatch
      */
     public void checkUserBelongsToGroup(String user, XmlLogbooks data) throws CFException {
-        if (data == null || data.getLogbooks() == null) return;
+        if (data == null || data.getLogbooks() == null) {
+            return;
+        }
         for (XmlLogbook logbook : data.getLogbooks()) {
             checkUserBelongsToGroup(user, logbook);
         }
