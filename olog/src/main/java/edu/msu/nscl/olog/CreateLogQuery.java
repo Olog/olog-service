@@ -97,22 +97,26 @@ public class CreateLogQuery {
                             throw new CFException(Response.Status.NOT_FOUND,
                                     "Property name (key) can not be null ");
                         }
-                        hm.clear();
-                        hm.put("lid", logId);
-                        hm.put("name", property.getName());
-                        ss.insert("mappings.PropertyMapping.addProperty", hm);
 
-                        int propId = (Integer) ss.selectOne("mappings.PropertyMapping.lastId");
+                        int propId;
+                        if (property.getId() > 0) {
+                            propId = property.getId();
+                        }
+                        else {
+                            XmlProperty prop = (XmlProperty) ss.selectOne("mappings.PropertyMapping.getProperty", property.getName());
+                            propId = prop.getId();
+                        }
                         if (propId > 0) {
                             hm.clear();
+                            hm.put("lid", logId);
                             hm.put("pid", propId);
                             Map<String, String> attributes = property.getAttributes();
                             Iterator attribute = attributes.entrySet().iterator();
                             while (attribute.hasNext()) {
                                 Map.Entry e = (Map.Entry) attribute.next();
-                                hm.put("name", e.getKey());
+                                hm.put("attribute", e.getKey());
                                 hm.put("value", e.getValue());
-                                ss.insert("mappings.PropertyMapping.addPropertyAttribute", hm);
+                                ss.insert("mappings.PropertyMapping.addAttributeToLog", hm);
                             }
                         } else {
                             throw new CFException(Response.Status.NOT_FOUND, "Property attributes could not be created");
@@ -120,7 +124,7 @@ public class CreateLogQuery {
 
                     }
                 }
-                
+
                 ss.commit();
 
                 // Get log object directly from db so all information is filled in and we can update the md5
