@@ -368,6 +368,16 @@ public class OLogManager {
     }
 
     /**
+     * Return a list of attributes for a given property
+     *
+     * @param 
+     * @throws CFException wrapping an SQLException
+     */
+    XmlProperty listAttributes(String property) throws CFException {
+        return ListPropertiesQuery.getAttributes(property);
+    }
+
+    /**
      * Adds a new property.
      *
      * @param String newProperty name of the new property
@@ -404,11 +414,10 @@ public class OLogManager {
                     prop.setAttributes(attributes);
                 }
             }
-        }
-        else {
+        } else {
             currentProperties.add(data);
         }
-        
+
         currentLog.setXmlProperties(currentProperties);
 
         return createOrReplaceLog(hostAddress, logId, currentLog);

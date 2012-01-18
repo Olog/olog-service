@@ -91,6 +91,30 @@ public class PropertiesResource {
     }
 
     /**
+     * GET method for retrieving the list of attributes for a given property.
+     *
+     * @return
+     */
+    @GET
+    @Path("{propName}")
+    @Produces({"application/xml", "application/json"})
+    public Response listAttributes(@PathParam("propName") String property) {
+        OLogManager cm = OLogManager.getInstance();
+        String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
+        XmlProperty result = null;
+        try {
+            result = cm.listAttributes(property);
+            Response r = Response.ok(result).build();
+            log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
+            return r;
+        } catch (CFException e) {
+            log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
+                    + e.getResponseStatusCode() + "|cause=" + e);
+            return e.toResponse();
+        }
+    }
+
+    /**
      * POST method for adding a new property. Is not destructive as it appends attributes to those already there.
      *
      * @param newProperty the property being added

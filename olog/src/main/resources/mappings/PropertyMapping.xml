@@ -6,6 +6,7 @@
     <resultMap id="propertyResultMap" type="Property">
         <id property="id" column="id" /> 
         <result property="name" column="prop_name" /> 
+        <collection property="attributes" ofType="HashMap" resultMap="attributesResultMap" />
     </resultMap>
     
     <resultMap id="attributesResultMap" type="HashMap">
@@ -23,7 +24,7 @@
     
     <select id="getProperty" resultType="Property" parameterType="String">
         <![CDATA[
-            SELECT prop.id FROM properties as prop WHERE name = #{name}
+            SELECT id, name FROM properties as prop WHERE name = #{name}
         ]]>
     </select>
     
