@@ -469,25 +469,19 @@ public class FindLogsQuery {
             }
 
             ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getLogsFromIds", idsList);
+            HashMap<String, Object> hm = new HashMap<String, Object>();
+            Log logger = LogFactory.getLog(FindLogsQuery.class);
             for (XmlLog log : logs) {
                 Collection<XmlProperty> props = log.getXmlProperties();
                 Map<String, String> attributes = new HashMap<String, String>();
                 for (XmlProperty prop : props) {
-                    Iterator p = prop.getAttributes().entrySet().iterator();
-                    String key = "";
-                    String value = "";
-                    while (p.hasNext()) {
-                        Map.Entry e = (Map.Entry) p.next();
-                        String temp = (String) e.getKey();
-                        if ("attr_value".equals(temp)) {
-                            value = (String) e.getValue();
-                        }
-                        if ("attr_name".equals(temp)) {
-                            key = (String) e.getValue();
-                            attributes.put(key, value);
-                            key = "";
-                            value = "";
-                        }
+                    hm.clear();
+                    hm.put("lid", log.getId());
+                    hm.put("pid", prop.getId());
+                    ArrayList<HashMap> attrs = (ArrayList<HashMap>) ss.selectList("mappings.PropertyMapping.attributesForLog", hm);
+                    Iterator p = attrs.iterator();
+                    for (HashMap hash : attrs) {
+                        attributes.put(hash.get("name").toString(), hash.get("value").toString());
                     }
                     prop.setAttributes(attributes);
                 }

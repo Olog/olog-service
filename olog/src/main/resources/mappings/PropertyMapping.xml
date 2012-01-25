@@ -35,6 +35,17 @@
         ]]>
     </select>
     
+    <select id="attributesForLog" resultType="Map" parameterType="Hashmap"> 
+        <![CDATA[
+            SELECT attr.name, attr_val.value FROM `logs` as log 
+                LEFT JOIN `logs` as parent ON log.id = parent.parent_id LEFT JOIN statuses as status ON log.status_id = status.id
+                LEFT JOIN logs_attributes as attr_val ON attr_val.log_id = log.id 
+                LEFT JOIN attributes as attr ON attr.id = attr_val.attribute_id
+                LEFT JOIN properties as prop ON prop.id = attr.property_id WHERE  status.name = 'Active' AND log.id = #{lid}
+                AND prop.id = #{pid}
+        ]]>
+    </select>
+    
     <select id="lastId" resultType="int">
         <![CDATA[
             SELECT LAST_INSERT_ID() as propId
