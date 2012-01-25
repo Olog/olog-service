@@ -470,7 +470,6 @@ public class FindLogsQuery {
 
             ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getLogsFromIds", idsList);
             HashMap<String, Object> hm = new HashMap<String, Object>();
-            Log logger = LogFactory.getLog(FindLogsQuery.class);
             for (XmlLog log : logs) {
                 Collection<XmlProperty> props = log.getXmlProperties();
                 Map<String, String> attributes = new HashMap<String, String>();
