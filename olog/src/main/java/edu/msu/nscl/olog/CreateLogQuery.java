@@ -92,6 +92,7 @@ public class CreateLogQuery {
                     }
                 }
                 if (log.getXmlProperties().size() > 0) {
+                    int groupingNum = 1;
                     for (XmlProperty property : log.getXmlProperties()) {
                         if (property.getName().isEmpty() || property.getName() == null) {
                             throw new CFException(Response.Status.NOT_FOUND,
@@ -101,8 +102,7 @@ public class CreateLogQuery {
                         int propId;
                         if (property.getId() > 0) {
                             propId = property.getId();
-                        }
-                        else {
+                        } else {
                             XmlProperty prop = (XmlProperty) ss.selectOne("mappings.PropertyMapping.getProperty", property.getName());
                             propId = prop.getId();
                         }
@@ -110,6 +110,7 @@ public class CreateLogQuery {
                             hm.clear();
                             hm.put("lid", logId);
                             hm.put("pid", propId);
+                            hm.put("gnum", groupingNum);
                             Map<String, String> attributes = property.getAttributes();
                             Iterator attribute = attributes.entrySet().iterator();
                             while (attribute.hasNext()) {
@@ -121,18 +122,31 @@ public class CreateLogQuery {
                         } else {
                             throw new CFException(Response.Status.NOT_FOUND, "Property attributes could not be created");
                         }
-
+                        groupingNum++;
                     }
                 }
 
                 ss.commit();
+
+                // Get the previous logId (if it exists) and use it as the parent_id of the new log
+                Long pid = null;
+                if (log.getId() != null) {
+                    pid = log.getId();
+                    
+                    hm.clear();
+                    hm.put("pid", pid);
+                    hm.put("id", (long) logId);
+
+                    ss.update("mappings.LogMapping.updateParentId", hm);
+                    ss.commit();
+                }
 
                 // Get log object directly from db so all information is filled in and we can update the md5
                 log = FindLogsQuery.findLogByIdNoMD5((long) logId);
 
                 hm.clear();
 
-                hm.put("md5entry", getmd5Entry((long) logId, log));
+                hm.put("md5entry", getmd5Entry((pid != null) ? (long) pid : (long) logId, log));
                 hm.put("md5recent", getmd5Recent((long) logId));
                 hm.put("id", (long) logId);
 
@@ -236,7 +250,7 @@ public class CreateLogQuery {
             }
             explodeRecent += "md5_recent:" + line + "\n";
         }
-
+        
         entry = "id:" + logId + "\n"
                 + "level:" + log.getLevel() + "\n"
                 //+ "subject:" + log.getSubject() + "\n"
