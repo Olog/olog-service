@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlType;
 public class XmlProperty {
 
     private int id;
+    private int groupingNum;
     private String name = null;
     private Map<String, String> attributes;
     private XmlLogs logs = null;
@@ -71,6 +72,25 @@ public class XmlProperty {
      */
     public void setId(int id) {
         this.id = id;
+    }
+
+    /**
+     * Getter for property id.
+     * 
+     * @return property id
+     */
+    @XmlAttribute
+    public int getGroupingNum() {
+        return groupingNum;
+    }
+
+    /**
+     * Setter for property id.
+     * 
+     * @param id property id
+     */
+    public void setGroupingNum(int groupingNum) {
+        this.groupingNum = groupingNum;
     }
 
     /**
