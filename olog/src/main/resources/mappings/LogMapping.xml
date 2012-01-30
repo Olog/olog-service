@@ -16,7 +16,8 @@
 <!--        <result property="subject" column="subject" /> -->
         <result property="description" column="description" /> 
         <collection property="properties" ofType="Property" javaType="ArrayList">
-            <id property="id" column="prop_id" /> 
+            <id property="groupingNum" column="grouping_num" />
+            <result property="id" column="prop_id" /> 
             <result property="name" column="prop_name" /> 
             <collection property="attributes" ofType="Map" resultMap="attributesResultMap" />
         </collection>
@@ -258,7 +259,7 @@
     <select id="getLogsFromIds" parameterType="List" resultMap="logResultMap">
         <![CDATA[
             SELECT log.*, lbook.name as lbook_name, lbook.owner as lbook_owner, tag.name as tag_name, tag.*, level.name as level_name, 
-                prop.id as prop_id, prop.name as prop_name, 
+                prop.id as prop_id, prop.name as prop_name, grouping_num, 
                 (SELECT logs.created FROM logs WHERE log.parent_id=logs.id) as parent_created, 
                 ifnull((SELECT logs.created FROM logs WHERE log.parent_id=logs.id), log.created) as createdDate, 
                 if((SELECT logs.created FROM logs WHERE log.parent_id=logs.id), log.created, null) as modifiedDate,
@@ -342,9 +343,16 @@
         ]]>
     </update>
     
+    <update id="updateParentId" parameterType="HashMap">
+        <![CDATA[
+            UPDATE logs SET parent_id = #{pid} WHERE id = #{id}
+        ]]>
+    </update>
+    
+    
     <update id="updateMD5" parameterType="HashMap">
         <![CDATA[
-            UPDATE logs SET md5entry = #{md5entry}, md5recent = #{md5recent} where id = #{id}
+            UPDATE logs SET md5entry = #{md5entry}, md5recent = #{md5recent} WHERE id = #{id}
         ]]>
     </update>
     
