@@ -467,23 +467,47 @@ public class FindLogsQuery {
                     idsList.add(i);
                 }
             }
-
+            
             ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getLogsFromIds", idsList);
             HashMap<String, Object> hm = new HashMap<String, Object>();
+            
+            // Iterate through all the logs so we can add attributes
             for (XmlLog log : logs) {
+                
+                // All of the logs current properties minus attributes
                 Collection<XmlProperty> props = log.getXmlProperties();
-                Map<String, String> attributes = new HashMap<String, String>();
+                
+                // New collection of properties which will contain the log entries attributes
+                Collection<XmlProperty> newProps = new ArrayList<XmlProperty>();
+                
+                // Iterate through each current property
                 for (XmlProperty prop : props) {
+                    // Create a new property object to copy data from the current property
+                    XmlProperty newProp = new XmlProperty(prop.getName());
+                    newProp.setGroupingNum(prop.getGroupingNum());
+                    newProp.setId(prop.getId());
+                    
+                    Map<String, String> attributes = new HashMap<String, String>();
+                    
+                    // Get the attributes
                     hm.clear();
                     hm.put("lid", log.getId());
                     hm.put("pid", prop.getId());
+                    hm.put("gnum", prop.getGroupingNum());
                     ArrayList<HashMap> attrs = (ArrayList<HashMap>) ss.selectList("mappings.PropertyMapping.attributesForLog", hm);
-                    Iterator p = attrs.iterator();
+                    
+                    // Iterate through the returned hashmaps and populate the new attributes hashmap
                     for (HashMap hash : attrs) {
                         attributes.put(hash.get("name").toString(), hash.get("value").toString());
                     }
-                    prop.setAttributes(attributes);
+                    // Associate the attributes with the new property object
+                    newProp.setAttributes(attributes);
+                    
+                    // Add to the collection
+                    newProps.add(newProp);
                 }
+                // Set the logs new properties
+                log.setXmlProperties(newProps);
             }
 
             return logs;
