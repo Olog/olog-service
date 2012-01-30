@@ -165,7 +165,7 @@ CREATE TABLE  `ologdb4`.`attributes` (
   PRIMARY KEY (`id`),
   KEY `attributes_property_id_fk` (`property_id`),
   CONSTRAINT `attributes_property_id_fk` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
 
 --
 -- Definition of table `logs_attributes`
@@ -177,12 +177,13 @@ CREATE TABLE  `ologdb4`.`logs_attributes` (
   `log_id` int(11) NOT NULL,
   `attribute_id` int(11) NOT NULL,
   `value` varchar(200) NOT NULL,
+  `grouping_num` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `logs_attributes_attribute_id_fk` (`attribute_id`),
   KEY `logs_attributes_log_id_fk` (`log_id`),
   CONSTRAINT `logs_attributes_attribute_id_fk` FOREIGN KEY (`attribute_id`) REFERENCES `attributes` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `logs_attributes_log_id_fk` FOREIGN KEY (`log_id`) REFERENCES `logs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=179 DEFAULT CHARSET=latin1;
 
 --
 -- Definition of table `statuses`
