@@ -401,23 +401,8 @@ public class OLogManager {
     XmlLog addAttribute(String hostAddress, String property, Long logId, XmlProperty data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         XmlLog currentLog = findLogById(logId);
 
-        Collection<XmlProperty> currentProperties = currentLog.getXmlProperties();
-        if (currentProperties.size() > 0) {
-            for (XmlProperty prop : currentProperties) {
-                if (prop.getName().equals(data.getName())) {
-                    Map<String, String> attributes = prop.getAttributes();
-                    Set<String> incomingAttributes = data.getAttributes().keySet();
-                    for (String attr : incomingAttributes) {
-                        attributes.put(attr, data.getAttributes().get(attr));
-
-                    }
-                    prop.setAttributes(attributes);
-                }
-            }
-        } else {
-            currentProperties.add(data);
-        }
-
+        Collection<XmlProperty> currentProperties = currentLog.getXmlProperties();        
+        currentProperties.add(data);
         currentLog.setXmlProperties(currentProperties);
 
         return createOrReplaceLog(hostAddress, logId, currentLog);
