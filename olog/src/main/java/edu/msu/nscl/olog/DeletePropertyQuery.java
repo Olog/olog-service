@@ -28,7 +28,7 @@ class DeletePropertyQuery {
 
         try {
             // Remove property if no attributes are in the payload
-            if (data.getAttributes() == null) {
+            if (data.getAttributes() == null || data.getAttributes().keySet().isEmpty()) {
                 ss.update("mappings.PropertyMapping.setAsInactive", property);
             } else { // Remove attributes in payload
                 List<String> attributes = new ArrayList(data.getAttributes().keySet());
