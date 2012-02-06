@@ -31,6 +31,8 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -185,28 +187,27 @@ public class FindLogsQuery {
 
         try {
             Set<Long> ids = new HashSet<Long>();           // set of matching log ids
-            List<String> values = new ArrayList<String>();
-            List<String> names = new ArrayList<String>();
-
-            for (Map.Entry<String, Collection<String>> match : value_matches.asMap().entrySet()) {
-                names.add(match.getKey().toLowerCase());
-                for (String value : match.getValue()) {
-                    values.add(convertFileGlobToSQLPattern(value));
-                }
-            }
-            int size = value_matches.asMap().size();
 
             HashMap<String, Object> hm = new HashMap<String, Object>();
-            hm.put("propNameList", names);
-            hm.put("propValueList", values);
-            hm.put("size", size);
 
-            ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getIdsFromPropertiesMatch", hm);
-            if (logs != null) {
-                Iterator<XmlLog> iterator = logs.iterator();
-                while (iterator.hasNext()) {
-                    XmlLog log = iterator.next();
-                    ids.add(log.getId());
+            for (Map.Entry<String, String> match : value_matches.entries()) {
+                // Key is coming in as property[attribute] so lets split those two out
+                Pattern p = Pattern.compile("((?:[a-z][a-z]+))(\\[)((?:[a-z][a-z]+))(\\])");
+                Matcher m = p.matcher(match.getKey());
+                if (m.matches()) {
+                    hm.clear();
+                    hm.put("property", m.group(1));
+                    hm.put("attribute", m.group(3));
+                    hm.put("value", convertFileGlobToSQLPattern(match.getValue()));
+                    ArrayList<Long> logIds = (ArrayList<Long>) ss.selectList("mappings.PropertyMapping.getIdsFromPropertiesMatch", hm);
+                    if (logIds != null) {
+                        if (ids.isEmpty()) {
+                            ids.addAll(logIds);
+                        }
+                        else { // For AND operations
+                            ids.retainAll(logIds);
+                        }
+                    }
                 }
             }
 
@@ -467,42 +468,91 @@ public class FindLogsQuery {
                     idsList.add(i);
                 }
             }
-            
+
+//            final ArrayList<XmlLog> logs = new ArrayList<XmlLog>();
+//            ss.select("mappings.LogMapping.getLogsFromIds", idsList, new ResultHandler() {
+//
+//                @Override
+//                public void handleResult(ResultContext rc) {
+//                    XmlLog log = (XmlLog) rc.getResultObject();
+//
+//                    // All of the logs current properties minus attributes
+//                    Collection<XmlProperty> props = log.getXmlProperties();
+//
+//                    // New collection of properties which will contain the log entries attributes
+//                    Collection<XmlProperty> newProps = new ArrayList<XmlProperty>();
+//                    
+//                    HashMap<String, Object> hm = new HashMap<String, Object>();
+//
+//                    // Iterate through each current property
+//                    for (XmlProperty prop : props) {
+//                        // Create a new property object to copy data from the current property
+//                        XmlProperty newProp = new XmlProperty(prop.getName());
+//                        newProp.setGroupingNum(prop.getGroupingNum());
+//                        newProp.setId(prop.getId());
+//
+//                        Map<String, String> attributes = new HashMap<String, String>();
+//
+//                        // Get the attributes
+//                        hm.clear();
+//                        hm.put("lid", log.getId());
+//                        hm.put("pid", prop.getId());
+//                        hm.put("gnum", prop.getGroupingNum());
+//                        ArrayList<HashMap> attrs = (ArrayList<HashMap>) ss.selectList("mappings.PropertyMapping.attributesForLog", hm);
+//
+//                        // Iterate through the returned hashmaps and populate the new attributes hashmap
+//                        for (HashMap hash : attrs) {
+//                            attributes.put(hash.get("name").toString(), hash.get("value").toString());
+//                        }
+//                        // Associate the attributes with the new property object
+//                        newProp.setAttributes(attributes);
+//
+//                        // Add to the collection
+//                        newProps.add(newProp);
+//                    }
+//                    // Set the logs new properties
+//                    log.setXmlProperties(newProps);
+//                    
+//                    // Add to logs list
+//                    logs.add(log);
+//                }
+//            });
+
             ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getLogsFromIds", idsList);
             HashMap<String, Object> hm = new HashMap<String, Object>();
-            
+
             // Iterate through all the logs so we can add attributes
             for (XmlLog log : logs) {
-                
+
                 // All of the logs current properties minus attributes
                 Collection<XmlProperty> props = log.getXmlProperties();
-                
+
                 // New collection of properties which will contain the log entries attributes
                 Collection<XmlProperty> newProps = new ArrayList<XmlProperty>();
-                
+
                 // Iterate through each current property
                 for (XmlProperty prop : props) {
                     // Create a new property object to copy data from the current property
                     XmlProperty newProp = new XmlProperty(prop.getName());
                     newProp.setGroupingNum(prop.getGroupingNum());
                     newProp.setId(prop.getId());
-                    
+
                     Map<String, String> attributes = new HashMap<String, String>();
-                    
+
                     // Get the attributes
                     hm.clear();
                     hm.put("lid", log.getId());
                     hm.put("pid", prop.getId());
                     hm.put("gnum", prop.getGroupingNum());
                     ArrayList<HashMap> attrs = (ArrayList<HashMap>) ss.selectList("mappings.PropertyMapping.attributesForLog", hm);
-                    
+
                     // Iterate through the returned hashmaps and populate the new attributes hashmap
                     for (HashMap hash : attrs) {
                         attributes.put(hash.get("name").toString(), hash.get("value").toString());
                     }
                     // Associate the attributes with the new property object
                     newProp.setAttributes(attributes);
-                    
+
                     // Add to the collection
                     newProps.add(newProp);
                 }

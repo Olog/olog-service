@@ -28,6 +28,12 @@
         ]]>
     </select>
     
+    <select id="getAttribute" resultType="Long" parameterType="HashMap">
+        <![CDATA[
+            SELECT id FROM attributes WHERE name = #{aname} AND property_id = (SELECT id FROM properties WHERE name = #{pname})
+        ]]>
+    </select>
+    
     <select id="attributesForProperty" resultType="String" parameterType="Long">
         <![CDATA[
             SELECT attr.name FROM attributes as attr WHERE attr.property_id = #{pid} 
@@ -52,6 +58,14 @@
     <select id="lastId" resultType="int">
         <![CDATA[
             SELECT LAST_INSERT_ID() as propId
+        ]]>
+    </select>
+    
+    <select id="getIdsFromPropertiesMatch" resultType="Long" parameterType="HashMap">
+        <![CDATA[
+            SELECT log_id FROM logs_attributes WHERE attribute_id = 
+                (SELECT id FROM attributes WHERE name = #{attribute} AND property_id = (SELECT id FROM properties WHERE name = #{property}))
+                AND value LIKE #{value}
         ]]>
     </select>
   
