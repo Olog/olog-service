@@ -192,7 +192,7 @@ public class FindLogsQuery {
 
             for (Map.Entry<String, String> match : value_matches.entries()) {
                 // Key is coming in as property[attribute] so lets split those two out
-                Pattern p = Pattern.compile("((?:[a-z][a-z]+))(\\[)((?:[a-z][a-z]+))(\\])");
+                Pattern p = Pattern.compile("((?:[A-Za-z0-9]+))(\\[)((?:[A-Za-z0-9]+))(\\])");
                 Matcher m = p.matcher(match.getKey());
                 if (m.matches()) {
                     hm.clear();
