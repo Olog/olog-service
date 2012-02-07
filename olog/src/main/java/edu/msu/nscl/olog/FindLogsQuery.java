@@ -191,13 +191,12 @@ public class FindLogsQuery {
             HashMap<String, Object> hm = new HashMap<String, Object>();
 
             for (Map.Entry<String, String> match : value_matches.entries()) {
-                // Key is coming in as property[attribute] so lets split those two out
-                Pattern p = Pattern.compile("((?:[A-Za-z0-9]+))(\\[)((?:[A-Za-z0-9]+))(\\])");
-                Matcher m = p.matcher(match.getKey());
-                if (m.matches()) {
+                // Key is coming in as property.attribute so lets split those two out
+                List<String> group = Arrays.asList(match.getKey().split("\\."));
+                if (group.size() == 2) {
                     hm.clear();
-                    hm.put("property", m.group(1));
-                    hm.put("attribute", m.group(3));
+                    hm.put("property", group.get(0));
+                    hm.put("attribute", group.get(1));
                     hm.put("value", convertFileGlobToSQLPattern(match.getValue()));
                     ArrayList<Long> logIds = (ArrayList<Long>) ss.selectList("mappings.PropertyMapping.getIdsFromPropertiesMatch", hm);
                     if (logIds != null) {
