@@ -132,7 +132,8 @@
     <insert id="addAttributeToLog" parameterType="String">
         <![CDATA[
             INSERT INTO logs_attributes (log_id, attribute_id, value, grouping_num) VALUES (#{lid}, 
-                (SELECT id FROM attributes WHERE name = #{attribute} AND property_id = #{pid}), #{value}, #{gnum})
+                (SELECT id FROM attributes WHERE name = #{attribute} AND property_id = #{pid} 
+                AND status_id = (SELECT id FROM statuses WHERE name = 'Active')), #{value}, #{gnum})
         ]]>
     </insert>
   
