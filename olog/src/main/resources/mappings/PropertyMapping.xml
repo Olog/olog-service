@@ -64,7 +64,11 @@
     <select id="getIdsFromPropertiesMatch" resultType="Long" parameterType="HashMap">
         <![CDATA[
             SELECT log_id FROM logs_attributes WHERE attribute_id = 
-                (SELECT id FROM attributes WHERE name = #{attribute} AND property_id = (SELECT id FROM properties WHERE name = #{property}))
+                (SELECT id FROM attributes WHERE name = #{attribute} 
+                    AND property_id = 
+                        (SELECT id FROM properties WHERE name = #{property} 
+                        AND status_id = (SELECT id FROM statuses WHERE name = 'Active')) 
+                    AND status_id = (SELECT id FROM statuses WHERE name = 'Active'))
                 AND value LIKE #{value}
         ]]>
     </select>
