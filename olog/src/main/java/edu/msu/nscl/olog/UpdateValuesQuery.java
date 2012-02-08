@@ -49,15 +49,18 @@ public class UpdateValuesQuery {
             Long pid = FindLogbookIdsQuery.getLogbookId(name);
 
             if (pid == null) {
-                throw new CFException(Response.Status.NOT_FOUND, "A logbook named '" + name + "' does not exist");
+                throw new CFException(Response.Status.NOT_FOUND, "Log entry + " + logId 
+                        + " could not be added to logbook '" + name 
+                        + "': Logbook does not exist");
             }
             
             // Add incoming id
             ids.add(logId);
 
             if (ids.isEmpty()) {
-                throw new CFException(Response.Status.NOT_FOUND,
-                        "Logs specified in Logbook update do not exist");
+                throw new CFException(Response.Status.BAD_REQUEST,
+                        "Log entry could not be added to logbook '" + name 
+                        + "': No log specified");
             }
 
             HashMap<String, Object> hm = new HashMap<String, Object>();
@@ -96,7 +99,8 @@ public class UpdateValuesQuery {
             Long pid = FindLogbookIdsQuery.getLogbookId(logbook.getName());
 
             if (pid == null) {
-                throw new CFException(Response.Status.NOT_FOUND, "A logbook named '" + logbook.getName() + "' does not exist");
+                throw new CFException(Response.Status.NOT_FOUND, 
+                        "Logbook '" + logbook.getName() + "' could not be updated: Logbook does not exist");
             }
 
             XmlLogbook p = ListLogbooksQuery.findLogbook(logbook.getName());
@@ -126,7 +130,8 @@ public class UpdateValuesQuery {
                 ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getChildrenIds", newestVersionIds);
                 if (logs.isEmpty()) {
                     throw new CFException(Response.Status.NOT_FOUND,
-                            "Logs do not exist in getChildrenIds query");
+                            "Logbook '" + logbook.getName() + "' could not be updated: "
+                            + "No parent logs could be found");
                 }
 
                 for (XmlLog log : logs) {
@@ -136,7 +141,8 @@ public class UpdateValuesQuery {
 
             if (ids.isEmpty()) {
                 throw new CFException(Response.Status.NOT_FOUND,
-                        "Logs specified in Logbook update do not exist");
+                        "Logbook '" + logbook.getName() + "' could not be updated: "
+                        + "Logs specified do not exist");
             }
 
             HashMap<String, Object> hm = new HashMap<String, Object>();
@@ -182,7 +188,8 @@ public class UpdateValuesQuery {
             Long pid = FindLogbookIdsQuery.getLogbookId(tag.getName());
             
             if (pid == null) {
-                throw new CFException(Response.Status.NOT_FOUND, "A tag named '" + tag.getName() + "' does not exist");
+                throw new CFException(Response.Status.NOT_FOUND, 
+                        "Tag '" + tag.getName() + "' could not be updated: Does not exist");
             }
 
             if (name != null && !name.equals(tag.getName())) {
@@ -216,7 +223,8 @@ public class UpdateValuesQuery {
                 ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getChildrenIds", newestVersionIds);
                 if (logs.isEmpty()) {
                     throw new CFException(Response.Status.NOT_FOUND,
-                            "Logs do not exist in getChildrenIds query");
+                            "Tag '" + tag.getName() + "' could not be updated: "
+                            + "No parent logs could be found");
                 }
 
                 for (XmlLog log : logs) {
@@ -226,7 +234,8 @@ public class UpdateValuesQuery {
 
             if (ids.isEmpty()) {
                 throw new CFException(Response.Status.NOT_FOUND,
-                        "Logs specified in Logbook update do not exist");
+                        "Tag '" + tag.getName() + "' could not be updated: "
+                        + "Logs specified do not exist");
             }
 
             HashMap<String, Object> hm = new HashMap<String, Object>();
@@ -274,7 +283,8 @@ public class UpdateValuesQuery {
             // Get log id
             Long pid = FindLogbookIdsQuery.getLogbookId(tag);
             if (pid == null) {
-                throw new CFException(Response.Status.NOT_FOUND, "A tag named '" + tag + "' does not exist");
+                throw new CFException(Response.Status.NOT_FOUND, 
+                        "Tag '" + tag + "' could not be updated: Does not exist");
             }
              
             if (logs == null) {
@@ -296,7 +306,8 @@ public class UpdateValuesQuery {
                 ArrayList<XmlLog> logs_returned = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getChildrenIds", newestVersionIds);
                 if (logs_returned.isEmpty()) {
                     throw new CFException(Response.Status.NOT_FOUND,
-                            "Logs do not exist in getChildrenIds query");
+                            "Tag '" + tag + "' could not be updated: "
+                            + "No parent logs could be found");
                 }
 
                 for (XmlLog log : logs_returned) {
@@ -306,7 +317,8 @@ public class UpdateValuesQuery {
 
             if (ids.isEmpty()) {
                 throw new CFException(Response.Status.NOT_FOUND,
-                        "Logs specified in Logbook update do not exist");
+                        "Tag '" + tag + "' could not be updated: "
+                        + "Logs specified do not exist");
             }
 
             HashMap<String, Object> hm = new HashMap<String, Object>();

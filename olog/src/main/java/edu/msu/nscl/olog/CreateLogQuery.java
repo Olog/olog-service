@@ -62,14 +62,14 @@ public class CreateLogQuery {
                 // Insert logbook/tags
                 // Fail if there isn't at least one logbook
                 if (log.getXmlLogbooks().isEmpty()) {
-                    throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                            "There is no logbook associated with log: " + log.getId());
+                    throw new CFException(Response.Status.BAD_REQUEST,
+                            "Log entry " + log.getId() + " not created: No logbook specified.");
                 }
                 if (log.getXmlLogbooks().size() > 0 || log.getXmlTags().size() > 0) {
                     for (XmlLogbook logbook : log.getXmlLogbooks()) {
                         if (pids.get(logbook.getName()) == null) {
                             throw new CFException(Response.Status.NOT_FOUND,
-                                    "Logbook '" + logbook.getName() + "' does not exist");
+                                    "Log entry " + log.getId() + " not created: Logbook '" + logbook.getName() + "' does not exist");
                         }
 
                         hm.clear();
@@ -82,7 +82,7 @@ public class CreateLogQuery {
                     for (XmlTag tag : log.getXmlTags()) {
                         if (pids.get(tag.getName()) == null) {
                             throw new CFException(Response.Status.NOT_FOUND,
-                                    "Tag '" + tag.getName() + "' does not exist");
+                                    "Log entry " + log.getId() + " not created: Tag '" + tag.getName() + "' does not exist");
                         }
                         hm.clear();
                         hm.put("logid", logId);
@@ -95,8 +95,8 @@ public class CreateLogQuery {
                     int groupingNum = 1;
                     for (XmlProperty property : log.getXmlProperties()) {
                         if (property.getName().isEmpty() || property.getName() == null) {
-                            throw new CFException(Response.Status.NOT_FOUND,
-                                    "Property name (key) can not be null ");
+                            throw new CFException(Response.Status.BAD_REQUEST,
+                                    "Log entry " + log.getId() + " not created: Property name in the payload can not be empty");
                         }
 
                         int propId;
@@ -120,7 +120,8 @@ public class CreateLogQuery {
                                 ss.insert("mappings.PropertyMapping.addAttributeToLog", hm);
                             }
                         } else {
-                            throw new CFException(Response.Status.NOT_FOUND, "Property attributes could not be created");
+                            throw new CFException(Response.Status.NOT_FOUND, 
+                                    "Log entry " + log.getId() + " not created: Property " + property.getName() + " does not exist");
                         }
                         groupingNum++;
                     }
@@ -152,8 +153,8 @@ public class CreateLogQuery {
 
                 ss.update("mappings.LogMapping.updateMD5", hm);
             } else {
-                throw new CFException(Response.Status.NOT_FOUND,
-                        "Log could not be created");
+                throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                        "The log entry could not be created in the database");
             }
 
             ss.commit();

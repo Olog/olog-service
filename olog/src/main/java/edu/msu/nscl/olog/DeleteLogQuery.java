@@ -36,7 +36,7 @@ public class DeleteLogQuery {
             int rows = ss.update("mappings.LogMapping.deleteLog", logId);
             if (rows == 0) {
                 throw new CFException(Response.Status.NOT_FOUND,
-                        "Log '" + logId + "' does not exist");
+                        "Could not delete log entry '" + logId + "': Does not exist");
             }
             ss.commit();
         } catch (PersistenceException e) {

@@ -61,7 +61,7 @@ public class DeleteLogbookQuery {
             int rows = ss.update("mappings.LogbookMapping.removeExistingLogbook", lid);
             if (rows == 0) {
                 throw new CFException(Response.Status.NOT_FOUND,
-                        "Logbook/tag '" + name + "' does not exist for log '" + lid + "'");
+                        "The logbook/tag '" + name + "' could not be removed: Does not exist");
             }
 
             ss.commit();

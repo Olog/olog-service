@@ -501,8 +501,7 @@ public class OLogManager {
         XmlLog dest = findLogById(logId);
         if (dest == null) {
             throw new CFException(Response.Status.NOT_FOUND,
-                    "Specified log '" + logId
-                    + "' does not exist");
+                    "Log entry " + logId + " could not be updated: Does not exist");
         }
         dest.setId(data.getId());
         dest.setOwner(data.getOwner());
@@ -539,7 +538,7 @@ public class OLogManager {
 //        }
         if (data.getOwner() == null || data.getOwner().equals("")) {
             throw new CFException(Response.Status.BAD_REQUEST,
-                    "Invalid log owner (null or empty string) for '" + data.getId() + "'");
+                    "Log entry " + data.getId() + " does not have an owner.");
         }
     }
 
@@ -571,8 +570,8 @@ public class OLogManager {
         }
         if (!name.equals(data.getName())) {
             throw new CFException(Response.Status.BAD_REQUEST,
-                    "Specified tag name '" + name
-                    + "' and payload tag name '" + data.getName() + "' do not match");
+                    "Tag specified in the URL '" + name 
+                    + "' and tag specified in the payload '" + data.getName() + "' do not match");
         }
     }
 
@@ -585,7 +584,7 @@ public class OLogManager {
     public void checkValidNameAndOwner(XmlTag data) throws CFException {
         if (data.getName() == null || data.getName().equals("")) {
             throw new CFException(Response.Status.BAD_REQUEST,
-                    "Invalid tag name (null or empty string)");
+                    "The specified tag does not have a name");
         }
     }
 
@@ -599,7 +598,9 @@ public class OLogManager {
     public void checkPropertyName(String propertyName, XmlProperty data) throws CFException {
         if (data.getName() == null || !data.getName().equals(propertyName)) {
             throw new CFException(Response.Status.BAD_REQUEST,
-                    "The property name in the URL does not match the property name in the payload.");
+                    "The property name in the URL '" + propertyName 
+                    + "' and the property name in the payload '" + data.getName()
+                    + "' do not match");
         }
     }
 
@@ -628,8 +629,8 @@ public class OLogManager {
     public void checkNameMatchesPayload(String name, XmlLogbook data) throws CFException {
         if (!name.equals(data.getName())) {
             throw new CFException(Response.Status.BAD_REQUEST,
-                    "Specified logbook name '" + name
-                    + "' and payload logbook name '" + data.getName() + "' do not match");
+                    "The logbook in the URL '" + name
+                    + "' and the logbook in the payload '" + data.getName() + "' do not match");
         }
     }
 
@@ -642,11 +643,11 @@ public class OLogManager {
     public void checkValidNameAndOwner(XmlLogbook data) throws CFException {
         if (data.getName() == null || data.getName().equals("")) {
             throw new CFException(Response.Status.BAD_REQUEST,
-                    "Invalid logbook name (empty string)");
+                    "Logbook name is empty");
         }
         if (data.getOwner() == null || data.getOwner().equals("")) {
             throw new CFException(Response.Status.BAD_REQUEST,
-                    "Invalid logbook owner (null or empty string) for '" + data.getName() + "'");
+                    "Logbook '" + data.getName() + "' does not have an owner");
         }
     }
 
