@@ -55,6 +55,7 @@ public class FindLogsQuery {
     private List<String> logbook_matches = new ArrayList();
     private List<String> tag_matches = new ArrayList();
     private List<String> tag_patterns = new ArrayList();
+    private List<String> property_matches = new ArrayList();
     private List<Long> jcr_search_ids = new ArrayList();
     private static SqlSessionFactory ssf = MyBatisSession.getSessionFactory();
 
@@ -78,6 +79,8 @@ public class FindLogsQuery {
                 addTagMatches(match.getValue());
             } else if (key.equals("logbook")) {
                 addLogbookMatches(match.getValue());
+            } else if (key.equals("property")) {
+                addPropertyMatches(match.getValue());
             } else if (key.equals("page")) {
                 logPaginate_matches.putAll(key, match.getValue());
             } else if (key.equals("limit")) {
@@ -132,6 +135,12 @@ public class FindLogsQuery {
             } else {
                 tag_matches.add(m);
             }
+        }
+    }
+
+    private void addPropertyMatches(Collection<String> matches) {
+        for (String m : matches) {
+            property_matches.add(m);
         }
     }
 
@@ -202,12 +211,39 @@ public class FindLogsQuery {
                     if (logIds != null) {
                         if (ids.isEmpty()) {
                             ids.addAll(logIds);
-                        }
-                        else { // For AND operations
+                        } else { // For AND operations
                             ids.retainAll(logIds);
                         }
                     }
                 }
+            }
+
+            return ids;
+        } catch (PersistenceException e) {
+            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "MyBatis exception: " + e);
+        } finally {
+            ss.close();
+        }
+
+
+    }
+
+    /**
+     * Creates and executes the property string match subquery using GROUP.
+     *
+     * @param con connection to use
+     * @return a set of log ids that match
+     */
+    private Set<Long> getIdsFromPropertyMatch(String match) throws CFException {
+        SqlSession ss = ssf.openSession();
+
+        try {
+            Set<Long> ids = new HashSet<Long>();           // set of matching log ids
+
+            ArrayList<Long> log_ids = (ArrayList<Long>) ss.selectList("mappings.PropertyMapping.getIdsFromPropertyMatch", match);
+            if (log_ids != null) {
+                ids.addAll(log_ids);
             }
 
             return ids;
@@ -312,6 +348,16 @@ public class FindLogsQuery {
                     return null;
                 }
                 idsList.addAll(ids);
+            }
+
+            if (!property_matches.isEmpty()) {
+                for (String property : property_matches) {
+                    Set<Long> ids = getIdsFromPropertyMatch(property);
+                    if (ids.isEmpty()) {
+                        return null;
+                    }
+                    idsList.addAll(ids);
+                }
             }
 
             if (!tag_patterns.isEmpty()) {
