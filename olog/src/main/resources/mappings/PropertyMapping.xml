@@ -63,23 +63,32 @@
     
     <select id="getIdsFromPropertiesMatch" resultType="Long" parameterType="HashMap">
         <![CDATA[
-            SELECT log_id FROM logs_attributes WHERE attribute_id = 
+            SELECT log_id FROM logs_attributes
+            LEFT JOIN logs AS log ON log.id = log_id LEFT JOIN logs AS parent ON log.id = parent.parent_id
+            WHERE (parent.parent_id IS NULL and log.parent_id IS NULL 
+                    OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id)) 
+            AND attribute_id = 
                 (SELECT id FROM attributes WHERE name = #{attribute} 
                     AND property_id = 
                         (SELECT id FROM properties WHERE name = #{property} 
                         AND status_id = (SELECT id FROM statuses WHERE name = 'Active')) 
                     AND status_id = (SELECT id FROM statuses WHERE name = 'Active'))
-                AND value LIKE #{value}
+                AND value LIKE #{value} AND log.status_id = (SELECT id FROM statuses WHERE name = 'Active')
         ]]>
     </select>
     
         <select id="getIdsFromPropertyMatch" resultType="Long" parameterType="String">
         <![CDATA[
-            SELECT log_id FROM logs_attributes WHERE attribute_id = 
+            SELECT log_id FROM logs_attributes
+            LEFT JOIN logs AS log ON log.id = log_id LEFT JOIN logs AS parent ON log.id = parent.parent_id
+            WHERE (parent.parent_id IS NULL and log.parent_id IS NULL 
+                    OR log.id IN (SELECT MAX(logs.id) FROM logs WHERE logs.parent_id=log.parent_id))
+            AND attribute_id = 
                 (SELECT id FROM attributes WHERE property_id = 
                         (SELECT id FROM properties WHERE name = #{match} 
                             AND status_id = (SELECT id FROM statuses WHERE name = 'Active'))
                     AND status_id = (SELECT id FROM statuses WHERE name = 'Active'))
+            AND log.status_id = (SELECT id FROM statuses WHERE name = 'Active')
         ]]>
     </select>
   
