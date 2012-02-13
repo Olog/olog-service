@@ -116,7 +116,11 @@ public class DeleteLogbookQuery {
             hm.put("lid", lid);
             hm.put("logid", logId);
 
-            ss.update("mappings.LogbookMapping.deleteOneValue", hm);
+            int rows = ss.update("mappings.LogbookMapping.deleteOneValue", hm);
+            if (rows == 0) {
+                throw new CFException(Response.Status.NOT_FOUND,
+                        "The logbook/tag '" + name + "' could not be removed: It is not associated with log entry " + lid);
+            }
 
             ss.commit();
         } catch (PersistenceException e) {
