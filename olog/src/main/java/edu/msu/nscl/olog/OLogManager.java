@@ -401,7 +401,7 @@ public class OLogManager {
     XmlLog addAttribute(String hostAddress, String property, Long logId, XmlProperty data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         XmlLog currentLog = findLogById(logId);
 
-        Collection<XmlProperty> currentProperties = currentLog.getXmlProperties();        
+        Collection<XmlProperty> currentProperties = currentLog.getXmlProperties();
         currentProperties.add(data);
         currentLog.setXmlProperties(currentProperties);
 
@@ -431,6 +431,10 @@ public class OLogManager {
 
         // Remove attributes from incoming payload from the current log
         Collection<XmlProperty> currentProperties = currentLog.getXmlProperties();
+        if (currentProperties.isEmpty() || currentProperties == null) {
+            throw new CFException(Response.Status.NOT_FOUND,
+                    "Log entry " + logId + " could not be updated: Property '" + data.getName() + "' is not associated with this log.");
+        }
         for (XmlProperty prop : currentProperties) {
             if (prop.getName().equals(data.getName())) {
                 Map<String, String> attributes = prop.getAttributes();
@@ -441,6 +445,9 @@ public class OLogManager {
                     }
                 }
                 prop.setAttributes(attributes);
+            } else {
+                throw new CFException(Response.Status.NOT_FOUND,
+                        "Log entry " + logId + " could not be updated: Property '" + data.getName() + "' is not associated with this log.");
             }
         }
         currentLog.setXmlProperties(currentProperties);
@@ -570,7 +577,7 @@ public class OLogManager {
         }
         if (!name.equals(data.getName())) {
             throw new CFException(Response.Status.BAD_REQUEST,
-                    "Tag specified in the URL '" + name 
+                    "Tag specified in the URL '" + name
                     + "' and tag specified in the payload '" + data.getName() + "' do not match");
         }
     }
@@ -598,7 +605,7 @@ public class OLogManager {
     public void checkPropertyName(String propertyName, XmlProperty data) throws CFException {
         if (data.getName() == null || !data.getName().equals(propertyName)) {
             throw new CFException(Response.Status.BAD_REQUEST,
-                    "The property name in the URL '" + propertyName 
+                    "The property name in the URL '" + propertyName
                     + "' and the property name in the payload '" + data.getName()
                     + "' do not match");
         }
