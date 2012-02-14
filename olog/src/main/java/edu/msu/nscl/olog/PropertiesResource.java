@@ -53,7 +53,7 @@ public class PropertiesResource {
         try {
             result = cm.listProperties();
             Response r = Response.ok(result).build();
-            log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
+            audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.getProperties().size() + " properties");
             return r;
         } catch (CFException e) {
@@ -81,7 +81,7 @@ public class PropertiesResource {
             cm.checkPropertyName(newProperty, data);
             result = cm.addProperty(newProperty, data, true);
             Response r = Response.ok(result).build();
-            log.fine(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
+            audit.info(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
             return r;
         } catch (CFException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|PUT|ERROR|"
@@ -105,7 +105,7 @@ public class PropertiesResource {
         try {
             result = cm.listAttributes(property);
             Response r = Response.ok(result).build();
-            log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
+            audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
         } catch (CFException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
@@ -132,7 +132,7 @@ public class PropertiesResource {
             cm.checkPropertyName(newProperty, data);
             result = cm.addProperty(newProperty, data, false);
             Response r = Response.ok(result).build();
-            log.fine(user + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus());
+            audit.info(user + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus());
             return r;
         } catch (CFException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|POST|ERROR|"
@@ -157,7 +157,7 @@ public class PropertiesResource {
         try {
             cm.removeProperty(property, data);
             Response r = Response.ok().build();
-            log.fine(user + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
+            audit.info(user + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
         } catch (CFException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|DELETE|ERROR|"
@@ -186,7 +186,7 @@ public class PropertiesResource {
             cm.checkPropertyName(property, data);
             result = cm.addAttribute(hostAddress, property, logId, data);
             Response r = Response.ok(result).build();
-            log.fine(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
+            audit.info(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
             return r;
         } catch (CFException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|PUT|ERROR|"
@@ -215,7 +215,7 @@ public class PropertiesResource {
             cm.checkPropertyName(property, data);
             result = cm.removeAttribute(hostAddress, property, logId, data);
             Response r = Response.ok(result).build();
-            log.fine(user + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
+            audit.info(user + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
         } catch (CFException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|DELETE|ERROR|"
