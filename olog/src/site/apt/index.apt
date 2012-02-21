@@ -39,6 +39,6 @@ properties and tags, as an XML or JSON document.
   Two design documents are available - these are also included in the WAR file as part
 of the internal web site of the application.
 
- * {{{https://sourceforge.net/apps/trac/olog/raw-attachment/wiki/WikiStart/Olog-Design.pdf}Design Paper}} (16 Nov 2009; 2 pages)
+ * {{{http://olog.hg.sourceforge.net/hgweb/olog/olog-service/raw-file/tip/doc/Elog-Manuals-Arch.docx}Manuals}}
 
- * {{{https://sourceforge.net/apps/trac/olog/raw-attachment/wiki/WikiStart/OLog-API.pdf}API Description}} (16 Nov 2010; 9 pages)
+ * {{{http://code.google.com/p/acceldesign/wiki/Logbook}Design}}

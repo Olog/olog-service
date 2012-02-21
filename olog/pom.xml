@@ -32,9 +32,9 @@
         </developer>
     </developers>
     <scm>
-        <connection>scm:hg:http://olog.hg.sourceforge.net:8000/hgroot/olog/olog-service</connection>
-        <developerConnection>scm:hg:ssh://user@olog.hg.sourceforge.net/hgroot/olog/olog-service</developerConnection>
-        <url>http://olog.hg.sourceforge.net/hgweb/olog/olog-service/</url>
+        <connection>scm:hg:http://olog.hg.sourceforge.net:8000/hgroot/olog/</connection>
+        <developerConnection>scm:hg:ssh://user@olog.hg.sourceforge.net/hgroot/olog/</developerConnection>
+        <url>http://olog.hg.sourceforge.net/hgweb/olog/</url>
     </scm>
     <issueManagement>
         <system>jira</system>
@@ -42,7 +42,7 @@
     </issueManagement>
     <ciManagement>
         <system>Jenkins</system>
-        <url>https://irmis-dev.bnl.gov/jenkins/job/olog-service%20-%20Site/</url>
+        <url>https://irmis-dev.bnl.gov/jenkins/view/Olog/</url>
     </ciManagement>
     <repositories>
         <repository>

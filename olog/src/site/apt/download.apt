@@ -16,4 +16,4 @@ Download
 
   Latest unreleased version:
 
-  {{{https://irmis-dev.bnl.gov/jenkins/job/olog-service%20-%20Site/lastSuccessfulBuild/artifact/olog/dist/olog-service.tar.gz}Latest development build}}
+  {{{https://irmis-dev.bnl.gov/jenkins/job/olog-service%20Build/lastSuccessfulBuild/artifact/olog/target/olog-service.war}Latest development build}}
