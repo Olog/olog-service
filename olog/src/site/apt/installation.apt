@@ -6,9 +6,9 @@
 
 Installation
 
-  ChannelFinder is a Java EE5 REST-style web service. The directory data is held in
+  Olog is a Java EE5 REST-style web service. The directory data is held in
 a relational database, and authentication/authorization info as well as the user/group
-relations are taken from an LDAP server.
+relations are taken from an LDAP server or Unix "id".
 
 * Prerequisites
 
@@ -16,7 +16,7 @@ relations are taken from an LDAP server.
 
   * SQL database with JDBC driver, e.g. mySQL
 
-  * LDAP server, e.g. OpenLDAP
+  * LDAP server, e.g. OpenLDAP or unix "id"
 
 * Installation Process
 
@@ -29,17 +29,17 @@ relations are taken from an LDAP server.
 ** Install mySQL and JDBC Drivers
 
   * If your site is running a mySQL server, you can skip the next step, and have
-    the database manager create the channelfinder tables and user for you.
+    the database manager create the olog tables and user for you.
 
   * Download and install mySQL from {{{http://www.mysql.com/downloads/mysql/}MySQL.com}}
     following the instructions for your platform.\
     <Alternatively:> Install the mySQL server from your distribution using a package manager.
 
-  * Create the ChannelFinder tables using the <<<sql/channelfinder-base.sql>>>
+  * Create the olog tables using the <<<sql/olog.sql>>>
     script in the distribution tar.
     Unless you are running the mySQL server locally on your machine with access restricted to localhost,
-    it is strongly advisable to create a user for the ChannelFinder service and give it
-    sufficient rights on the channelfinder database. Having the ChannelFinder service access
+    it is strongly advisable to create a user for the Olog service and give it
+    sufficient rights on the olog database. Having the Olog service access
     the database as root is a possible security hole.
 
   * Download the JDBC driver from {{{http://www.mysql.com/downloads/connector/j/}MySQL.com}}.
@@ -56,16 +56,16 @@ relations are taken from an LDAP server.
 
   * Open "Common Tasks" / "Resources" / "JDBC" / "Connection Pools".
 
-  * Create a new Connection Pool called "ChannelFinderPool", selecting
+  * Create a new Connection Pool called "OlogPool", selecting
     "javax.sql.ConnectionPoolDataSource" as your "Resource Type" and "MySQL" as "Database vendor".
 
   * Fill in the details according to your mySQL installation. Minimum are:
 
     * Server Name (e.g. "localhost")
 
-    * Database Name ("channelfinder")
+    * Database Name ("olog")
 
-    * User Name (for access to channelfinder, as set in mySQL)
+    * User Name (for access to olog, as set in mySQL)
 
     * Password (for that user name, as set in mySQL)
 
@@ -74,7 +74,7 @@ relations are taken from an LDAP server.
 
   * Open "Common Tasks" / "Resources" / "JDBC" / "JDBC Resources".
 
-  * Create a new JNDI resource called "jdbc/channelfinder", selecting the Connection Pool you just created.
+  * Create a new JNDI resource called "jdbc/olog", selecting the Connection Pool you just created.
 
 ** Install an LDAP Server
 
@@ -87,7 +87,7 @@ relations are taken from an LDAP server.
 
   * Set up users and groups. The <<<ldif/cftest.ldif>>> file in the distribution shows
     the LDAP entries I create to run the integration tests. That should give you an idea
-    about the structures that ChannelFinder expects.
+    about the structures that Olog expects.
 
 ** Create the LDAP Connection for Authentication/Authorization
 
@@ -95,7 +95,7 @@ relations are taken from an LDAP server.
 
   * Open "Common Tasks" / "Configuration" / "Security" / "Realms".
 
-  * Create a new realm called "channelfinder", setting the "Class Name" to
+  * Create a new realm called "olog", setting the "Class Name" to
     "com.sun.enterprise.security.auth.realm.ldap.LDAPRealm", and the "JAAS Context" to "ldapRealm".
     "Directory" and "Base DN" should reflect your LDAP configuration. (My integration tests use
     "ldap://localhost:389" as "Directory" and "dc=cf-test,dc=bnl,dc=gov" as "Base DN" which connects
@@ -110,16 +110,16 @@ relations are taken from an LDAP server.
 
   * Open "Common Tasks" / "Resources" / "JNDI" / "Custom Resources".
 
-  * Create a new resource called "channelfinderGroups", setting the "Resource Type" to
+  * Create a new resource called "ologGroups", setting the "Resource Type" to
     "javax.naming.directory.Directory", and the "Factory Class" to "com.sun.jndi.ldap.LdapCtxFactory".
 
   * Add two additional properties "URL" and "javax.naming.security.principal" reflecting your
     LDAP configuration. (My integration test use "URL" = "ldap://localhost/dc=cf-test,dc=bnl,dc=gov"
-    and "javax.naming.security.principal" = "cn=channelfinder,dc=nsls2,dc=bnl,dc=gov".)
+    and "javax.naming.security.principal" = "cn=olog,dc=nsls2,dc=bnl,dc=gov".)
 
-** Deploy the ChannelFinder Application
+** Deploy the Olog Application
 
-  * Drop the ChannelFinder WAR file <<<war/ChannelFinder.war>>> into
+  * Drop the Olog WAR file <<<war/olog-service.war>>> into
     <<<GLASSFISH_HOME/domains/domain1/autodeploy>>>.
     (You may have to create the autodeploy directory if it doesn't exist yet.)\
     <Alternatively:> Call <<<asadmin deploy <WAR-file>>>> (<<<asadmin.bat>>> on Windows)
@@ -129,14 +129,14 @@ relations are taken from an LDAP server.
 
 ** Using a Browser
 
-  Once deployed, ChannelFinder should be listening for requests.
+  Once deployed, Olog should be listening for requests.
 
-  For a Glassfish default installation on localhost, the URL "http://localhost:8080/ChannelFinder/"
+  For a Glassfish default installation on localhost, the URL "http://localhost:8080/Olog/"
 should get you to the top page of the embedded web site, showing documentation, links to the
 SourceForge project site, and Build information.
 
-  For a list of all channels in your database, try pointing your browser to
-"http://localhost:8080/ChannelFinder/resources/channels".
+  For a list of all logs in your database, try pointing your browser to
+"http://localhost:8080/Olog/resources/logs".
 
 ** Using a Generic Client
 
