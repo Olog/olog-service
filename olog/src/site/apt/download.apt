@@ -1,7 +1,9 @@
    ----
    Download
    ----
-   Ralph Lange
+   Eric Berryman
+   Robert Gaul
+   Kunal Shroff
    ----
 
 Download
@@ -9,9 +11,9 @@ Download
   Released versions:
 
 *----------------+----------------------+
-| Version 1.0.0  |  {{{http://downloads.sourceforge.net/channelfinder/ChannelFinder/channelfinder-1.0.0.tar.gz}Download v1.0.0}} |
+| Version 2.1.0  |  {{{http://downloads.sourceforge.net/olog/olog/olog-service-2.1.0.tar.gz}Download v2.1.0}} |
 *----------------+----------------------+
 
   Latest unreleased version:
 
-  {{{https://irmis-dev.bnl.gov/hudson/job/ChannelFinder%20-%20Build/lastSuccessfulBuild/artifact/channelfinder/dist/channelfinder.tar.gz}Latest development build}}
+  {{{https://irmis-dev.bnl.gov/jenkins/job/olog-service%20-%20Site/lastSuccessfulBuild/artifact/olog/dist/olog-service.tar.gz}Latest development build}}

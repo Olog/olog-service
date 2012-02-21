@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Olog">
+<project name="Olog-service">
     <bannerLeft>
         <name>Olog</name>
         <!--<src>http://maven.apache.org/images/apache-maven-project.png</src>-->
-        <href>http://olog.sourceforge.net</href>
+        <href>http://sourceforge.net/projects/olog/</href>
     </bannerLeft>
 
     <!--<bannerRight>
@@ -14,7 +14,7 @@
         <links>
             <item name="EPICS" href="http://www.aps.anl.gov/epics/"/>
         </links>
-        <menu name="Olog">
+        <menu name="Olog-service">
             <item name="Overview" href="index.html"/>
             <item name="Download" href="download.html"/>
             <item name="Installation" href="installation.html"/>

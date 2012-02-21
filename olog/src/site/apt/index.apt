@@ -1,10 +1,10 @@
    ----
    Overview
    ----
-   Ralph Lange
+   Eric Berryman
    ----
 
-ChannelFinder Overview
+Olog-service Overview
 
   ChannelFinder is a directory server, implemented as a REST style web service.
 Its intended use is within control systems, namely the EPICS Control system, for which it has been written.
