@@ -6,31 +6,30 @@
 
 Olog-service Overview
 
-  ChannelFinder is a directory server, implemented as a REST style web service.
-Its intended use is within control systems, namely the EPICS Control system, for which it has been written.
+  Olog is a directory server, implemented as a REST style web service.
+Its intended use is as an electronic logbook for accelerator operations
 
 * Motivation and Objectives
 
-  High level applications tend to prefer an hierarchical view of the control system name space.
-They group channel names by location or physical function. The name space of the EPICS Channel Access protocol,
-on the other hand, is flat. A good and thoroughly enforced naming convention may solve the problem of creating
-unique predictable names. It does not free every application from being configured explicitly,
-so that it knows all channel names it might be interested in beforehand.
+  A Logbook is a critical element used in order to record information acquired over time.  
+This information usually consists of data sets, ongoing activities, and events occurring; with the 
+main purpose of having a history of what was known at a certain time.  This project will create a 
+new logbook application, with a flexible plugin-based framework, that can meet future requirements 
+through the use of additional plugins.
 
-  ChannelFinder tries to overcome this limitation by implementing a generic directory service,
-which applications can query for a list of channels that match certain conditions,
-such as physical functionality or location. It also provides mechanisms to create channel name aliases,
-allowing for different perspectives of the same set of channel names.
+ Olog tries to overcome this limitation by implementing a generic log service,
+which applications can query for a list of logs that match certain conditions,
+such as physical functionality or location.
 
-* Directory Data Structure
+* Log Data Structure
 
- Each directory entry consists of a channel <name>, an arbitrary set of <properties> (name-value pairs),
+ Each log entry consists of a log, an arbitrary set of <properties> (name-value pairs),
 and an arbitrary set of <tags> (names).
 
 * Basic Operation
 
  An application sends an HTTP query to the service, specifying an expression that references tags,
-properties and their values, or channel names. The service returns a list of matching channels with their
+properties and their values, or log id. The service returns a list of matching logs with their
 properties and tags, as an XML or JSON document.
 
  Other methods allow manipulation of directory entries: create, update, add properties or tags, delete.
