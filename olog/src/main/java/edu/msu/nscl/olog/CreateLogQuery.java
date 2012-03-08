@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.ws.rs.core.Response;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
@@ -147,8 +148,8 @@ public class CreateLogQuery {
 
                 hm.clear();
 
-                hm.put("md5entry", getmd5Entry((pid != null) ? (long) pid : (long) logId, log));
-                hm.put("md5recent", getmd5Recent((long) logId));
+                hm.put("md5entry", getmd5Entry(log));
+                hm.put("md5recent", getmd5Recent(log.getTableId()));
                 hm.put("id", (long) logId);
 
                 ss.update("mappings.LogMapping.updateMD5", hm);
@@ -239,11 +240,11 @@ public class CreateLogQuery {
      * @return md5Entry String MD5 encoded XmlLog Object
      * @todo Move this to LogEnt as a private function
      */
-    public static String getmd5Entry(Long logId, XmlLog log) throws UnsupportedEncodingException, NoSuchAlgorithmException, CFException {
+    public static String getmd5Entry(XmlLog log) throws UnsupportedEncodingException, NoSuchAlgorithmException, CFException {
         String entry;
         String explodeRecent = "";
         List<String> explodeRecentArray = new ArrayList<String>();
-        explodeRecentArray = Arrays.asList(getmd5Recent(logId).split("\n"));
+        explodeRecentArray = Arrays.asList(getmd5Recent(log.getTableId()).split("\n"));
 
         for (String line : explodeRecentArray) {
             if ((line == null ? "" == null : line.equals("")) || (line == null ? "\n" == null : line.equals("\n"))) {
@@ -252,7 +253,7 @@ public class CreateLogQuery {
             explodeRecent += "md5_recent:" + line + "\n";
         }
         
-        entry = "id:" + logId + "\n"
+        entry = "id:" + log.getTableId() + "\n"
                 + "level:" + log.getLevel() + "\n"
                 //+ "subject:" + log.getSubject() + "\n"
                 + "description:" + log.getDescription() + "\n"
@@ -261,7 +262,10 @@ public class CreateLogQuery {
                 + "source:" + log.getSource() + "\n"
                 + "owner:" + log.getOwner() + "\n"
                 + explodeRecent;
-
+        
+        if (log.getTableId() == 1408 || log.getTableId() == 1409){
+            String test = "test";
+        }
         byte[] bytesOfMessage = entry.getBytes("UTF-8");
         MessageDigest md = MessageDigest.getInstance("MD5");
         byte[] md5Entry = md.digest(bytesOfMessage);

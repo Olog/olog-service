@@ -670,7 +670,7 @@ public class FindLogsQuery {
             Iterator<XmlLog> iterator = logs.iterator();
             while (iterator.hasNext()) {
                 XmlLog log = iterator.next();
-                if (log.getMD5Entry().equals(CreateLogQuery.getmd5Entry(log.getId(), log))) {
+                if (log.getMD5Entry().equals(CreateLogQuery.getmd5Entry(log))) {
                     xmlLogs.addXmlLog(log);
                 }
             }
@@ -717,7 +717,7 @@ public class FindLogsQuery {
             Iterator<XmlLog> iterator = logs.iterator();
             while (iterator.hasNext()) {
                 XmlLog log = iterator.next();
-                if (log.getMD5Entry().equals(CreateLogQuery.getmd5Entry(log.getId(), log))) {
+                if (log.getMD5Entry().equals(CreateLogQuery.getmd5Entry(log))) {
                     xmlLog = log;
                 }
             }

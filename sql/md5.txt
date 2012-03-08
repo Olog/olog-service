@@ -1,0 +1,17 @@
+id:1086
+level:Info
+description:Started cooling down the EBIT by taking LHe from the cryoplant. Started at 12:00 PM on 11/03/2011 and stopped at midnight. The cool down went rather well, but the magnet temperature was still just a little less than 77 K. As it is, it might take another 6 hours to reach 4 K. Stopped for the night and we'll finish up tomorrow (11/04/2011).
+created:Fri Nov 04 11:09:15 EDT 2011
+modified:null
+source:0.0.0.0
+owner:lapierre
+md5_recent:1085 5261e9b5ceba27ab4a459b7b095babcd
+md5_recent:1084 5ba807cab6c76a66bc4e51df6dc97ee5
+md5_recent:1083 38ff2b2ee036b0bc10c0e4403b6984a7
+md5_recent:1082 870b824d88ffa6c652fb86769ed0d186
+md5_recent:1081 a00f03d3759a952934c22c303d4d061c
+md5_recent:1080 c297518c01b430f1eab2fc27864add29
+md5_recent:1079 4c9f315c0faa1825a65c39788369d373
+md5_recent:1078 33e2e0e5983d6320c666f69d65173abd
+md5_recent:1077 25c904eb1010d5c1a53806629c9c2622
+md5_recent:1076 bb3088e7279024e34819bdf68984cebd

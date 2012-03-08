@@ -10,7 +10,8 @@
         <result property="level" column="level_name" /> 
         <result property="source" column="source" /> 
         <result property="md5Entry" column="md5entry" /> 
-        <result property="md5Recent" column="md5recent" /> 
+        <result property="md5Recent" column="md5recent" />
+        <result property="tableId" column="id" /> 
         <result property="createdDate" column="createdDate" /> 
         <result property="modifiedDate" column="modifiedDate" /> 
 <!--        <result property="subject" column="subject" /> -->
