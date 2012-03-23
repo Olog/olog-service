@@ -70,17 +70,17 @@ def getmd5Entry(log):
     else:
         entry += 'description:' + unicode(log.getString('description'),'utf-8') + '\n'
     
-    entry += 'created:' + strftime('%a %b %d %H:%M:%S %Z %Y', strptime(log.getString('createdDate'),'%Y-%m-%d %H:%M:%S')) + '\n'
+    entry += 'created:' + mktime(strptime(log.getString('createdDate'),'%Y-%m-%d %H:%M:%S')) + '\n'
     
     if log.getString('modifiedDate') == None:
         entry += 'modified:null' + '\n' 
     else:
-        entry += 'modified:' + strftime('%a %b %d %H:%M:%S %Z %Y', strptime(log.getString('modifiedDate'),'%Y-%m-%d %H:%M:%S')) + '\n'
+        entry += 'modified:' + mktime(strptime(log.getString('modifiedDate'),'%Y-%m-%d %H:%M:%S')) + '\n'
         
     entry += 'source:' + unicode(log.getString('source'),'utf-8') + '\n' \
                 + 'owner:' + unicode(log.getString('owner'),'utf-8') + '\n' \
                 + explodeRecent
-    
+
     bytesOfMessage = String(entry).getBytes('UTF-8')
     md = MessageDigest.getInstance('MD5')
     md5Entry = md.digest(bytesOfMessage)
@@ -113,20 +113,17 @@ sql = 'SELECT DISTINCT log.*, level.name as level_name, ' \
 
 rs = stmt.executeQuery(sql)
 con2 = DriverManager.getConnection(url)
-stmt2 = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)
+    
 while (rs.next()):
+
+    stmt2 = con2.createStatement()
     recent = str(getmd5Recent(rs.getString('id')))
     entry = str(getmd5Entry(rs))
-    sql2 = 'SELECT * FROM logs WHERE id=%s'%rs.getString('id')
-    rs2 = stmt2.executeQuery(sql2)
-    rs2.absolute(1);
-    rs2.updateString('md5entry', entry)
-    rs2.updateString('md5recent', recent)
-    rs2.updateRow()
-    rs2.close()
+    sql2 = "UPDATE logs SET md5entry='%(entry)s',md5recent='%(recent)s' WHERE id='%(id)s'"%{"entry":entry,"recent":recent,"id":rs.getString('id')}
+    rs2 = stmt2.executeUpdate(sql2)
+    stmt2.close()
     print 'updated: '+rs.getString('id')
 
-stmt2.close()
 con2.close()
 rs.close()
 stmt.close()

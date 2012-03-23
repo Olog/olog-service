@@ -255,17 +255,13 @@ public class CreateLogQuery {
         
         entry = "id:" + log.getTableId() + "\n"
                 + "level:" + log.getLevel() + "\n"
-                //+ "subject:" + log.getSubject() + "\n"
                 + "description:" + log.getDescription() + "\n"
-                + "created:" + log.getCreatedDate() + "\n"
-                + "modified:" + log.getModifiedDate() + "\n"
+                + "created:" + log.getCreatedDate().getTime() + "\n"
+                + "modified:" + log.getModifiedDate().getTime() + "\n"
                 + "source:" + log.getSource() + "\n"
                 + "owner:" + log.getOwner() + "\n"
                 + explodeRecent;
         
-        if (log.getTableId() == 1408 || log.getTableId() == 1409){
-            String test = "test";
-        }
         byte[] bytesOfMessage = entry.getBytes("UTF-8");
         MessageDigest md = MessageDigest.getInstance("MD5");
         byte[] md5Entry = md.digest(bytesOfMessage);
