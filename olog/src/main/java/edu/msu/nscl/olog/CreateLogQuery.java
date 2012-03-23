@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -241,7 +242,8 @@ public class CreateLogQuery {
      * @todo Move this to LogEnt as a private function
      */
     public static String getmd5Entry(XmlLog log) throws UnsupportedEncodingException, NoSuchAlgorithmException, CFException {
-        String entry;
+        String entry = "";
+        int test;
         String explodeRecent = "";
         List<String> explodeRecentArray = new ArrayList<String>();
         explodeRecentArray = Arrays.asList(getmd5Recent(log.getTableId()).split("\n"));
@@ -256,12 +258,12 @@ public class CreateLogQuery {
         entry = "id:" + log.getTableId() + "\n"
                 + "level:" + log.getLevel() + "\n"
                 + "description:" + log.getDescription() + "\n"
-                + "created:" + log.getCreatedDate().getTime() + "\n"
-                + "modified:" + log.getModifiedDate().getTime() + "\n"
+                + "created:" + (log.getCreatedDate()==null ? log.getCreatedDate():log.getCreatedDate().getTime()) + "\n"
+                + "modified:" + (log.getModifiedDate()==null ? log.getModifiedDate():log.getModifiedDate().getTime()) + "\n"
                 + "source:" + log.getSource() + "\n"
                 + "owner:" + log.getOwner() + "\n"
                 + explodeRecent;
-        
+
         byte[] bytesOfMessage = entry.getBytes("UTF-8");
         MessageDigest md = MessageDigest.getInstance("MD5");
         byte[] md5Entry = md.digest(bytesOfMessage);

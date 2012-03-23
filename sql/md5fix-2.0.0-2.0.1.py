@@ -28,7 +28,7 @@ from java.util import Hashtable
 from edu.msu.nscl.olog.api import *
 import com.mysql.jdbc.Driver
 
-from time import strftime, strptime
+from time import strftime, strptime, mktime
 import getpass
 
 server = raw_input("Enter database server: ")
@@ -70,12 +70,12 @@ def getmd5Entry(log):
     else:
         entry += 'description:' + unicode(log.getString('description'),'utf-8') + '\n'
     
-    entry += 'created:' + mktime(strptime(log.getString('createdDate'),'%Y-%m-%d %H:%M:%S')) + '\n'
+    entry += 'created:' + "%d"%(mktime(strptime(log.getString('createdDate'),'%Y-%m-%d %H:%M:%S'))*1000) + '\n'
     
     if log.getString('modifiedDate') == None:
         entry += 'modified:null' + '\n' 
     else:
-        entry += 'modified:' + mktime(strptime(log.getString('modifiedDate'),'%Y-%m-%d %H:%M:%S')) + '\n'
+        entry += 'modified:' + "%d"%(mktime(strptime(log.getString('modifiedDate'),'%Y-%m-%d %H:%M:%S'))*1000) + '\n'
         
     entry += 'source:' + unicode(log.getString('source'),'utf-8') + '\n' \
                 + 'owner:' + unicode(log.getString('owner'),'utf-8') + '\n' \
@@ -89,7 +89,7 @@ def getmd5Entry(log):
 
     return md5EntryString
 
-client = OlogClientImpl.OlogClientBuilder.serviceURL().create()
+client = OlogClientImpl.OlogClientBuilder.serviceURL("https://localhost:8181/Olog/resources").jcrURI("https://localhost:8181/Olog/repository/olog").create()
 
 map = Hashtable()
 map.put("search", "*")
