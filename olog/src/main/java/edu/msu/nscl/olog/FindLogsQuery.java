@@ -41,7 +41,9 @@ import org.apache.ibatis.session.SqlSessionFactory;
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-public class FindLogsQuery {
+public class FindLogsQuery {    
+    
+    private Logger log = Logger.getLogger(this.getClass().getName());
 
     private enum SearchType {
 
@@ -73,8 +75,12 @@ public class FindLogsQuery {
             String key = match.getKey().toLowerCase();
             if (key.equals("search")) {
                 log_matches.addAll(match.getValue());
-                JcrSearch js = new JcrSearch();
-                jcr_search_ids = js.searchForIds(match.getValue().get(0));
+                try{
+                    JcrSearch js = new JcrSearch();
+                    jcr_search_ids = js.searchForIds(match.getValue().get(0));
+                }catch (Exception e){
+                    log.severe("Failed to create jcrSearch | Cause: " + e.getMessage());
+                }
             } else if (key.equals("tag")) {
                 addTagMatches(match.getValue());
             } else if (key.equals("logbook")) {
