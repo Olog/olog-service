@@ -6,7 +6,7 @@
 
 Olog-service Overview
 
-  Olog is a directory server, implemented as a REST style web service.
+  Olog is implemented as a REST style web service.
 Its intended use is as an electronic logbook for accelerator operations
 
 * Motivation and Objectives
@@ -32,7 +32,7 @@ and an arbitrary set of <tags> (names).
 properties and their values, or log id. The service returns a list of matching logs with their
 properties and tags, as an XML or JSON document.
 
- Other methods allow manipulation of directory entries: create, update, add properties or tags, delete.
+ Other methods allow manipulation of log entries: create, update, add properties or tags, delete.
 
 * Design Documents and API Specification
 
