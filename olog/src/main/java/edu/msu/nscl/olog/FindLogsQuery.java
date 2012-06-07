@@ -142,6 +142,11 @@ public class FindLogsQuery {
                 tag_matches.add(m);
             }
         }
+        if (tag_matches.size() == 1) {
+            String match = tag_matches.get(0);
+            tag_matches.clear();
+            tag_matches.addAll(Arrays.asList(match.split(",")));
+        }
     }
 
     private void addPropertyMatches(Collection<String> matches) {

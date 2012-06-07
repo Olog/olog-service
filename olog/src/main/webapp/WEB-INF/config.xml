@@ -74,9 +74,9 @@
         <iohandler>
             <class name="org.apache.jackrabbit.server.io.ZipHandler" />
         </iohandler>
-        <iohandler>
+  <!--      <iohandler>
             <class name="org.apache.jackrabbit.server.io.XmlHandler" />
-        </iohandler>
+        </iohandler> -->
         <iohandler>
             <class name="org.apache.jackrabbit.server.io.DirListingExportHandler" />
         </iohandler>
