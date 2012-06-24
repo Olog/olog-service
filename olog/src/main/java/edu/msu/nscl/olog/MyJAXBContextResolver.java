@@ -24,7 +24,7 @@ public class MyJAXBContextResolver implements ContextResolver<JAXBContext> {
 
     private JAXBContext context;
     private List<Class<?>> types = Arrays.asList(XmlLogs.class,
-            XmlLogbooks.class, XmlTags.class);
+            XmlLogbooks.class, XmlTags.class, XmlAttachments.class, XmlProperties.class);
 
     public MyJAXBContextResolver() throws Exception {
         this.context = new JSONJAXBContext(

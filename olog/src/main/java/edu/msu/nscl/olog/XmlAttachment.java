@@ -5,9 +5,6 @@
 
 package edu.msu.nscl.olog;
 
-import javax.activation.DataHandler;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlMimeType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
@@ -26,14 +23,19 @@ public class XmlAttachment {
     protected String fileName;
 
     @XmlTransient
-    protected DataHandler fileContent;
-
-    private String Uri;
+    protected String contentType;
+    
+    @XmlTransient
+    protected Boolean thumbnail;
+    
+    @XmlTransient
+    protected Long fileSize;
 
     /**
      * Creates a new instance of XmlAttachment
      */
     public XmlAttachment() {
+        this.thumbnail = false;
     }
 
     /**
@@ -50,38 +52,51 @@ public class XmlAttachment {
     public void setFileName(String fileName) {
     	this.fileName = fileName;
     }
-
-    /**
-     * @return the Uri
+    
+        /**
+     * @return the fileSize
      */
-    @XmlAttribute
-    public String getUri() {
-    	return Uri;
+    public Long getFileSize() {
+    	return fileSize;
     }
 
     /**
-     * @param Uri
-     *            the Uri to set
+     * @param fileSize
+     *            the fileSize to set
      */
-    public void setUri(String Uri) {
-    	this.Uri = Uri;
-    }
-    /**
-     * @return the fileContent
-     */
-    @XmlMimeType("application/octet-stream")
-    public DataHandler getFileContent() {
-        return fileContent;
+    public void setFileSize(Long fileSize) {
+    	this.fileSize = fileSize;
     }
 
     /**
-     * @param fileContent
-     *            the fileContent to set
+     * @return the contentType
      */
-    public void setFileContent(DataHandler fileContent) {
-	this.fileContent = fileContent;
+    public String getContentType() {
+        return contentType;
     }
 
+    /**
+     * @param contentType
+     *            the contentType to set
+     */
+    public void setContentType(String contentType) {
+	this.contentType = contentType;
+    }
+    
+        /**
+     * @return the thumbnail name
+     */
+    public boolean getThumbnail() {
+        return thumbnail;
+    }
+
+    /**
+     * @param thumbnail name
+     *            the contentType to set
+     */
+    public void setThumbnail(Boolean thumbnail) {
+	this.thumbnail = thumbnail;
+    }
 
     /**
      * Creates a compact string representation for the log.
@@ -90,6 +105,6 @@ public class XmlAttachment {
      * @return string representation for log
      */
     public static String toLog(XmlAttachment data) {
-        return data.getFileName() + "(" + data.getUri() + ")";
+        return data.getFileName() + "(" + data.getContentType() + ")";
     }
 }

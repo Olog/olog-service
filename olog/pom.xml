@@ -76,11 +76,24 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.sun.jersey.glassfish.v3</groupId>
-            <artifactId>jersey-gfv3-core</artifactId>
-            <version>1.2</version>
-            <scope>provided</scope>
-            <type>pom</type>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-server</artifactId>
+            <version>1.8</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-core</artifactId>
+            <version>1.8</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey.contribs</groupId>
+            <artifactId>jersey-multipart</artifactId>
+            <version>1.8</version>
+	</dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-json</artifactId>
+            <version>1.8</version>
         </dependency>
         <dependency>
             <groupId>com.google.collections</groupId>
@@ -128,6 +141,11 @@
             <artifactId>mybatis</artifactId>
             <version>3.0.4</version>
         </dependency>
+        <dependency>
+            <groupId>net.coobird.thumbnailator</groupId>
+            <artifactId>thumbnailator</artifactId>
+            <version>0.3.10</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -144,7 +162,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.1-beta-1</version>
+                <version>2.1.1</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                     <encoding>${project.build.sourceEncoding}</encoding>

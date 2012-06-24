@@ -579,7 +579,7 @@ public class FindLogsQuery {
 
             // Iterate through all the logs so we can add attributes
             for (XmlLog log : logs) {
-
+                
                 // All of the logs current properties minus attributes
                 Collection<XmlProperty> props = log.getXmlProperties();
 

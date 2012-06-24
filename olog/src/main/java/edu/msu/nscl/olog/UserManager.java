@@ -26,6 +26,7 @@ public abstract class UserManager {
     private ThreadLocal<Principal> user = new ThreadLocal<Principal>();
     private ThreadLocal<Boolean> hasAdminRole = new ThreadLocal<Boolean>();
     private ThreadLocal<Collection<String>> groups = new ThreadLocal<Collection<String>>();
+    private ThreadLocal<String> hostName = new ThreadLocal<String>();
     
     private static final String defaultUserManager = "edu.msu.nscl.olog.IDUserManager";
     private static final String userManager;
@@ -113,5 +114,23 @@ public abstract class UserManager {
      */
     public String getUserName() {
         return user.get().getName();
+    }
+    
+    /**
+     * Sets the (thread local) user hostName to be used in further calls.
+     *
+     * @param haostName String of host name
+     */
+    public void setHostAddress(String hostName) {
+        this.hostName.set(hostName);
+    }
+    
+    /**
+     * Returns the current user's hostName.
+     *
+     * @return hostName of current user
+     */
+    public String getHostAddress() {
+        return hostName.get();
     }
 }

@@ -11,11 +11,13 @@ package edu.msu.nscl.olog;
  */
 
 import javax.servlet.*;
+import org.apache.jackrabbit.core.RepositoryImpl;
 
 public  class OlogContextListener implements ServletContextListener {
   
   private static OlogContextListener instance = new OlogContextListener();
   private static ServletContext context;
+  private ContentRepository repo;
  
 
   public static OlogContextListener getInstance() {
@@ -31,6 +33,7 @@ public  class OlogContextListener implements ServletContextListener {
 
   @Override
   public void contextDestroyed(ServletContextEvent event) {
+    ((RepositoryImpl)repo.getRepository()).shutdown();  
     System.out.println("Olog JCR Sessions have been removed");
 
   }
@@ -47,6 +50,7 @@ public  class OlogContextListener implements ServletContextListener {
      } else {
         	System.out.println("Servlet context fetched from ServiceContext.");
      }
+     repo = new ContentRepository();
      System.out.println("Olog JCR has been initialized: ");
 
   }
