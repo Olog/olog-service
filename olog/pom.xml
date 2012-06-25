@@ -78,22 +78,22 @@
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-server</artifactId>
-            <version>1.8</version>
+            <version>1.12</version>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-core</artifactId>
-            <version>1.8</version>
+            <version>1.12</version>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-multipart</artifactId>
-            <version>1.8</version>
+            <version>1.12</version>
 	</dependency>
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-json</artifactId>
-            <version>1.8</version>
+            <version>1.12</version>
         </dependency>
         <dependency>
             <groupId>com.google.collections</groupId>
@@ -144,7 +144,7 @@
         <dependency>
             <groupId>net.coobird.thumbnailator</groupId>
             <artifactId>thumbnailator</artifactId>
-            <version>0.3.10</version>
+            <version>0.4.2</version>
         </dependency>
     </dependencies>
     <build>
