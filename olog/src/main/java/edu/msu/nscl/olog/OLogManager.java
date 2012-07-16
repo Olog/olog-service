@@ -18,6 +18,7 @@ import javax.jcr.*;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.DatatypeConverter;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.JcrConstants;
@@ -38,6 +39,7 @@ public class OLogManager {
         
         private InputStream content;
         private String mimeType;
+        private String encoding;
         private String fileName;
         private Long fileSize;
         
@@ -71,6 +73,14 @@ public class OLogManager {
         
         public Long getFileSize(){
             return fileSize;
+        }
+        
+        public void setEncoding(String encoding){
+            this.encoding = encoding;
+        }
+        
+        public String getEncoding(){
+            return encoding;
         }
     }
 
@@ -578,6 +588,15 @@ public class OLogManager {
             Long fileSize = attachment.getFileSize();
             final int ndx = fileName.lastIndexOf(".");
             final String extension = fileName.substring(ndx + 1);
+            InputStream stream;
+            
+            if(attachment.getEncoding().equalsIgnoreCase("base64")){
+             StringWriter writer = new StringWriter();
+                IOUtils.copy(attachment.getContent(), writer, null);
+                stream = new ByteArrayInputStream(DatatypeConverter.parseBase64Binary(writer.toString()));
+            }else{
+                stream = attachment.getContent();
+            }
             
             if (mimeType == null) mimeType = "application/octet-stream";
             
@@ -595,7 +614,7 @@ public class OLogManager {
             resNode.setProperty(JcrConstants.JCR_MIMETYPE, mimeType);
             resNode.setProperty(JcrConstants.JCR_ENCODING, "");
 
-            Binary binFile = valueFactory.createBinary(attachment.getContent());
+            Binary binFile = valueFactory.createBinary(stream);
             resNode.setProperty(JcrConstants.JCR_DATA, binFile);
             
             // Add thumbnail

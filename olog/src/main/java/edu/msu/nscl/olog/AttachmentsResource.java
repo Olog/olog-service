@@ -6,13 +6,15 @@ package edu.msu.nscl.olog;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataParam;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
+import javax.xml.bind.DatatypeConverter;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Top level Jersey HTTP methods for the .../attachments URL
@@ -149,7 +151,8 @@ public class AttachmentsResource {
             attachment.setFileName(disposition.getFileName());
             attachment.setMimeType(body.getMediaType().toString());
             attachment.setContent(uploadedInputStream);
-            attachment.setFileSize(disposition.getSize());
+            attachment.setFileSize(disposition.getSize()); 
+            attachment.setEncoding(nonNull(body.getHeaders().getFirst("Content-Transfer-Encoding")));
             result = cm.createOrReplaceAttachment(attachment, logId);
 
             Response r = Response.ok(result).build();
@@ -195,6 +198,7 @@ public class AttachmentsResource {
             attachment.setMimeType(body.getMediaType().toString());
             attachment.setContent(uploadedInputStream);
             attachment.setFileSize(disposition.getSize());
+            attachment.setEncoding(nonNull(body.getHeaders().getFirst("Content-Transfer-Encoding")));
             //TODO: Should be destructive (replace)
             //cm.removeExistingAttachment(fileName,logId);
             cm.createOrReplaceAttachment(attachment, logId);
@@ -241,5 +245,20 @@ public class AttachmentsResource {
                     + "|cause=" + e);
             return e.toResponse();
         }
+    }
+    /**
+    * Return a not null string.
+    *
+    * @param s String
+    * @return empty string if it is null otherwise the string passed in as
+    * parameter.
+    */
+
+    private static String nonNull(String s) {
+        
+        if (s == null) {
+            return "";
+        }
+        return s;
     }
 }
