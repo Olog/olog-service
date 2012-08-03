@@ -9,8 +9,8 @@
     </settings>
      
     <typeAliases> 
-        <typeAlias alias="Logbook" type="edu.msu.nscl.olog.XmlLogbook"/>
-        <typeAlias alias="Tag" type="edu.msu.nscl.olog.XmlTag"/>
+        <typeAlias alias="Logbook" type="edu.msu.nscl.olog.Logbook"/>
+        <typeAlias alias="Tag" type="edu.msu.nscl.olog.Tag"/>
         <typeAlias alias="Log" type="edu.msu.nscl.olog.XmlLog"/>
         <typeAlias alias="Property" type="edu.msu.nscl.olog.XmlProperty"/>
         <typeAlias alias="Properties" type="edu.msu.nscl.olog.XmlProperties"/>

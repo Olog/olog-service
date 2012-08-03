@@ -17,7 +17,7 @@ public  class OlogContextListener implements ServletContextListener {
   
   private static OlogContextListener instance = new OlogContextListener();
   private static ServletContext context;
-  private ContentRepository repo;
+  private JCRUtil repo;
  
 
   public static OlogContextListener getInstance() {
@@ -33,8 +33,9 @@ public  class OlogContextListener implements ServletContextListener {
 
   @Override
   public void contextDestroyed(ServletContextEvent event) {
+     JPAUtil.getEntityManagerFactory().close();
     ((RepositoryImpl)repo.getRepository()).shutdown();  
-    System.out.println("Olog JCR Sessions have been removed");
+    System.out.println("Olog JCR and JPA Sessions have been removed");
 
   }
 
@@ -50,7 +51,7 @@ public  class OlogContextListener implements ServletContextListener {
      } else {
         	System.out.println("Servlet context fetched from ServiceContext.");
      }
-     repo = new ContentRepository();
+     repo = new JCRUtil();
      System.out.println("Olog JCR has been initialized: ");
 
   }

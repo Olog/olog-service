@@ -28,7 +28,6 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import javax.jcr.RepositoryException;
 import javax.ws.rs.core.Response;
-import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.ResultContext;
@@ -76,8 +75,7 @@ public class FindLogsQuery {
             if (key.equals("search")) {
                 log_matches.addAll(match.getValue());
                 try{
-                    JcrSearch js = new JcrSearch();
-                    jcr_search_ids = js.searchForIds(match.getValue().get(0));
+                    jcr_search_ids = AttachmentManager.findAll(match.getValue().get(0));
                 }catch (Exception e){
                     log.severe("Failed to create jcrSearch | Cause: " + e.getMessage());
                 }
@@ -178,11 +176,11 @@ public class FindLogsQuery {
             hm.put("list", params);
             hm.put("size", size);
 
-            ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getIdsFromLogbookAndTagMatch", hm);
+            ArrayList<Log> logs = (ArrayList<Log>) ss.selectList("mappings.LogMapping.getIdsFromLogbookAndTagMatch", hm);
             if (logs != null) {
-                Iterator<XmlLog> iterator = logs.iterator();
+                Iterator<Log> iterator = logs.iterator();
                 while (iterator.hasNext()) {
-                    XmlLog log = iterator.next();
+                    Log log = iterator.next();
                     ids.add(log.getId());
                 }
             }
@@ -280,11 +278,11 @@ public class FindLogsQuery {
         try {
             Set<Long> ids = new HashSet<Long>();
 
-            ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getIdsFromTagMatch", match);
+            ArrayList<Log> logs = (ArrayList<Log>) ss.selectList("mappings.LogMapping.getIdsFromTagMatch", match);
             if (logs != null) {
-                Iterator<XmlLog> iterator = logs.iterator();
+                Iterator<Log> iterator = logs.iterator();
                 while (iterator.hasNext()) {
-                    XmlLog log = iterator.next();
+                    Log log = iterator.next();
                     ids.add(log.getId());
                 }
             }
@@ -309,11 +307,11 @@ public class FindLogsQuery {
         try {
             Set<Long> ids = new HashSet<Long>();
 
-            ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getIdsFromLogbookMatch", match);
+            ArrayList<Log> logs = (ArrayList<Log>) ss.selectList("mappings.LogMapping.getIdsFromLogbookMatch", match);
             if (logs != null) {
-                Iterator<XmlLog> iterator = logs.iterator();
+                Iterator<Log> iterator = logs.iterator();
                 while (iterator.hasNext()) {
-                    XmlLog log = iterator.next();
+                    Log log = iterator.next();
                     ids.add(log.getId());
                 }
             }
@@ -477,11 +475,11 @@ public class FindLogsQuery {
                 hm.put("valuesList", valuesList);
             }
 
-            ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getIdsFromPagination", hm);
+            ArrayList<Log> logs = (ArrayList<Log>) ss.selectList("mappings.LogMapping.getIdsFromPagination", hm);
             if (logs != null) {
-                Iterator<XmlLog> iterator = logs.iterator();
+                Iterator<Log> iterator = logs.iterator();
                 while (iterator.hasNext()) {
-                    XmlLog log = iterator.next();
+                    Log log = iterator.next();
                     returnIds.add(log.getId());
                 }
             }
@@ -504,7 +502,7 @@ public class FindLogsQuery {
      *         <tt>value</tt>, null if no results
      * @throws CFException wrapping an SQLException
      */
-    private ArrayList<XmlLog> executeQuery() throws CFException {
+    private ArrayList<Log> executeQuery() throws CFException {
         SqlSession ss = ssf.openSession();
 
         try {
@@ -530,7 +528,7 @@ public class FindLogsQuery {
 //
 //                @Override
 //                public void handleResult(ResultContext rc) {
-//                    XmlLog log = (XmlLog) rc.getResultObject();
+//                    Log log = (Log) rc.getResultObject();
 //
 //                    // All of the logs current properties minus attributes
 //                    Collection<XmlProperty> props = log.getXmlProperties();
@@ -574,11 +572,11 @@ public class FindLogsQuery {
 //                }
 //            });
 
-            ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getLogsFromIds", idsList);
+            ArrayList<Log> logs = (ArrayList<Log>) ss.selectList("mappings.LogMapping.getLogsFromIds", idsList);
             HashMap<String, Object> hm = new HashMap<String, Object>();
 
             // Iterate through all the logs so we can add attributes
-            for (XmlLog log : logs) {
+            for (Log log : logs) {
                 
                 // All of the logs current properties minus attributes
                 Collection<XmlProperty> props = log.getXmlProperties();
@@ -670,20 +668,20 @@ public class FindLogsQuery {
      * Finds logs by matching logbook/tag values and/or log and/or tag names.
      *
      * @param matches MultiMap of query parameters
-     * @return XmlLogs container with all found logs and their logbooks/tags
+     * @return Logs container with all found logs and their logbooks/tags
      */
-    public static XmlLogs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws CFException, RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public static Logs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws CFException, RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
         FindLogsQuery q = new FindLogsQuery(matches);
-        XmlLogs xmlLogs = new XmlLogs();
+        Logs xmlLogs = new Logs();
 
-        ArrayList<XmlLog> logs = q.executeQuery();
+        ArrayList<Log> logs = q.executeQuery();
         if (logs != null) {
-            Iterator<XmlLog> iterator = logs.iterator();
+            Iterator<Log> iterator = logs.iterator();
             while (iterator.hasNext()) {
-                XmlLog log = iterator.next();
-                if (log.getMD5Entry().equals(CreateLogQuery.getmd5Entry(log))) {
-                    xmlLogs.addXmlLog(log);
-                }
+                Log log = iterator.next();
+                //if (log.getMD5Entry().equals(CreateLogQuery.getmd5Entry(log))) {
+                //    xmlLogs.addXmlLog(log);
+               // }
             }
         }
 
@@ -695,15 +693,15 @@ public class FindLogsQuery {
      * Returns logs found by matching logbook/tag and/or log names.
      *
      * @param name query to be used for matching
-     * @return XmlLogs container with all found logs and their logbooks/tags
+     * @return Logs container with all found logs and their logbooks/tags
      */
-    public static XmlLogs findLogsByLogbookName(String name) throws CFException {
+    public static Logs findLogsByLogbookName(String name) throws CFException {
         FindLogsQuery q = new FindLogsQuery(SearchType.TAG, name);
-        XmlLogs xmlLogs = null;
+        Logs xmlLogs = null;
 
-        ArrayList<XmlLog> logs = q.executeQuery();
+        ArrayList<Log> logs = q.executeQuery();
         if (logs != null) {
-            Iterator<XmlLog> iterator = logs.iterator();
+            Iterator<Log> iterator = logs.iterator();
             while (iterator.hasNext()) {
                 xmlLogs.addXmlLog(iterator.next());
             }
@@ -716,21 +714,21 @@ public class FindLogsQuery {
      * Return single log found by log id.
      *
      * @param logId id to look for
-     * @return XmlLog with found log and its logbooks
+     * @return Log with found log and its logbooks
      * @throws CFException on SQLException
      */
-    public static XmlLog findLogById(Long logId) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public static Log findLogById(Long logId) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         FindLogsQuery q = new FindLogsQuery(SearchType.LOG, logId);
-        XmlLog xmlLog = null;
+        Log xmlLog = null;
 
-        ArrayList<XmlLog> logs = q.executeQuery();
+        ArrayList<Log> logs = q.executeQuery();
         if (logs != null) {
-            Iterator<XmlLog> iterator = logs.iterator();
+            Iterator<Log> iterator = logs.iterator();
             while (iterator.hasNext()) {
-                XmlLog log = iterator.next();
-                if (log.getMD5Entry().equals(CreateLogQuery.getmd5Entry(log))) {
-                    xmlLog = log;
-                }
+                Log log = iterator.next();
+               // if (log.getMD5Entry().equals(CreateLogQuery.getmd5Entry(log))) {
+               //     xmlLog = log;
+               // }
             }
         }
 
@@ -741,16 +739,16 @@ public class FindLogsQuery {
      * Return single log found by log id without checking for md5
      *
      * @param logId id to look for
-     * @return XmlLog with found log and its logbooks
+     * @return Log with found log and its logbooks
      * @throws CFException on SQLException
      */
-    public static XmlLog findLogByIdNoMD5(Long logId) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public static Log findLogByIdNoMD5(Long logId) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         FindLogsQuery q = new FindLogsQuery(SearchType.LOG, logId);
-        XmlLog xmlLog = null;
+        Log xmlLog = null;
 
-        ArrayList<XmlLog> logs = q.executeQuery();
+        ArrayList<Log> logs = q.executeQuery();
         if (logs != null) {
-            Iterator<XmlLog> iterator = logs.iterator();
+            Iterator<Log> iterator = logs.iterator();
             while (iterator.hasNext()) {
                 xmlLog = iterator.next();
             }

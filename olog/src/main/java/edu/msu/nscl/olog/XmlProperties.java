@@ -66,14 +66,14 @@ public class XmlProperties {
      * @param data XmlChannel to create the string representation for
      * @return string representation
      */
-    public static String toLog(XmlProperties data) {
+    public static String toLogger(XmlProperties data) {
         if (data.getProperties().size() == 0) {
             return "[None]";
         } else {
             StringBuilder s = new StringBuilder();
             s.append("[");
             for (XmlProperty p : data.getProperties()) {
-                s.append(XmlProperty.toLog(p) + ",");
+                s.append(XmlProperty.toLogger(p) + ",");
             }
             s.delete(s.length()-1, s.length());
             s.append("]");

@@ -104,7 +104,7 @@ public class XmlAttachment {
      * @param data the XmlAttach to log
      * @return string representation for log
      */
-    public static String toLog(XmlAttachment data) {
+    public static String toLogger(XmlAttachment data) {
         return data.getFileName() + "(" + data.getContentType() + ")";
     }
 }

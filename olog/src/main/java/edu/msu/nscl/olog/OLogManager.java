@@ -32,58 +32,6 @@ public class OLogManager {
 
     private static OLogManager instance = new OLogManager();
 
-    public static class Attachment {
-
-        public Attachment() {
-        }
-        
-        private InputStream content;
-        private String mimeType;
-        private String encoding;
-        private String fileName;
-        private Long fileSize;
-        
-        public void setContent(InputStream content){
-            this.content = content;
-        }
-        
-        public InputStream getContent(){
-            return content;
-        }
-        
-        public void setMimeType(String mimeType){
-            this.mimeType = mimeType;
-        }
-        
-        public String getMimeType(){
-            return mimeType;
-        }
-        
-        public void setFileName(String fileName){
-            this.fileName = fileName;
-        }
-        
-        public String getFileName(){
-            return fileName;
-        }
-        
-        public void setFileSize(Long fileSize){
-            this.fileSize = fileSize;
-        }
-        
-        public Long getFileSize(){
-            return fileSize;
-        }
-        
-        public void setEncoding(String encoding){
-            this.encoding = encoding;
-        }
-        
-        public String getEncoding(){
-            return encoding;
-        }
-    }
-
     /**
      * Create an instance of OlogManager
      */
@@ -100,12 +48,12 @@ public class OLogManager {
     }
 
     /**
-     * Merges XmlLogbooks and XmlTags of two logs in place
+     * Merges Logbooks and Tags of two logs in place
      *
      * @param dest destination log
      * @param src source log
      */
-    public static void mergeXmlLogs(XmlLog dest, XmlLog src) {
+    public static void mergeXmlLogs(Log dest, Log src) {
 //        if(src.getSubject() != null)
 //            dest.setSubject(src.getSubject());
         if (src.getDescription() != null) {
@@ -115,23 +63,23 @@ public class OLogManager {
             dest.setLevel(src.getLevel());
         }
         src_logbooks:
-        for (XmlLogbook s : src.getXmlLogbooks()) {
-            for (XmlLogbook d : dest.getXmlLogbooks()) {
+        for (Logbook s : src.getLogbooks()) {
+            for (Logbook d : dest.getLogbooks()) {
                 if (d.getName().equals(s.getName())) {
                     continue src_logbooks;
                 }
             }
-            dest.getXmlLogbooks().add(s);
+            dest.getLogbooks().add(s);
         }
         src_tags:
-        for (XmlTag s : src.getXmlTags()) {
-            for (XmlTag d : dest.getXmlTags()) {
+        for (Tag s : src.getTags()) {
+            for (Tag d : dest.getTags()) {
                 if (d.getName().equals(s.getName())) {
 //TODO: here                   d.setState(s.getState());
                     continue src_tags;
                 }
             }
-            dest.getXmlTags().add(s);
+            dest.getTags().add(s);
         }
         src_properties:
         for (XmlProperty s : src.getXmlProperties()) {
@@ -149,22 +97,11 @@ public class OLogManager {
      * Return single log found by log id.
      *
      * @param logId id to look for
-     * @return XmlLog with found log and its logbooks
+     * @return Log with found log and its logbooks
      * @throws CFException on SQLException
      */
-    public XmlLog findLogById(Long logId) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        return FindLogsQuery.findLogById(logId);
-    }
-
-    /**
-     * Return logs found by matching tags against a collection of name patterns.
-     *
-     * @param name matches collection of name patterns to match
-     * @return XmlLogs container with all found logs and their logbooks
-     * @throws CFException wrapping an SQLException
-     */
-    public XmlLogs findLogsByLogbookName(String name) throws CFException {
-        return FindLogsQuery.findLogsByLogbookName(name);
+    public Log findLogById(Long logId) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        return LogManager.findLog(logId);
     }
 
     /**
@@ -172,11 +109,12 @@ public class OLogManager {
      *
      * @param matches multivalued map of logbook, tag, log names and patterns to match
      * their values against.
-     * @return XmlLogs container with all found logs and their logbooks
+     * @return Logs container with all found logs and their logbooks
      * @throws CFException wrapping an SQLException
      */
-    public XmlLogs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws CFException, RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        return FindLogsQuery.findLogsByMultiMatch(matches);
+    public Logs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws CFException, RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        //return FindLogsQuery.findLogsByMultiMatch(matches);
+        return LogManager.findLog(matches);
     }
 
     /**
@@ -186,17 +124,7 @@ public class OLogManager {
      * @throws CFException wrapping an SQLException
      */
     public void removeLog(Long logId) throws CFException {
-        DeleteLogQuery.deleteLogIgnoreNoexist(logId);
-    }
-
-    /**
-     * Deletes a log identified by <tt>logId</tt>.
-     *
-     * @param logId log to delete
-     * @throws CFException wrapping an SQLException
-     */
-    public void removeExistingLog(Long logId) throws CFException {
-        DeleteLogQuery.deleteLogFailNoexist(logId);
+        LogManager.remove(logId);
     }
 
     /**
@@ -204,64 +132,57 @@ public class OLogManager {
      *
      * @throws CFException wrapping an SQLException
      */
-    public XmlLogbooks listLogbooks() throws CFException {
-        return ListLogbooksQuery.getLogbooks();
+    public Logbooks listLogbooks() throws CFException {
+        return LogbookManager.findAll();
     }
 
     /**
      * Return single logbook found by name.
      *
      * @param name name to look for
-     * @return XmlLogbook with found logbook and its logs
+     * @return Logbook with found logbook and its logs
      * @throws CFException on SQLException
      */
-    public XmlLogbook findLogbookByName(String name) throws CFException {
-        XmlLogbook p = ListLogbooksQuery.findLogbook(name);
-        if (p != null) {
-            XmlLogs c = FindLogsQuery.findLogsByLogbookName(name);
-            if (c != null) {
-                p.setXmlLogs(c);
-            }
-        }
-        return p;
+    public Logbook findLogbookByName(String name) throws CFException {
+        return LogbookManager.findLogbook(name);
     }
 
     /**
      * Add the logbook identified by <tt>logbook</tt> to the logs
-     * specified in the XmlLogs <tt>data</tt>.
+     * specified in the Logs <tt>data</tt>.
      *
      * @param logbook logbook to add
-     * @param data XmlLogbook data with all logs
+     * @param data Logbook data with all logs
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public XmlLogbook updateLogbook(String logbook, XmlLogbook data) throws CFException {
+    public Logbook updateLogbook(String logbook, Logbook data) throws CFException {
         return UpdateValuesQuery.updateLogbook(logbook, data);
     }
 
     /**
      * Adds the logbook identified by <tt>tag</tt> <b>exclusively</b>
-     * to the logs specified in the XmlLogbook payload <tt>data</tt>, creating it
+     * to the logs specified in the Logbook payload <tt>data</tt>, creating it
      * if necessary.
      *
      * @param logbook logbook to add
-     * @param data XmlLogbook container with all logs to add logbook to
+     * @param data Logbook container with all logs to add logbook to
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public XmlLogbook createOrReplaceLogbook(String logbook, XmlLogbook data) throws CFException {
-        DeleteLogbookQuery.removeLogbook(logbook);
-        CreateLogbookQuery.createLogbook(data.getName(), data.getOwner());
+    public Logbook createOrReplaceLogbook(String logbook, Logbook data) throws CFException {
+        LogbookManager.remove(logbook);
+        LogbookManager.create(data.getName(), data.getOwner());
         return UpdateValuesQuery.updateLogbook(data.getName(), data);
     }
 
     /**
      * Create or replace logbooks specified in <tt>data</tt>.
      *
-     * @param data XmlLogbooks data
+     * @param data Logbooks data
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public XmlLogbooks createOrReplaceLogbooks(XmlLogbooks data) throws CFException {
-        XmlLogbooks xmlLogbooks = null;
-        for (XmlLogbook logbook : data.getLogbooks()) {
+    public Logbooks createOrReplaceLogbooks(Logbooks data) throws CFException {
+        Logbooks xmlLogbooks = null;
+        for (Logbook logbook : data.getLogbooks()) {
             removeLogbook(logbook.getName());
             xmlLogbooks.addXmlLogbook(createOrReplaceLogbook(logbook.getName(), logbook));
         }
@@ -276,11 +197,17 @@ public class OLogManager {
      *
      * @param logbook logbook to add
      * @param logId log to add the logbook to
-     * @param data XmlLogbook
+     * @param data Logbook
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public XmlLogbook addSingleLogbook(String logbook, Long logId) throws CFException {
-        return UpdateValuesQuery.updateLogbookWithLog(logbook, logId);
+    public Logbook addSingleLogbook(String logbookName, Long logId) throws CFException {
+        Log log = LogManager.findLog(logId);
+        Set<Logbook> logbooks  = log.getLogbooks();
+        Logbook logbook = LogbookManager.findLogbook(logbookName);
+        logbooks.add(logbook);
+        log.setLogbooks(logbooks);
+        LogManager.create(log);
+        return logbook;
     }
 
     /**
@@ -290,7 +217,7 @@ public class OLogManager {
      * @throws CFException wrapping an SQLException
      */
     public void removeLogbook(String logbook) throws CFException {
-        DeleteLogbookQuery.removeLogbook(logbook);
+        LogbookManager.remove(logbook);
     }
 
     /**
@@ -301,7 +228,7 @@ public class OLogManager {
      * @throws CFException wrapping an SQLException or on failure
      */
     public void removeExistingLogbook(String logbook) throws CFException {
-        DeleteLogbookQuery.removeExistingLogbook(logbook);
+        LogbookManager.remove(logbook);
     }
 
     /**
@@ -311,8 +238,13 @@ public class OLogManager {
      * @param logId log to delete it from
      * @throws CFException wrapping an SQLException
      */
-    public void removeSingleLogbook(String logbook, Long logId) throws CFException {
-        DeleteLogbookQuery.deleteOneValue(logbook, logId);
+    public void removeSingleLogbook(String logbookName, Long logId) throws CFException {
+        Log log = LogManager.findLog(logId);
+        Set<Logbook> logbooks  = log.getLogbooks();
+        Logbook logbook = LogbookManager.findLogbook(logbookName);
+        logbooks.remove(logbook);
+        log.setLogbooks(logbooks);
+        LogManager.create(log);
     }
 
     /**
@@ -320,66 +252,59 @@ public class OLogManager {
      *
      * @throws CFException wrapping an SQLException
      */
-    public XmlTags listTags() throws CFException {
-        return ListLogbooksQuery.getTags();
+    public Tags listTags() throws CFException {
+        return TagManager.findAll();
     }
 
     /**
      * Return single tag found by name.
      *
      * @param name name to look for
-     * @return XmlTag with found tag and its logs/state
+     * @return Tag with found tag and its logs/state
      * @throws CFException on SQLException
      */
-    public XmlTag findTagByName(String name) throws CFException {
-        XmlTag t = ListLogbooksQuery.findTag(name);
-        if (t != null) {
-            XmlLogs c = FindLogsQuery.findLogsByLogbookName(name);
-            if (c != null) {
-                t.setXmlLogs(c);
-            }
-        }
-        return t;
+    public Tag findTagByName(String name) throws CFException {
+        return TagManager.findTag(name);
     }
 
     /**
      * Add the tag identified by <tt>tag</tt> and <tt>state</tt> to the logs
-     * specified in the XmlLogs <tt>data</tt>.
+     * specified in the Logs <tt>data</tt>.
      *
      * @param tag tag to add
-     * @param data XmlTag with list of all logs to add tag to
+     * @param data Tag with list of all logs to add tag to
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public XmlTag updateTag(String tag, XmlTag data) throws CFException {
+    public Tag updateTag(String tag, Tag data) throws CFException {
         return UpdateValuesQuery.updateTag(tag, data);
     }
 
     /**
      * Adds the tag identified by <tt>tag</tt> <b>exclusively</b>
-     * to the logs specified in the XmlTag payload <tt>data</tt>, creating it
+     * to the logs specified in the Tag payload <tt>data</tt>, creating it
      * if necessary.
      *
      * @TODO Right now, this is only a create tag; not create/replace.
      *       To Delete, and recreate log key ids every time is too expensive
      * @param tag tag to add
-     * @param data XmlTag container with all logs to add tag to
+     * @param data Tag container with all logs to add tag to
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public XmlTag createOrReplaceTag(String tag, XmlTag data) throws CFException {
-        DeleteLogbookQuery.removeLogbook(tag);
-        CreateLogbookQuery.createTag(data.getName());
+    public Tag createOrReplaceTag(String tag, Tag data) throws CFException {
+        TagManager.remove(tag);
+        TagManager.create(data.getName());
         return UpdateValuesQuery.updateTag(data.getName(), data);
     }
 
     /**
      * Create tags specified in <tt>data</tt>.
      *
-     * @param data XmlTags data
+     * @param data Tags data
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public XmlTags createOrReplaceTags(XmlTags data) throws CFException {
-        XmlTags xmlTags = null;
-        for (XmlTag tag : data.getTags()) {
+    public Tags createOrReplaceTags(Tags data) throws CFException {
+        Tags xmlTags = null;
+        for (Tag tag : data.getTags()) {
             removeTag(tag.getName());
             xmlTags.addXmlTag(createOrReplaceTag(tag.getName(), tag));
         }
@@ -393,8 +318,14 @@ public class OLogManager {
      * @param logId
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public XmlTag addSingleTag(String tag, Long logId) throws CFException {
-        return UpdateValuesQuery.updateTag(tag, logId);
+    public Tag addSingleTag(String tagName, Long logId) throws CFException {
+        Log log = LogManager.findLog(logId);
+        Set<Tag> tags  = log.getTags();
+        Tag tag = TagManager.findTag(tagName);
+        tags.add(tag);
+        log.setTags(tags);
+        LogManager.create(log);
+        return tag;
     }
 
     /**
@@ -404,7 +335,7 @@ public class OLogManager {
      * @throws CFException wrapping an SQLException
      */
     public void removeTag(String tag) throws CFException {
-        DeleteLogbookQuery.removeLogbook(tag);
+        TagManager.remove(tag);
     }
 
     /**
@@ -414,8 +345,13 @@ public class OLogManager {
      * @param logId log to delete it from
      * @throws CFException wrapping an SQLException
      */
-    public void removeSingleTag(String tag, Long logId) throws CFException {
-        DeleteLogbookQuery.deleteOneValue(tag, logId);
+    public void removeSingleTag(String tagName, Long logId) throws CFException {
+        Log log = LogManager.findLog(logId);
+        Set<Tag> tags  = log.getTags();
+        Tag tag = TagManager.findTag(tagName);
+        tags.remove(tag);
+        log.setTags(tags);
+        LogManager.create(log);
     }
 
     /**
@@ -459,8 +395,8 @@ public class OLogManager {
      * @param XmlProperty data incoming payload
      * @throws CFException wrapping an SQLException
      */
-    XmlLog addAttribute(String hostAddress, String property, Long logId, XmlProperty data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        XmlLog currentLog = findLogById(logId);
+    Log addAttribute(String hostAddress, String property, Long logId, XmlProperty data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        Log currentLog = findLogById(logId);
 
         Collection<XmlProperty> currentProperties = currentLog.getXmlProperties();
         currentProperties.add(data);
@@ -487,8 +423,8 @@ public class OLogManager {
      * @param XmlProperty data incoming payload
      * @throws CFException wrapping an SQLException
      */
-    XmlLog removeAttribute(String hostAddress, String property, Long logId, XmlProperty data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        XmlLog currentLog = findLogById(logId);
+    Log removeAttribute(String hostAddress, String property, Long logId, XmlProperty data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        Log currentLog = findLogById(logId);
 
         // Remove attributes from incoming payload from the current log
         Collection<XmlProperty> currentProperties = currentLog.getXmlProperties();
@@ -523,24 +459,23 @@ public class OLogManager {
      * log logbooks are <b>replaced</b> with the logbooks in <tt>data</tt>.
      *
      * @param logId log to update
-     * @param data XmlLog data
+     * @param data Log data
      * @throws CFException on ownership or name mismatch, or wrapping an SQLException
      */
-    public XmlLog createOrReplaceLog(String hostAddress, Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Log createOrReplaceLog(String hostAddress, Long logId, Log data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         data.setSource(hostAddress);
-        DeleteLogQuery.deleteLogIgnoreNoexist(logId);
-        return CreateLogQuery.createLog(data);
+        return LogManager.create(data);
     }
 
     /**
      * Create logs specified in <tt>data</tt>.
      *
-     * @param data XmlLogs data
+     * @param data Logs data
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public XmlLogs createOrReplaceLogs(String hostAddress, XmlLogs data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        XmlLogs xmlLogs = new XmlLogs();
-        for (XmlLog log : data.getLogs()) {
+    public Logs createOrReplaceLogs(String hostAddress, Logs data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        Logs xmlLogs = new Logs();
+        for (Log log : data.getLogs()) {
             log.setSource(hostAddress);
             removeLog(log.getId());
             xmlLogs.addXmlLog(createOneLog(log));
@@ -551,22 +486,22 @@ public class OLogManager {
     /**
      * Create a new log using the logbook set in <tt>data</tt>.
      *
-     * @param data XmlLog data
+     * @param data Log data
      * @throws CFException on ownership or name mismatch, or wrapping an SQLException
      */
-    private XmlLog createOneLog(XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        return CreateLogQuery.createLog(data);
+    private Log createOneLog(Log data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        return LogManager.create(data);
     }
 
     /**
      * Merge logbook set in <tt>data</tt> into the existing log <tt>logId</tt>.
      *
      * @param logId log to merge the logbooks and tags into
-     * @param data XmlLog data containing logbooks and tags
+     * @param data Log data containing logbooks and tags
      * @throws CFException on name or owner mismatch, or wrapping an SQLException
      */
-    public XmlLog updateLog(String hostAddress, Long logId, XmlLog data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        XmlLog dest = findLogById(logId);
+    public Log updateLog(String hostAddress, Long logId, Log data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        Log dest = findLogById(logId);
         if (dest == null) {
             throw new CFException(Response.Status.NOT_FOUND,
                     "Log entry " + logId + " could not be updated: Does not exist");
@@ -577,192 +512,24 @@ public class OLogManager {
         return createOrReplaceLog(hostAddress, logId, dest);
     }
     
-    public XmlAttachment createOrReplaceAttachment(Attachment attachment, Long logId) throws CFException {
-        XmlAttachment result = new XmlAttachment();
-        try {
-            Session session = ContentRepository.getSession();
-            ValueFactory valueFactory = session.getValueFactory();
-            Node rn = session.getRootNode();
-            String mimeType = attachment.getMimeType();
-            String fileName = attachment.getFileName();
-            Long fileSize = attachment.getFileSize();
-            final int ndx = fileName.lastIndexOf(".");
-            final String extension = fileName.substring(ndx + 1);
-            InputStream stream;
-            
-            if(attachment.getEncoding().equalsIgnoreCase("base64")){
-             StringWriter writer = new StringWriter();
-                IOUtils.copy(attachment.getContent(), writer, null);
-                stream = new ByteArrayInputStream(DatatypeConverter.parseBase64Binary(writer.toString()));
-            }else{
-                stream = attachment.getContent();
-            }
-            
-            if (mimeType == null) mimeType = "application/octet-stream";
-            
-            Node folderNode;
-            
-            if(rn.hasNode(logId.toString())){
-                folderNode = rn.getNode(logId.toString());
-                if (!folderNode.isNodeType(JcrConstants.NT_FOLDER))
-                    folderNode = rn.addNode(logId.toString(), JcrConstants.NT_FOLDER);
-            } else {
-                folderNode = rn.addNode(logId.toString(), JcrConstants.NT_FOLDER);
-            }
-            Node fileNode  = folderNode.addNode(fileName, JcrConstants.NT_FILE);
-            Node resNode = fileNode.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
-            resNode.setProperty(JcrConstants.JCR_MIMETYPE, mimeType);
-            resNode.setProperty(JcrConstants.JCR_ENCODING, "");
 
-            Binary binFile = valueFactory.createBinary(stream);
-            resNode.setProperty(JcrConstants.JCR_DATA, binFile);
-            
-            // Add thumbnail
-            if ((extension.equals("jpeg") || extension.equals("jpg")
-                                          || extension.equals("gif") 
-                                          || extension.equals("png"))) {
-                Node tfolderNode;
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                Thumbnails.of(binFile.getStream()).size(80, 80).outputFormat(extension).toOutputStream(outputStream);
-                InputStream fis = new ByteArrayInputStream(outputStream.toByteArray());
-                Binary binThumbnail = valueFactory.createBinary(fis);
-                
-                if(!rn.hasNode("thumbnails"))
-                    rn.addNode("thumbnails", JcrConstants.NT_FOLDER);
-                
-                if(rn.hasNode("thumbnails/"+logId.toString())){
-                    tfolderNode = rn.getNode("thumbnails/"+logId.toString());
-                    if (!tfolderNode.isNodeType(JcrConstants.NT_FOLDER))
-                        tfolderNode = rn.addNode("thumbnails/"+logId.toString(), JcrConstants.NT_FOLDER);
-                } else {
-                    tfolderNode = rn.addNode("thumbnails/"+logId.toString(), JcrConstants.NT_FOLDER);
-                }
-                Node tfileNode  = tfolderNode.addNode(fileName, JcrConstants.NT_FILE);
-                Node tresNode = tfileNode.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
-                tresNode.setProperty(JcrConstants.JCR_MIMETYPE, "image/"+extension);
-                tresNode.setProperty(JcrConstants.JCR_ENCODING, "");
-                tresNode.setProperty(JcrConstants.JCR_DATA, binThumbnail);
-                binThumbnail.dispose();
-                result.setThumbnail(true);
-            }
-            binFile.dispose();
-
-            session.save();
-            result.setContentType(mimeType);
-            result.setFileName(fileName);
-            result.setFileSize(fileSize);
-            
-            return result;
-            
-        } catch (IOException ex) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "Log entry " + logId.toString() + " could not create thumbnail. " + ex);
-        } catch (LoginException ex) {
-            throw new CFException(Response.Status.BAD_REQUEST,
-                    "Log entry " + logId.toString() + " could not login to repository. " + ex);
-        } catch (RepositoryException ex) {
-            throw new CFException(Response.Status.CONFLICT,
-                    "Log entry " + logId.toString() + " could not put item in repository. " + ex);
-        }
-    }
 
     
-    public Attachment getAttachment(String filePath, String fileName) throws CFException {
-        InputStream content = null;
-        String mimeType = null;
-        try {
-            Session session = ContentRepository.getSession();
-            Node rn = session.getRootNode();
-            Node folderNode = rn.getNode(filePath);
-            Node contentNode = folderNode.getNode(fileName).getNode(JcrConstants.JCR_CONTENT);
-            Property dataProperty = contentNode.getProperty(JcrConstants.JCR_DATA);
-            Property mimeProperty = contentNode.getProperty(JcrConstants.JCR_MIMETYPE);
-            
-            mimeType = mimeProperty.getString();
 
-            Binary bin = dataProperty.getBinary();
-            content = bin.getStream();
-            bin.dispose();
-            
-        } catch (LoginException ex) {
-            throw new CFException(Response.Status.BAD_REQUEST,
-                    filePath + ", could not login to repository. " + ex);
-        } catch (RepositoryException ex) {
-            throw new CFException(Response.Status.NOT_FOUND,
-                    filePath + ", could not find item in repository. " + ex);
-        }
-        Attachment attachment = new Attachment();
-        attachment.setContent(content);
-        attachment.setMimeType(mimeType);
-        
-        return attachment;
-    }
     
-    public XmlAttachments findAttachmentsById(Long logId) throws CFException {
-        XmlAttachments xmlAttachments = new XmlAttachments();
-        try {
-            Session session = ContentRepository.getSession();
-            Node rn = session.getRootNode();
-            Node folderNode = rn.getNode(logId.toString());        
-            NodeIterator nodes = folderNode.getNodes();
-            while(nodes.hasNext()){
-                Node contentNode = nodes.nextNode();
-                String tfileName = contentNode.getName();
-                XmlAttachment xmlAttachment = new XmlAttachment();
-                xmlAttachment.setFileName(contentNode.getName());
-                xmlAttachment.setContentType(contentNode.getNode(JcrConstants.JCR_CONTENT).getProperty(JcrConstants.JCR_MIMETYPE).getString());
-                xmlAttachment.setFileSize(contentNode.getNode(JcrConstants.JCR_CONTENT).getProperty(JcrConstants.JCR_DATA).getLength());
-                if(rn.hasNode("thumbnails/"+logId.toString()+"/"+tfileName))
-                    xmlAttachment.setThumbnail(true);
-                xmlAttachments.addXmlAttachment(xmlAttachment);
-            }
-            return xmlAttachments;
-            
-        } catch (LoginException ex) {
-            throw new CFException(Response.Status.BAD_REQUEST,
-                    "Log entry " + logId.toString() + " could not login to repository. " + ex);
-        } catch (RepositoryException ex) {
-            // TODO: Return Empty set only for javax.jcr.PathNotFoundException
-            return xmlAttachments;
-            //
-            //throw new CFException(Response.Status.NOT_FOUND,
-            //        "Log entry " + logId.toString() + " could not find item in repository. " + ex);
-        }
-    }
+
     
-    public void removeExistingAttachment(String fileName, Long logId) throws CFException {
-        XmlAttachments xmlAttachments = new XmlAttachments();
-        try {
-            Session session = ContentRepository.getSession();
-            Node rn = session.getRootNode();
-            Node folderNode = rn.getNode(logId.toString()); 
-            Node contentNode = folderNode.getNode(fileName);
-            contentNode.remove();
-            if(rn.hasNode("thumbnails/"+logId.toString()+"/"+fileName)){
-                Node tfolderNode = rn.getNode("thumbnails/"+logId.toString());
-                Node tcontentNode = tfolderNode.getNode(fileName);
-                tcontentNode.remove();
-            }
-            session.save();
-            
-        } catch (LoginException ex) {
-            throw new CFException(Response.Status.BAD_REQUEST,
-                    "Log entry " + logId.toString() + " could not login to repository. " + ex);
-        } catch (RepositoryException ex) {
-            throw new CFException(Response.Status.NOT_FOUND,
-                    "Log entry " + logId.toString() + " could not find item in repository. " + ex);
-        }
-    }
+
     
     /**
      * Check that <tt>logId</tt> matches the log id in <tt>data</tt>.
      *
      * @param logId log id to check
-     * @param data XmlLog data to check against
+     * @param data Log data to check against
      * @throws CFException on name mismatch
      */
     //TODO: fix this
-    public void checkIdMatchesPayload(Long logId, XmlLog data) throws CFException {
+    public void checkIdMatchesPayload(Long logId, Log data) throws CFException {
         //    if (!logId.equals(data.getId())) {
         //        throw new CFException(Response.Status.BAD_REQUEST,
         //                "Specified log id '" + logId
@@ -773,10 +540,10 @@ public class OLogManager {
     /**
      * Check the log in <tt>data</tt> for valid owner data.
      *
-     * @param data XmlLog data to check
+     * @param data Log data to check
      * @throws CFException on error
      */
-    public void checkValidOwner(XmlLog data) throws CFException {
+    public void checkValidOwner(Log data) throws CFException {
 
         if (data.getOwner() == null || data.getOwner().equals("")) {
             throw new CFException(Response.Status.BAD_REQUEST,
@@ -787,14 +554,14 @@ public class OLogManager {
     /**
      * Check all logs in <tt>data</tt> for valid owner data.
      *
-     * @param data XmlLogs data to check
+     * @param data Logs data to check
      * @throws CFException on error
      */
-    public void checkValidOwner(XmlLogs data) throws CFException {
+    public void checkValidOwner(Logs data) throws CFException {
         if (data == null || data.getLogs() == null) {
             return;
         }
-        for (XmlLog c : data.getLogs()) {
+        for (Log c : data.getLogs()) {
             checkValidOwner(c);
         }
     }
@@ -803,10 +570,10 @@ public class OLogManager {
      * Check that <tt>name</tt> matches the tag name in <tt>data</tt>.
      *
      * @param name tag name to check
-     * @param data XmlTag data to check against
+     * @param data Tag data to check against
      * @throws CFException on name mismatch
      */
-    public void checkNameMatchesPayload(String name, XmlTag data) throws CFException {
+    public void checkNameMatchesPayload(String name, Tag data) throws CFException {
         if (data == null) {
             return;
         }
@@ -820,10 +587,10 @@ public class OLogManager {
     /**
      * Check the tag in <tt>data</tt> for valid name data.
      *
-     * @param data XmlTag data to check
+     * @param data Tag data to check
      * @throws CFException on name mismatch
      */
-    public void checkValidNameAndOwner(XmlTag data) throws CFException {
+    public void checkValidNameAndOwner(Tag data) throws CFException {
         if (data.getName() == null || data.getName().equals("")) {
             throw new CFException(Response.Status.BAD_REQUEST,
                     "The specified tag does not have a name");
@@ -849,14 +616,14 @@ public class OLogManager {
     /**
      * Check all tags in <tt>data</tt> for valid name data.
      *
-     * @param data XmlTags data to check
+     * @param data Tags data to check
      * @throws CFException on error
      */
-    public void checkValidNameAndOwner(XmlTags data) throws CFException {
+    public void checkValidNameAndOwner(Tags data) throws CFException {
         if (data == null || data.getTags() == null) {
             return;
         }
-        for (XmlTag t : data.getTags()) {
+        for (Tag t : data.getTags()) {
             checkValidNameAndOwner(t);
         }
     }
@@ -865,10 +632,10 @@ public class OLogManager {
      * Check that <tt>name</tt> matches the logbook name in <tt>data</tt>.
      *
      * @param name logbook name to check
-     * @param data XmlLogbook data to check against
+     * @param data Logbook data to check against
      * @throws CFException on name mismatch
      */
-    public void checkNameMatchesPayload(String name, XmlLogbook data) throws CFException {
+    public void checkNameMatchesPayload(String name, Logbook data) throws CFException {
         if (!name.equals(data.getName())) {
             throw new CFException(Response.Status.BAD_REQUEST,
                     "The logbook in the URL '" + name
@@ -879,10 +646,10 @@ public class OLogManager {
     /**
      * Check the logbook in <tt>data</tt> for valid name/owner data.
      *
-     * @param data XmlLogbook data to check
+     * @param data Logbook data to check
      * @throws CFException on error
      */
-    public void checkValidNameAndOwner(XmlLogbook data) throws CFException {
+    public void checkValidNameAndOwner(Logbook data) throws CFException {
         if (data.getName() == null || data.getName().equals("")) {
             throw new CFException(Response.Status.BAD_REQUEST,
                     "Logbook name is empty");
@@ -896,14 +663,14 @@ public class OLogManager {
     /**
      * Check all logbooks in <tt>data</tt> for valid name/owner data.
      *
-     * @param data XmlLogbooks data to check
+     * @param data Logbooks data to check
      * @throws CFException on error
      */
-    public void checkValidNameAndOwner(XmlLogbooks data) throws CFException {
+    public void checkValidNameAndOwner(Logbooks data) throws CFException {
         if (data == null || data.getLogbooks() == null) {
             return;
         }
-        for (XmlLogbook p : data.getLogbooks()) {
+        for (Logbook p : data.getLogbooks()) {
             checkValidNameAndOwner(p);
         }
     }
@@ -935,7 +702,7 @@ public class OLogManager {
         if (logbook == null || logbook.equals("")) {
             return;
         }
-        checkUserBelongsToGroup(user, ListLogbooksQuery.findLogbook(logbook));
+        checkUserBelongsToGroup(user, LogbookManager.findLogbook(logbook));
     }
 
     /**
@@ -943,19 +710,16 @@ public class OLogManager {
      * log <tt>data</tt>.
      *
      * @param user user name
-     * @param data XmlLog data to check ownership for
+     * @param data Log data to check ownership for
      * @throws CFException on name mismatch
      */
-    public void checkUserBelongsToGroup(String user, XmlLog data) throws CFException {
+    public void checkUserBelongsToGroup(String user, Log data) throws CFException {
         if (data == null) {
             return;
         }
         UserManager um = UserManager.getInstance();
-        if (!um.userIsInGroup(data.getOwner())) {
-            throw new CFException(Response.Status.FORBIDDEN,
-                    "User '" + um.getUserName()
-                    + "' does not belong to owner group '" + data.getOwner()
-                    + "' of log '" + data.getId() + "'");
+        for (Logbook logbook: data.getLogbooks()){
+            checkUserBelongsToGroup(user, LogbookManager.findLogbook(logbook.getName()));
         }
     }
 
@@ -963,14 +727,14 @@ public class OLogManager {
      * Check that <tt>user</tt> belongs to the owner groups of all logs in <tt>data</tt>.
      *
      * @param user user name
-     * @param data XmlLogs data to check ownership for
+     * @param data Logs data to check ownership for
      * @throws CFException on name mismatch
      */
-    public void checkUserBelongsToGroup(String user, XmlLogs data) throws CFException {
+    public void checkUserBelongsToGroup(String user, Logs data) throws CFException {
         if (data == null || data.getLogs() == null) {
             return;
         }
-        for (XmlLog log : data.getLogs()) {
+        for (Log log : data.getLogs()) {
             checkUserBelongsToGroup(user, log);
         }
     }
@@ -980,10 +744,10 @@ public class OLogManager {
      * logbook <tt>data</tt>.
      *
      * @param user user name
-     * @param data XmlLogbook data to check ownership for
+     * @param data Logbook data to check ownership for
      * @throws CFException on name mismatch
      */
-    public void checkUserBelongsToGroup(String user, XmlLogbook data) throws CFException {
+    public void checkUserBelongsToGroup(String user, Logbook data) throws CFException {
         if (data == null) {
             return;
         }
@@ -1000,15 +764,35 @@ public class OLogManager {
      * Check that <tt>user</tt> belongs to the owner groups of all logbooks in <tt>data</tt>.
      *
      * @param user user name
-     * @param data XmlLogs data to check ownership for
+     * @param data Logs data to check ownership for
      * @throws CFException on name mismatch
      */
-    public void checkUserBelongsToGroup(String user, XmlLogbooks data) throws CFException {
+    public void checkUserBelongsToGroup(String user, Logbooks data) throws CFException {
         if (data == null || data.getLogbooks() == null) {
             return;
         }
-        for (XmlLogbook logbook : data.getLogbooks()) {
+        for (Logbook logbook : data.getLogbooks()) {
             checkUserBelongsToGroup(user, logbook);
         }
+    }
+
+    XmlAttachments findAttachmentsById(Long logId) throws CFException {
+        return AttachmentManager.findAll(logId);
+    }
+
+    Attachment getAttachment(String filePath, String fileName) throws CFException {
+        return AttachmentManager.findAttachment(filePath, fileName);
+    }
+
+    XmlAttachment createAttachment(Attachment attachment, Long logId) throws CFException {
+        return AttachmentManager.create(attachment, logId);
+    }
+
+    void removeAttachment(String fileName, Long logId) throws CFException {
+        AttachmentManager.remove(fileName, logId);
+    }
+
+    Logs findLogsTest() throws CFException {
+        return LogManager.findAll();
     }
 }

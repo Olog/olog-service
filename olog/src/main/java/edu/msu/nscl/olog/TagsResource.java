@@ -50,7 +50,7 @@ public class TagsResource {
     public Response list() {
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
-        XmlTags result = null;
+        Tags result = null;
         try {
             result = cm.listTags();
             Response r = Response.ok(result).build();
@@ -67,27 +67,27 @@ public class TagsResource {
     /**
      * POST method for creating multiple tags.
      *
-     * @param data XmlTags data (from payload)
+     * @param data Tags data (from payload)
      * @return HTTP Response
      * @throws IOException when audit or log fail
      */
     @POST
     @Consumes({"application/xml", "application/json"})
-    public Response add(XmlTags data) throws IOException {
+    public Response add(Tags data) throws IOException {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
-        XmlTags result = null;
+        Tags result = null;
         try {
             cm.checkValidNameAndOwner(data);
             result = cm.createOrReplaceTags(data);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
-                    + "|data=" + XmlTags.toLog(data));
+                    + "|data=" + Tags.toLogger(data));
             return r;
         } catch (CFException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + XmlTags.toLog(data) + "|cause=" + e);
+                    + "|data=" + Tags.toLogger(data) + "|cause=" + e);
             return e.toResponse();
         }
     }
@@ -105,7 +105,7 @@ public class TagsResource {
     public Response read(@PathParam("tagName") String tag) {
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
-        XmlTag result = null;
+        Tag result = null;
         try {
             result = cm.findTagByName(tag);
             Response r;
@@ -130,28 +130,28 @@ public class TagsResource {
      * Setting the owner attribute in the XML root element is mandatory.
      *
      * @param tag URI path parameter: tag name
-     * @param data XmlTag structure containing the list of logs to be tagged
+     * @param data Tag structure containing the list of logs to be tagged
      * @return HTTP Response
      */
     @PUT
     @Path("{tagName}")
     @Consumes({"application/xml", "application/json"})
-    public Response create(@PathParam("tagName") String tag, XmlTag data) {
+    public Response create(@PathParam("tagName") String tag, Tag data) {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
-        XmlTag result = null;
+        Tag result = null;
         try {
             cm.checkValidNameAndOwner(data);
             cm.checkNameMatchesPayload(tag, data);
             result = cm.createOrReplaceTag(tag, data);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
-                    + "|data=" + XmlTag.toLog(data));
+                    + "|data=" + Tag.toLogger(data));
             return r;
         } catch (CFException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + XmlTag.toLog(data) + "|cause=" + e);
+                    + "|data=" + Tag.toLogger(data) + "|cause=" + e);
             return e.toResponse();
         }
     }
@@ -169,20 +169,20 @@ public class TagsResource {
     @POST
     @Path("{tagName}")
     @Consumes({"application/xml", "application/json"})
-    public Response update(@PathParam("tagName") String tag, XmlTag data) {
+    public Response update(@PathParam("tagName") String tag, Tag data) {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
-        XmlTag result = null;
+        Tag result = null;
         try {
             result = cm.updateTag(tag, data);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
-                    + "|data=" + XmlTag.toLog(data));
+                    + "|data=" + Tag.toLogger(data));
             return r;
         } catch (CFException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + XmlTag.toLog(data) + "|cause=" + e);
+                    + "|data=" + Tag.toLogger(data) + "|cause=" + e);
             return e.toResponse();
         }
     }
@@ -228,7 +228,7 @@ public class TagsResource {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
-        XmlTag result = null;
+        Tag result = null;
         try {
             result = cm.addSingleTag(tag, logId);
             Response r = Response.ok(result).build();

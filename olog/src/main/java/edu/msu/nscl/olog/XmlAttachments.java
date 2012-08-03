@@ -68,7 +68,7 @@ public class XmlAttachments {
             StringBuilder s = new StringBuilder();
             s.append("[");
             for (XmlAttachment t : data.getAttachments()) {
-                s.append(XmlAttachment.toLog(t) + ",");
+                s.append(XmlAttachment.toLogger(t) + ",");
             }
             s.delete(s.length()-1, s.length());
             s.append("]");

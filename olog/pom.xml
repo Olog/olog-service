@@ -7,6 +7,10 @@
     <name>Olog Directory Service</name>
     <description>Olog is a directory server, implemented as a REST style web service.</description>
     <url>http://sourceforge.net/projects/olog/</url>
+    <properties>
+        <eclipselink.version>2.4.0</eclipselink.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
     <developers>
         <developer>
             <name>Eric Berryman</name>
@@ -55,6 +59,12 @@
             <name>Repository hosting the Glassfish Repository</name>
             <url>http://repo1.maven.org/maven2</url>
         </repository>
+        <repository>
+            <id>EclipseLink Repo</id>
+            <url>
+                http://download.eclipse.org/rt/eclipselink/maven.repo
+            </url>
+        </repository>
     </repositories>
     <dependencies>
         <dependency>
@@ -89,7 +99,7 @@
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-multipart</artifactId>
             <version>1.12</version>
-	</dependency>
+        </dependency>
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-json</artifactId>
@@ -140,6 +150,21 @@
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
             <version>3.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>eclipselink</artifactId>
+            <version>${eclipselink.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>org.eclipse.persistence.core</artifactId>
+            <version>${eclipselink.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>org.eclipse.persistence.jpa</artifactId>
+            <version>${eclipselink.version}</version>
         </dependency>
         <dependency>
             <groupId>net.coobird</groupId>
@@ -205,10 +230,6 @@
         </plugins>
         <finalName>olog-service</finalName>
     </build>
-    <properties>
-        <netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
     <reporting>
         <plugins>
             <plugin>

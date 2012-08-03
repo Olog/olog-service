@@ -65,7 +65,8 @@ public class LogsResource {
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
-            XmlLogs result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
+            Logs result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
+            //Logs result = cm.findLogsTest();
             Response r = Response.ok(result).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.getLogs().size() + " logs");
@@ -80,21 +81,21 @@ public class LogsResource {
     /**
      * POST method for creating multiple log instances.
      *
-     * @param data XmlLogs data (from payload)
+     * @param data Logs data (from payload)
      * @return HTTP Response
      * @throws IOException when audit or log fail
      */
     @POST
     @Consumes({"application/xml", "application/json"})
     @Produces({"application/xml", "application/json"})
-    public Response add(@Context HttpServletRequest req, @Context HttpHeaders headers,XmlLogs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
+    public Response add(@Context HttpServletRequest req, @Context HttpHeaders headers,Logs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
-            XmlLogs data_temp = new XmlLogs();
-            for(XmlLog datum : data.getLogs()){
+            Logs data_temp = new Logs();
+            for(Log datum : data.getLogs()){
                 datum.setOwner(um.getUserName());
                 data_temp.addXmlLog(datum);
             }
@@ -104,14 +105,14 @@ public class LogsResource {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
             
-            XmlLogs result = cm.createOrReplaceLogs(hostAddress,data);
+            Logs result = cm.createOrReplaceLogs(hostAddress,data);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
-                    + "|data=" + XmlLogs.toLog(data));
+                    + "|data=" + Logs.toLogger(data));
             return r;
         } catch (CFException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + XmlLogs.toLog(data) + "|cause=" + e);
+                    + "|data=" + Logs.toLogger(data) + "|cause=" + e);
             return e.toResponse();
         }
     }
@@ -128,7 +129,7 @@ public class LogsResource {
     public Response read(@PathParam("logId") Long logId) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
-        XmlLog result = null;
+        Log result = null;
         try {
             result = cm.findLogById(logId);
             Response r;
@@ -158,12 +159,12 @@ public class LogsResource {
     @PUT
     @Path("{logId}")
     @Consumes({"application/xml", "application/json"})
-    public Response create(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, XmlLog data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Response create(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, Log data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
-        XmlLog result = null;
+        Log result = null;
         try {
             data.setOwner(um.getUserName());
             cm.checkValidOwner(data);
@@ -175,11 +176,11 @@ public class LogsResource {
             result = cm.createOrReplaceLog(hostAddress, logId, data);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
-                    + "|data=" + XmlLog.toLog(data));
+                    + "|data=" + Log.toLogger(data));
             return r;
         } catch (CFException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + XmlLog.toLog(data) + "|cause=" + e);
+                    + "|data=" + Log.toLogger(data) + "|cause=" + e);
             return e.toResponse();
         }
     }
@@ -189,18 +190,18 @@ public class LogsResource {
      * payload into an existing log.
      *
      * @param logId id of log to add
-     * @param data new XmlLog data (logbooks/tags) to be merged into log <tt>id</tt>
+     * @param data new Log data (logbooks/tags) to be merged into log <tt>id</tt>
      * @return HTTP response
      */
     @POST
     @Path("{logId}")
     @Consumes({"application/xml", "application/json"})
-    public Response update(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, XmlLog data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Response update(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, Log data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
-        XmlLog result = null;
+        Log result = null;
         try {
             data.setOwner(um.getUserName());
             cm.checkValidOwner(data);
@@ -212,11 +213,11 @@ public class LogsResource {
             result = cm.updateLog(hostAddress, logId, data);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
-                    + "|data=" + XmlLog.toLog(data));
+                    + "|data=" + Log.toLogger(data));
             return r;
         } catch (CFException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + XmlLog.toLog(data) + "|cause=" + e);
+                    + "|data=" + Log.toLogger(data) + "|cause=" + e);
             return e.toResponse();
         }
     }
@@ -238,7 +239,7 @@ public class LogsResource {
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), cm.findLogById(logId));
             }
-            cm.removeExistingLog(logId);
+            cm.removeLog(logId);
             Response r = Response.ok().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;

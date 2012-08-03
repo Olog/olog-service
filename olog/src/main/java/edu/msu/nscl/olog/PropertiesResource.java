@@ -181,7 +181,7 @@ public class PropertiesResource {
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
-        XmlLog result = null;
+        Log result = null;
         try {
             cm.checkPropertyName(property, data);
             result = cm.addAttribute(hostAddress, property, logId, data);
@@ -210,7 +210,7 @@ public class PropertiesResource {
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
-        XmlLog result = null;
+        Log result = null;
         try {
             cm.checkPropertyName(property, data);
             result = cm.removeAttribute(hostAddress, property, logId, data);

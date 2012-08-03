@@ -7,6 +7,7 @@ package edu.msu.nscl.olog;
 
 import java.io.IOException;
 import java.util.logging.Logger;
+import javax.ejb.Stateless;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.DELETE;
@@ -50,7 +51,7 @@ public class LogbooksResource {
     public Response list() {
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
-        XmlLogbooks result = null;
+        Logbooks result = null;
         try {
             result = cm.listLogbooks();
             Response r = Response.ok(result).build();
@@ -67,17 +68,17 @@ public class LogbooksResource {
     /**
      * POST method for creating multiple logbooks.
      *
-     * @param data XmlLogbooks data (from payload)
+     * @param data Logbooks data (from payload)
      * @return HTTP Response
      * @throws IOException when audit or log fail
      */
     @POST
     @Consumes({"application/xml", "application/json"})
-    public Response add(XmlLogbooks data) throws IOException {
+    public Response add(Logbooks data) throws IOException {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
-        XmlLogbooks result = null;
+        Logbooks result = null;
         try {
             cm.checkValidNameAndOwner(data);
             if (!um.userHasAdminRole()) {
@@ -86,18 +87,18 @@ public class LogbooksResource {
             result = cm.createOrReplaceLogbooks(data);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
-                    + "|data=" + XmlLogbooks.toLog(data));
+                    + "|data=" + Logbooks.toLogger(data));
             return r;
         } catch (CFException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + XmlLogbooks.toLog(data) + "|cause=" + e);
+                    + "|data=" + Logbooks.toLogger(data) + "|cause=" + e);
             return e.toResponse();
         }
     }
 
     /**
      * GET method for retrieving the logbook with the
-     * path parameter <tt>logbookName</tt> and its logs.
+     * path parameter <tt>logbookName</tt> .
      *
      * @param logbook URI path parameter: logbook name to search for
      * @return list of logs with their logbooks and tags that match
@@ -108,7 +109,7 @@ public class LogbooksResource {
     public Response read(@PathParam("logbookName") String logbook) {
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
-        XmlLogbook result = null;
+        Logbook result = null;
         try {
             result = cm.findLogbookByName(logbook);
             Response r;
@@ -140,11 +141,11 @@ public class LogbooksResource {
     @PUT
     @Path("{logbookName}")
     @Consumes({"application/xml", "application/json"})
-    public Response create(@PathParam("logbookName") String logbook, XmlLogbook data) {
+    public Response create(@PathParam("logbookName") String logbook, Logbook data) {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
-        XmlLogbook result = null;
+        Logbook result = null;
         try {
             cm.checkValidNameAndOwner(data);
             cm.checkNameMatchesPayload(logbook, data);
@@ -154,11 +155,11 @@ public class LogbooksResource {
             result = cm.createOrReplaceLogbook(logbook, data);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
-                    + "|data=" + XmlLogbook.toLog(data));
+                    + "|data=" + Logbook.toLogger(data));
             return r;
         } catch (CFException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + XmlLogbook.toLog(data) + "|cause=" + e);
+                    + "|data=" + Logbook.toLogger(data) + "|cause=" + e);
             return e.toResponse();
         }
     }
@@ -176,11 +177,11 @@ public class LogbooksResource {
     @POST
     @Path("{logbookName}")
     @Consumes({"application/xml", "application/json"})
-    public Response update(@PathParam("logbookName") String logbook, XmlLogbook data) {
+    public Response update(@PathParam("logbookName") String logbook, Logbook data) {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
-        XmlLogbook result = null;
+        Logbook result = null;
         try {
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroupOfLogbook(um.getUserName(), logbook);
@@ -189,11 +190,11 @@ public class LogbooksResource {
             result = cm.updateLogbook(logbook, data);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
-                    + "|data=" + XmlLogbook.toLog(data));
+                    + "|data=" + Logbook.toLogger(data));
             return r;
         } catch (CFException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + XmlLogbook.toLog(data) + "|cause=" + e);
+                    + "|data=" + Logbook.toLogger(data) + "|cause=" + e);
             return e.toResponse();
         }
     }
@@ -241,22 +242,22 @@ public class LogbooksResource {
     public Response addSingle(@PathParam("logbookName") String logbook, @PathParam("logId") Long logId) {
         OLogManager cm = OLogManager.getInstance();
         UserManager um = UserManager.getInstance();
-        XmlLogbook data = null;
+        Logbook data = null;
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
-        XmlLogbook result = null;
+        Logbook result = null;
         try {
-            data = ListLogbooksQuery.findLogbook(logbook);
+            data = LogbookManager.findLogbook(logbook);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
             result = cm.addSingleLogbook(logbook, logId);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
-                    + "|data=" + XmlLogbook.toLog(data));
+                    + "|data=" + Logbook.toLogger(data));
             return r;
         } catch (CFException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + XmlLogbook.toLog(data) + "|cause=" + e);
+                    + "|data=" + Logbook.toLogger(data) + "|cause=" + e);
             return e.toResponse();
         }
     }

@@ -73,7 +73,7 @@ public class AttachmentsResource {
     public Response getFile(@PathParam("logId") Long logId, @PathParam("fileName") String fileName ) {
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
-        OLogManager.Attachment result;
+        Attachment result;
         try {
             String filePath = logId.toString();
             result = cm.getAttachment(filePath, fileName);
@@ -102,7 +102,7 @@ public class AttachmentsResource {
     public Response getThumbnail(@PathParam("logId") Long logId, @PathParam("fileName") String fileName ) {
         OLogManager cm = OLogManager.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
-        OLogManager.Attachment result;
+        Attachment result;
         try {
             String filePath = "thumbnails/"+logId.toString();
             result = cm.getAttachment(filePath, fileName);
@@ -141,7 +141,7 @@ public class AttachmentsResource {
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For"));
-        OLogManager.Attachment attachment = new OLogManager.Attachment();
+        Attachment attachment = new Attachment();
         XmlAttachment result;
         try {
             if (!um.userHasAdminRole()) {
@@ -153,7 +153,7 @@ public class AttachmentsResource {
             attachment.setContent(uploadedInputStream);
             attachment.setFileSize(disposition.getSize()); 
             attachment.setEncoding(nonNull(body.getHeaders().getFirst("Content-Transfer-Encoding")));
-            result = cm.createOrReplaceAttachment(attachment, logId);
+            result = cm.createAttachment(attachment, logId);
 
             Response r = Response.ok(result).build();
             audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus());
@@ -188,7 +188,7 @@ public class AttachmentsResource {
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For"));
-        OLogManager.Attachment attachment = new OLogManager.Attachment();
+        Attachment attachment = new Attachment();
         try {
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroupOfLog(um.getUserName(), logId);
@@ -201,7 +201,7 @@ public class AttachmentsResource {
             attachment.setEncoding(nonNull(body.getHeaders().getFirst("Content-Transfer-Encoding")));
             //TODO: Should be destructive (replace)
             //cm.removeExistingAttachment(fileName,logId);
-            cm.createOrReplaceAttachment(attachment, logId);
+            cm.createAttachment(attachment, logId);
  
             String output = "File uploaded to : " + logId.toString()+"/"+disposition.getFileName();
             Response r = Response.status(200).entity(output).build();
@@ -236,7 +236,7 @@ public class AttachmentsResource {
                 cm.checkUserBelongsToGroupOfLog(um.getUserName(), logId);
                 cm.checkUserBelongsToGroup(um.getUserName(), cm.findLogById(logId));
             }
-            cm.removeExistingAttachment(fileName,logId);
+            cm.removeAttachment(fileName,logId);
             Response r = Response.ok().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;

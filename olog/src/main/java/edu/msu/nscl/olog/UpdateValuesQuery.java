@@ -39,14 +39,14 @@ public class UpdateValuesQuery {
      * @param logId Long the log to add to logbook
      * @throws CFException wrapping an SQLException
      */
-    public static XmlLogbook updateLogbookWithLog(String name, Long logId) throws CFException {
+    public static Logbook updateLogbookWithLog(String name, Long logId) throws CFException {
         SqlSession ss = ssf.openSession();
 
         try {
             List<Long> ids = new ArrayList<Long>();
 
             // Get logbook id
-            Long pid = FindLogbookIdsQuery.getLogbookId(name);
+            Long pid = LogbookManager.findLogbook(name).getId();
 
             if (pid == null) {
                 throw new CFException(Response.Status.NOT_FOUND, "Log entry + " + logId 
@@ -73,7 +73,7 @@ public class UpdateValuesQuery {
             ss.commit();
             
             // Return the logbook now that the new log has been added
-            return ListLogbooksQuery.findLogbook(name);
+            return LogbookManager.findLogbook(name);
         } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "MyBatis exception: " + e);
@@ -85,10 +85,10 @@ public class UpdateValuesQuery {
     /**
      * Updates a logbook in the database.
      *
-     * @param logbook XmlLogbook
+     * @param logbook Logbook
      * @throws CFException wrapping an SQLException
      */
-    public static XmlLogbook updateLogbook(String name, XmlLogbook logbook) throws CFException {
+    public static Logbook updateLogbook(String name, Logbook logbook) throws CFException {
         SqlSession ss = ssf.openSession();
 
         try {
@@ -96,14 +96,14 @@ public class UpdateValuesQuery {
             List<Long> ids = new ArrayList<Long>();
 
             // Get logbook id
-            Long pid = FindLogbookIdsQuery.getLogbookId(logbook.getName());
+            Long pid = LogbookManager.findLogbook(logbook.getName()).getId();
 
             if (pid == null) {
                 throw new CFException(Response.Status.NOT_FOUND, 
                         "Logbook '" + logbook.getName() + "' could not be updated: Logbook does not exist");
             }
 
-            XmlLogbook p = ListLogbooksQuery.findLogbook(logbook.getName());
+            Logbook p = LogbookManager.findLogbook(logbook.getName());
             String logbookOwner = p.getOwner();
 
             if ((name != null && !name.equals(logbook.getName())) || (logbook.getOwner() != null && !logbookOwner.equals(logbook.getOwner()))) {
@@ -115,10 +115,10 @@ public class UpdateValuesQuery {
             }
             
             if (logbook.getXmlLogs() == null) {
-                return ListLogbooksQuery.findLogbook(logbook.getName());
+                return LogbookManager.findLogbook(logbook.getName());
             }
 
-            for (XmlLog log : logbook.getXmlLogs().getLogs()) {
+            for (Log log : logbook.getXmlLogs().getLogs()) {
                 if (log.getVersion() > 0) {
                     newestVersionIds.add(log.getId());
                 } else {
@@ -127,14 +127,14 @@ public class UpdateValuesQuery {
             }
 
             if (!newestVersionIds.isEmpty()) {
-                ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getChildrenIds", newestVersionIds);
+                ArrayList<Log> logs = (ArrayList<Log>) ss.selectList("mappings.LogMapping.getChildrenIds", newestVersionIds);
                 if (logs.isEmpty()) {
                     throw new CFException(Response.Status.NOT_FOUND,
                             "Logbook '" + logbook.getName() + "' could not be updated: "
                             + "No parent logs could be found");
                 }
 
-                for (XmlLog log : logs) {
+                for (Log log : logs) {
                     ids.add(log.getId());
                 }
             }
@@ -162,7 +162,7 @@ public class UpdateValuesQuery {
             ss.commit();
             
             // Return the logbook now that all the changes have been made
-            return ListLogbooksQuery.findLogbook(logbook.getName());
+            return LogbookManager.findLogbook(logbook.getName());
         } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "MyBatis exception: " + e);
@@ -174,10 +174,10 @@ public class UpdateValuesQuery {
     /**
      * Updates a tag in the database, adding it to all logs in <tt>tag</tt>.
      *
-     * @param tag XmlTag
+     * @param tag Tag
      * @throws CFException wrapping an SQLException
      */
-    public static XmlTag updateTag(String name, XmlTag tag) throws CFException {
+    public static Tag updateTag(String name, Tag tag) throws CFException {
         SqlSession ss = ssf.openSession();
 
         try {
@@ -185,7 +185,7 @@ public class UpdateValuesQuery {
             List<Long> ids = new ArrayList<Long>();
 
             // Get logbook id
-            Long pid = FindLogbookIdsQuery.getLogbookId(tag.getName());
+            Long pid = TagManager.findTag(tag.getName()).getId();
             
             if (pid == null) {
                 throw new CFException(Response.Status.NOT_FOUND, 
@@ -199,7 +199,7 @@ public class UpdateValuesQuery {
                 ss.update("mappings.TagMapper.updateTag", hm);
             }
             
-            XmlTag t = ListLogbooksQuery.findTag(tag.getName());
+            Tag t = TagManager.findTag(tag.getName());
             if(t == null){
                 return null;
             }
@@ -211,7 +211,7 @@ public class UpdateValuesQuery {
                 return t;
             }
             
-            for (XmlLog log : tag.getXmlLogs().getLogs()) {
+            for (Log log : tag.getXmlLogs().getLogs()) {
                 if (log.getVersion() > 0) {
                     newestVersionIds.add(log.getId());
                 } else {
@@ -220,14 +220,14 @@ public class UpdateValuesQuery {
             }
 
             if (!newestVersionIds.isEmpty()) {
-                ArrayList<XmlLog> logs = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getChildrenIds", newestVersionIds);
+                ArrayList<Log> logs = (ArrayList<Log>) ss.selectList("mappings.LogMapping.getChildrenIds", newestVersionIds);
                 if (logs.isEmpty()) {
                     throw new CFException(Response.Status.NOT_FOUND,
                             "Tag '" + tag.getName() + "' could not be updated: "
                             + "No parent logs could be found");
                 }
 
-                for (XmlLog log : logs) {
+                for (Log log : logs) {
                     ids.add(log.getId());
                 }
             }
@@ -255,7 +255,7 @@ public class UpdateValuesQuery {
             ss.commit();
             
             // Return new tag now that the logs have been added
-            return ListLogbooksQuery.findTag(tag.getName());
+            return TagManager.findTag(tag.getName());
         } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "MyBatis exception: " + e);
@@ -271,17 +271,17 @@ public class UpdateValuesQuery {
      * @param logId id of log to add tag to
      * @throws CFException wrapping an SQLException
      */
-    public static XmlTag updateTag(String tag, Long logId) throws CFException {
+    public static Tag updateTag(String tag, Long logId) throws CFException {
         SqlSession ss = ssf.openSession();
 
         try {
             List<Long> newestVersionIds = new ArrayList<Long>();
             List<Long> ids = new ArrayList<Long>();
             
-            XmlLogs logs = new XmlLogs(new XmlLog(logId));
+            Logs logs = new Logs(new Log(logId));
 
             // Get log id
-            Long pid = FindLogbookIdsQuery.getLogbookId(tag);
+            Long pid = TagManager.findTag(tag).getId();
             if (pid == null) {
                 throw new CFException(Response.Status.NOT_FOUND, 
                         "Tag '" + tag + "' could not be updated: Does not exist");
@@ -294,7 +294,7 @@ public class UpdateValuesQuery {
                 return null;
             }
             
-            for (XmlLog log : logs.getLogs()) {
+            for (Log log : logs.getLogs()) {
                 if (log.getVersion() > 0) {
                     newestVersionIds.add(log.getId());
                 } else {
@@ -303,14 +303,14 @@ public class UpdateValuesQuery {
             }
 
             if (!newestVersionIds.isEmpty()) {
-                ArrayList<XmlLog> logs_returned = (ArrayList<XmlLog>) ss.selectList("mappings.LogMapping.getChildrenIds", newestVersionIds);
+                ArrayList<Log> logs_returned = (ArrayList<Log>) ss.selectList("mappings.LogMapping.getChildrenIds", newestVersionIds);
                 if (logs_returned.isEmpty()) {
                     throw new CFException(Response.Status.NOT_FOUND,
                             "Tag '" + tag + "' could not be updated: "
                             + "No parent logs could be found");
                 }
 
-                for (XmlLog log : logs_returned) {
+                for (Log log : logs_returned) {
                     ids.add(log.getId());
                 }
             }
@@ -332,7 +332,7 @@ public class UpdateValuesQuery {
             ss.commit();
             
             // Return new tag now that the new log have been added
-            return ListLogbooksQuery.findTag(tag);
+            return TagManager.findTag(tag);
         } catch (PersistenceException e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "MyBatis exception: " + e);

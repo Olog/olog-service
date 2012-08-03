@@ -17,9 +17,9 @@
 --
 -- Create schema ologdb4
 --
-DROP DATABASE IF EXISTS ologdb4;
-CREATE DATABASE ologdb4;
-USE ologdb4;
+DROP DATABASE IF EXISTS olog;
+CREATE DATABASE olog;
+USE olog;
 
 --
 -- Definition of table `levels`
@@ -137,8 +137,8 @@ CREATE TABLE `logs_logbooks` (
 -- Definition of table `properties`
 --
 
-DROP TABLE IF EXISTS `ologdb4`.`properties`;
-CREATE TABLE  `ologdb4`.`properties` (
+DROP TABLE IF EXISTS `properties`;
+CREATE TABLE  `properties` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(200) NOT NULL,
   `status_id` tinyint(1) NOT NULL,
@@ -156,8 +156,8 @@ CREATE TABLE  `ologdb4`.`properties` (
 -- Definition of table `attributes`
 --
 
-DROP TABLE IF EXISTS `ologdb4`.`attributes`;
-CREATE TABLE  `ologdb4`.`attributes` (
+DROP TABLE IF EXISTS `attributes`;
+CREATE TABLE  `attributes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `property_id` int(11) NOT NULL,
   `name` varchar(200) NOT NULL,
@@ -171,8 +171,8 @@ CREATE TABLE  `ologdb4`.`attributes` (
 -- Definition of table `logs_attributes`
 --
 
-DROP TABLE IF EXISTS `ologdb4`.`logs_attributes`;
-CREATE TABLE  `ologdb4`.`logs_attributes` (
+DROP TABLE IF EXISTS `logs_attributes`;
+CREATE TABLE  `logs_attributes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `log_id` int(11) NOT NULL,
   `attribute_id` int(11) NOT NULL,

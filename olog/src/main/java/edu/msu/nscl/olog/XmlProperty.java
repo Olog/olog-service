@@ -27,7 +27,7 @@ public class XmlProperty {
     private int groupingNum;
     private String name = null;
     private Map<String, String> attributes;
-    private XmlLogs logs = null;
+    private Logs logs = null;
 
     /**
      * Creates a new instance of XmlProperty.
@@ -129,22 +129,22 @@ public class XmlProperty {
     }
 
     /**
-     * Getter for property's XmlLogs.
+     * Getter for property's Logs.
      * 
      * @return XmlChannels object
      */
     @XmlElement(name = "logs")
-    public XmlLogs getXmlLogs() {
+    public Logs getXmlLogs() {
         return logs;
     }
 
     /**
-     * Setter for property's XmlLogs.
+     * Setter for property's Logs.
      * 
      * @param logs
-     *            XmlLogs object
+     *            Logs object
      */
-    public void setXmlLogs(XmlLogs logs) {
+    public void setXmlLogs(Logs logs) {
         this.logs = logs;
     }
 
@@ -155,12 +155,12 @@ public class XmlProperty {
      *            the XmlProperty to log
      * @return string representation for log
      */
-    public static String toLog(XmlProperty data) {
+    public static String toLogger(XmlProperty data) {
         if (data.logs == null) {
             return data.getName() + "(" + data.getAttributes().toString() + ")";
         } else {
             return data.getName() + "(" + data.getAttributes().toString() + ")"
-                    + XmlLogs.toLog(data.logs);
+                    + Logs.toLogger(data.logs);
         }
     }
 }
