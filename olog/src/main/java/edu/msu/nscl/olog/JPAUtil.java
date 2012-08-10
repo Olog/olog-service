@@ -95,7 +95,7 @@ public class JPAUtil {
             em = JPAUtil.getEntityManagerFactory().createEntityManager();
             JPAUtil.startTransaction(em);
 
-            Query query = em.createQuery("UPDATE " + type.getName() + " c  SET c.status='"+Status.Inactive+"' WHERE c.id = ?");
+            Query query = em.createQuery("UPDATE " + type.getName() + " c  SET c.status='"+State.Inactive+"' WHERE c.id = ?");
             query.setParameter(1, id);
             query.executeUpdate();
 

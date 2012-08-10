@@ -36,7 +36,7 @@ public class LogbookManager {
         CriteriaQuery<Logbook> cq = cb.createQuery(Logbook.class);
         Root<Logbook> from = cq.from(Logbook.class);
         CriteriaQuery<Logbook> select = cq.select(from);
-        Predicate statusPredicate = cb.equal(from.get("status"), Status.Active);
+        Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
         select.where(statusPredicate);
         select.orderBy(cb.asc(from.get("name")));
         TypedQuery<Logbook> typedQuery = em.createQuery(select);
@@ -73,7 +73,7 @@ public class LogbookManager {
         Root<Logbook> from = cq.from(Logbook.class);
         CriteriaQuery<Logbook> select = cq.select(from);
         Predicate namePredicate = cb.equal(from.get("name"), name);
-        Predicate statusPredicate = cb.equal(from.get("status"), Status.Active);
+        Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
         select.where(cb.and(namePredicate,statusPredicate));
         select.orderBy(cb.asc(from.get("name")));
         TypedQuery<Logbook> typedQuery = em.createQuery(select);
@@ -110,7 +110,7 @@ public class LogbookManager {
             Logbook xmlLogbook = new Logbook();
             Logbook logbook = findLogbook(name);
             if (logbook != null) {
-                logbook.setStatus(Status.Active);
+                logbook.setState(State.Active);
                 logbook.setOwner(owner);
                 JPAUtil.update(logbook);
             } else {

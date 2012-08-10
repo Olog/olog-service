@@ -8,7 +8,7 @@ package edu.msu.nscl.olog;
  *
  * @author berryman
  */
-public enum Status {
+public enum State {
     Active,
     Inactive
 }

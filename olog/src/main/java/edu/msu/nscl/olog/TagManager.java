@@ -36,7 +36,7 @@ public class TagManager {
         CriteriaQuery<Tag> cq = cb.createQuery(Tag.class);
         Root<Tag> from = cq.from(Tag.class);
         CriteriaQuery<Tag> select = cq.select(from);
-        Predicate statusPredicate = cb.equal(from.get("status"), Status.Active);
+        Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
         select.where(statusPredicate);
         select.orderBy(cb.asc(from.get("name")));
         TypedQuery<Tag> typedQuery = em.createQuery(select);
@@ -73,7 +73,7 @@ public class TagManager {
         Root<Tag> from = cq.from(Tag.class);
         CriteriaQuery<Tag> select = cq.select(from);
         Predicate namePredicate = cb.equal(from.get("name"), name);
-        Predicate statusPredicate = cb.equal(from.get("status"), Status.Active);
+        Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
         select.where(cb.and(namePredicate,statusPredicate));
         select.orderBy(cb.asc(from.get("name")));
         TypedQuery<Tag> typedQuery = em.createQuery(select);
@@ -109,7 +109,7 @@ public class TagManager {
             Tag xmlTag = new Tag();
             Tag tag = findTag(name);
             if (tag != null) {
-                tag.setStatus(Status.Active);
+                tag.setState(State.Active);
                 JPAUtil.update(tag);
             } else {
                 xmlTag.setName(name);    

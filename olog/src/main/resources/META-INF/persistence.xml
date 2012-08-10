@@ -3,7 +3,6 @@
   <persistence-unit name="olog_prod" transaction-type="RESOURCE_LOCAL">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <non-jta-data-source>jdbc/olog</non-jta-data-source>
-    <class>edu.msu.nscl.olog.Status</class>
     <class>edu.msu.nscl.olog.Level</class>
     <class>edu.msu.nscl.olog.Logbook</class>
     <class>edu.msu.nscl.olog.Tag</class>

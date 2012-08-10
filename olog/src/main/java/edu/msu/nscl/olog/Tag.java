@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlType;
 public class Tag implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id = null;
     
@@ -36,7 +36,7 @@ public class Tag implements Serializable {
     private String name = null;
     
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private State state;
     
     //for joing the tables (many-to-many)
     @ManyToMany(mappedBy="tags", fetch = FetchType.EAGER)
@@ -94,15 +94,15 @@ public class Tag implements Serializable {
      * @return the status
      */
     @XmlTransient
-    public Status getStatus() {
-        return status;
+    public State getState() {
+        return state;
     }
 
     /**
      * @return the status
      */
-    public void setStatus(Status status) {
-        this.status = status;
+    public void setState(State state) {
+        this.state = state;
     }
 
     /**
@@ -112,7 +112,7 @@ public class Tag implements Serializable {
      */
     //@XmlElement(name = "logs")
     @XmlTransient
-    public Logs getXmlLogs() {
+    public Logs getLogs() {
         if (logs != null) {
             Iterator<Log> iterator = logs.iterator();
             Logs xmlLogs = new Logs();
@@ -130,7 +130,7 @@ public class Tag implements Serializable {
      *
      * @param logs Logs object
      */
-    public void setXmlLogs(Logs logs) {
+    public void setLogs(Logs logs) {
         for (Log xmlLog : logs.getLogs()) {
             this.logs.add(xmlLog);
         }
@@ -144,10 +144,10 @@ public class Tag implements Serializable {
      */
     public static String toLogger(Tag data) {
         if (data.logs == null) {
-            return data.getName() + "(" + data.getStatus() + ")";
+            return data.getName() + "(" + data.getState() + ")";
         } else {
-            return data.getName() + "(" + data.getStatus() + ")"
-                    + Logs.toLogger(data.getXmlLogs());
+            return data.getName() + "(" + data.getState() + ")"
+                    + Logs.toLogger(data.getLogs());
         }
     }
 }
