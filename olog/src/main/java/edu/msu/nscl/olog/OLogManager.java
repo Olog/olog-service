@@ -5,23 +5,12 @@
  */
 package edu.msu.nscl.olog;
 
-import com.sun.jersey.core.header.FormDataContentDisposition;
-import com.sun.jersey.multipart.FormDataBodyPart;
 import java.io.*;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.jcr.*;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.xml.bind.DatatypeConverter;
-import net.coobird.thumbnailator.Thumbnails;
-import org.apache.commons.io.IOUtils;
-import org.apache.jackrabbit.JcrConstants;
 
 /**
  * Central business logic layer that implements all directory operations.
@@ -183,7 +172,7 @@ public class OLogManager {
     public Logbooks createOrReplaceLogbooks(Logbooks data) throws CFException {
         Logbooks xmlLogbooks = null;
         for (Logbook logbook : data.getLogbooks()) {
-            removeLogbook(logbook.getName());
+            //removeLogbook(logbook.getName());
             xmlLogbooks.addXmlLogbook(createOrReplaceLogbook(logbook.getName(), logbook));
         }
         return xmlLogbooks;
@@ -305,7 +294,7 @@ public class OLogManager {
     public Tags createOrReplaceTags(Tags data) throws CFException {
         Tags xmlTags = null;
         for (Tag tag : data.getTags()) {
-            removeTag(tag.getName());
+            //removeTag(tag.getName());
             xmlTags.addXmlTag(createOrReplaceTag(tag.getName(), tag));
         }
         return xmlTags;
@@ -477,7 +466,7 @@ public class OLogManager {
         Logs xmlLogs = new Logs();
         for (Log log : data.getLogs()) {
             log.setSource(hostAddress);
-            removeLog(log.getId());
+            //removeLog(log.getId());
             xmlLogs.addXmlLog(createOneLog(log));
         }
         return xmlLogs;

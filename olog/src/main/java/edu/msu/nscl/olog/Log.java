@@ -22,12 +22,12 @@ import javax.xml.bind.annotation.*;
 @Entity
 @Table(name = "logs")
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlType(propOrder = {"id","createdDate","modifiedDate","level","owner","source","version","description","logbooks","tags","xmlProperties","xmlAttachments","children"})
+@XmlType(propOrder = {"id","createdDate","modifiedDate","owner","source","version","description","logbooks","tags","xmlProperties","xmlAttachments","children"})
 @XmlRootElement(name = "log")
 public class Log implements Serializable {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
     
@@ -40,21 +40,12 @@ public class Log implements Serializable {
     @Column(name = "source", nullable = false, length = 50, insertable = true)
     private String source;
 
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "level_id", referencedColumnName="id")
+    @ManyToOne(optional = false,cascade = CascadeType.ALL)
+    @JoinColumn(name = "level_id", referencedColumnName="id", insertable=false, updatable=false)
     private Level level;
     
     @Enumerated(EnumType.STRING)
-    private Status status;
-    
-    @Column(name = "md5entry", nullable = false, length = 50, insertable = true)
-    private String md5Entry;
-    
-    @Column(name = "md5recent", nullable = false, length = 50, insertable = true)
-    private String md5Recent;
-    
-    @Transient
-    private Long tableId;
+    private State state;
     
     @Column(name = "created", nullable = false, length = 50, insertable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -70,16 +61,24 @@ public class Log implements Serializable {
     private Collection<XmlProperty> properties = new ArrayList<XmlProperty>();
     
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "logs_logbooks", joinColumns = {
         @JoinColumn(name = "log_id", unique = true)
     },
     inverseJoinColumns = {
-        @JoinColumn(name = "logbook_id")
+        @JoinColumn(name = "logbook_id",insertable=false,updatable=false)
     })
     @NotNull
     private Set<Logbook> logbooks;
-    
+        
+    @ManyToMany(cascade = CascadeType.PERSIST)
+    @JoinTable(name = "logs_logbooks", joinColumns = {
+        @JoinColumn(name = "log_id", unique = true)
+    },
+    inverseJoinColumns = {
+        @JoinColumn(name = "logbook_id",insertable=false,updatable=false)
+    })
+    private Set<Tag> tags;
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "parent_id",insertable=false,updatable=false)
@@ -89,21 +88,12 @@ public class Log implements Serializable {
     @JoinColumn(name = "parent_id")
     private Collection<Log> children = new ArrayList<Log>();
     
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "logs_logbooks", joinColumns = {
-        @JoinColumn(name = "log_id", unique = true)
-    },
-    inverseJoinColumns = {
-        @JoinColumn(name = "logbook_id")
-    })
-    private Set<Tag> tags;
-    
     @Transient
     private Collection<XmlAttachment> attachments = new ArrayList<XmlAttachment>();
 
     /** Creates a new instance of Log */
     public Log() {
-        this.level = new Level();
+       // this.level = new Level();
     }
 
     /**
@@ -112,7 +102,7 @@ public class Log implements Serializable {
      * @param logId log id
      */
     public Log(Long logId) {
-        this.level = new Level();
+  //      this.level = new Level();
         this.id = logId;
     }
 
@@ -123,7 +113,7 @@ public class Log implements Serializable {
      */
     public Log(String owner) {
 //        this.subject = subject;
-        this.level = new Level();
+    //    this.level = new Level();
         this.owner = owner;
     }
 
@@ -134,7 +124,7 @@ public class Log implements Serializable {
      * @param owner log owner
      */
     public Log(Long logId, String owner) {
-        this.level = new Level();
+    //    this.level = new Level();
         this.id = logId;
         this.owner = owner;
     }
@@ -169,15 +159,15 @@ public class Log implements Serializable {
      * @return the status
      */
     @XmlTransient
-    public Status getStatus() {
-        return status;
+    public State getState() {
+        return state;
     }
 
     /**
      * @return the status
      */
-    public void setStatus(Status status) {
-        this.status = status;
+    public void setState(State state) {
+        this.state = state;
     }
     
     /**
@@ -225,9 +215,10 @@ public class Log implements Serializable {
      *
      * @return level
      */
-    @XmlAttribute
-    public String getLevel() {
-        return level.getName();
+    @XmlTransient
+    //@XmlAttribute
+    public Level getLevel() {
+        return level;
     }
 
     /**
@@ -235,8 +226,8 @@ public class Log implements Serializable {
      *
      * @param level
      */
-    public void setLevel(String level) {
-        this.level.setName(level);
+    public void setLevel(Level level) {
+        this.level = level;
     }
 
     /**
@@ -317,42 +308,6 @@ public class Log implements Serializable {
      */
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    /**
-     * Getter for MD5 entry.
-     *
-     * @return description
-     */
-    public String getMD5Entry() {
-        return md5Entry;
-    }
-
-    /**
-     * Setter for MD5 entry.
-     *
-     * @param description the value to set
-     */
-    public void setMD5Entry(String md5entry) {
-        this.md5Entry = md5entry;
-    }
-    
-    /**
-     * Getter for Table id.
-     *
-     * @return table id
-     */
-    public Long getTableId() {
-        return tableId;
-    }
-
-    /**
-     * Setter for Table id.
-     *
-     * @param Table id to set
-     */
-    public void setTableId(Long tableId) {
-        this.tableId = tableId;
     }
     
     /**

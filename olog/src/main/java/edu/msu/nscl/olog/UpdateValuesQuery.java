@@ -114,11 +114,11 @@ public class UpdateValuesQuery {
                 ss.update("mappings.LogbookMapper.updateLogbook", hm);
             }
             
-            if (logbook.getXmlLogs() == null) {
+            if (logbook.getLogs() == null) {
                 return LogbookManager.findLogbook(logbook.getName());
             }
 
-            for (Log log : logbook.getXmlLogs().getLogs()) {
+            for (Log log : logbook.getLogs().getLogs()) {
                 if (log.getVersion() > 0) {
                     newestVersionIds.add(log.getId());
                 } else {
@@ -204,14 +204,14 @@ public class UpdateValuesQuery {
                 return null;
             }
             
-            if (tag.getXmlLogs() == null) {
+            if (tag.getLogs() == null) {
                 return t;
             }
-            if (tag.getXmlLogs().getLogs().isEmpty()) {
+            if (tag.getLogs().getLogs().isEmpty()) {
                 return t;
             }
             
-            for (Log log : tag.getXmlLogs().getLogs()) {
+            for (Log log : tag.getLogs().getLogs()) {
                 if (log.getVersion() > 0) {
                     newestVersionIds.add(log.getId());
                 } else {
