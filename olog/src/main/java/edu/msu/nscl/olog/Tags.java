@@ -3,11 +3,11 @@
  * Copyright (c) 2010 Helmholtz-Zentrum Berlin fuer Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
-
 package edu.msu.nscl.olog;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 
@@ -16,16 +16,20 @@ import javax.xml.bind.annotation.XmlElement;
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-
 @XmlRootElement(name = "tags")
 public class Tags {
+
     private Collection<Tag> tags = new ArrayList<Tag>();
-  
-    /** Creates a new instance of Tags. */
+
+    /**
+     * Creates a new instance of Tags.
+     */
     public Tags() {
     }
 
-    /** Creates a new instance of Tags with one initial tag.
+    /**
+     * Creates a new instance of Tags with one initial tag.
+     *
      * @param tag initial element
      */
     public Tags(Tag tag) {
@@ -75,7 +79,22 @@ public class Tags {
             for (Tag t : data.getTags()) {
                 s.append(Tag.toLogger(t) + ",");
             }
-            s.delete(s.length()-1, s.length());
+            s.delete(s.length() - 1, s.length());
+            s.append("]");
+            return s.toString();
+        }
+    }
+
+    public static String toLogger(Set<Tag> data) {
+        if (data.size() == 0) {
+            return "[None]";
+        } else {
+            StringBuilder s = new StringBuilder();
+            s.append("[");
+            for (Tag t : data) {
+                s.append(Tag.toLogger(t) + ",");
+            }
+            s.delete(s.length() - 1, s.length());
             s.append("]");
             return s.toString();
         }

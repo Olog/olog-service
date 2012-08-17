@@ -48,7 +48,7 @@ public class TagsResource {
     @GET
     @Produces({"application/xml", "application/json"})
     public Response list() {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         Tags result = null;
         try {
@@ -74,7 +74,7 @@ public class TagsResource {
     @POST
     @Consumes({"application/xml", "application/json"})
     public Response add(Tags data) throws IOException {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Tags result = null;
@@ -103,7 +103,7 @@ public class TagsResource {
     @Path("{tagName}")
     @Produces({"application/xml", "application/json"})
     public Response read(@PathParam("tagName") String tag) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         Tag result = null;
         try {
@@ -137,7 +137,7 @@ public class TagsResource {
     @Path("{tagName}")
     @Consumes({"application/xml", "application/json"})
     public Response create(@PathParam("tagName") String tag, Tag data) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Tag result = null;
@@ -170,7 +170,7 @@ public class TagsResource {
     @Path("{tagName}")
     @Consumes({"application/xml", "application/json"})
     public Response update(@PathParam("tagName") String tag, Tag data) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Tag result = null;
@@ -197,7 +197,7 @@ public class TagsResource {
     @DELETE
     @Path("{tagName}")
     public Response remove(@PathParam("tagName") String tag) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
@@ -225,7 +225,7 @@ public class TagsResource {
     @Path("{tagName}/{logId}")
     @Consumes({"application/xml", "application/json"})
     public Response addSingle(@PathParam("tagName") String tag, @PathParam("logId")Long logId) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Tag result = null;
@@ -252,7 +252,7 @@ public class TagsResource {
     @DELETE
     @Path("{tagName}/{logId}")
     public Response removeSingle(@PathParam("tagName") String tag, @PathParam("logId")Long logId) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {

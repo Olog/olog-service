@@ -3,29 +3,34 @@
  * Copyright (c) 2010 Helmholtz-Zentrum Berlin fuer Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
-
 package edu.msu.nscl.olog;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Logbooks (collection) object that can be represented as XML/JSON in payload data.
+ * Logbooks (collection) object that can be represented as XML/JSON in payload
+ * data.
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-
 @XmlRootElement(name = "logbooks")
 public class Logbooks {
+
     private Collection<Logbook> logbooks = new ArrayList<Logbook>();
-  
-    /** Creates a new instance of Logbooks. */
+
+    /**
+     * Creates a new instance of Logbooks.
+     */
     public Logbooks() {
     }
 
-    /** Creates a new instance of Logbooks with one initial logbook.
+    /**
+     * Creates a new instance of Logbooks with one initial logbook.
+     *
      * @param logbook initial element
      */
     public Logbooks(Logbook logbook) {
@@ -75,7 +80,22 @@ public class Logbooks {
             for (Logbook p : data.getLogbooks()) {
                 s.append(Logbook.toLogger(p) + ",");
             }
-            s.delete(s.length()-1, s.length());
+            s.delete(s.length() - 1, s.length());
+            s.append("]");
+            return s.toString();
+        }
+    }
+
+    public static String toLogger(Set<Logbook> data) {
+        if (data.size() == 0) {
+            return "[None]";
+        } else {
+            StringBuilder s = new StringBuilder();
+            s.append("[");
+            for (Logbook p : data) {
+                s.append(Logbook.toLogger(p) + ",");
+            }
+            s.delete(s.length() - 1, s.length());
             s.append("]");
             return s.toString();
         }

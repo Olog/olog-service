@@ -62,7 +62,7 @@ public class LogsResource {
     @GET
     @Produces({"application/xml", "application/json"})
     public Response query() throws RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
             Logs result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
@@ -89,15 +89,16 @@ public class LogsResource {
     @Consumes({"application/xml", "application/json"})
     @Produces({"application/xml", "application/json"})
     public Response add(@Context HttpServletRequest req, @Context HttpHeaders headers,Logs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
+        um.setHostAddress(hostAddress);
         try {
             Logs data_temp = new Logs();
             for(Log datum : data.getLogs()){
                 datum.setOwner(um.getUserName());
-                data_temp.addXmlLog(datum);
+                data_temp.addLog(datum);
             }
             data = data_temp;
             cm.checkValidOwner(data);
@@ -105,7 +106,7 @@ public class LogsResource {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
             
-            Logs result = cm.createOrReplaceLogs(hostAddress,data);
+            Logs result = cm.createOrReplaceLogs(data);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + Logs.toLogger(data));
@@ -127,7 +128,7 @@ public class LogsResource {
     @Path("{logId}")
     @Produces({"application/xml", "application/json"})
     public Response read(@PathParam("logId") Long logId) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         Log result = null;
         try {
@@ -160,10 +161,11 @@ public class LogsResource {
     @Path("{logId}")
     @Consumes({"application/xml", "application/json"})
     public Response create(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, Log data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
+        um.setHostAddress(hostAddress);
         Log result = null;
         try {
             data.setOwner(um.getUserName());
@@ -173,7 +175,7 @@ public class LogsResource {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
             
-            result = cm.createOrReplaceLog(hostAddress, logId, data);
+            result = cm.createOrReplaceLog(logId, data);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + Log.toLogger(data));
@@ -197,10 +199,11 @@ public class LogsResource {
     @Path("{logId}")
     @Consumes({"application/xml", "application/json"})
     public Response update(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, Log data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
+        um.setHostAddress(hostAddress);
         Log result = null;
         try {
             data.setOwner(um.getUserName());
@@ -210,7 +213,7 @@ public class LogsResource {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
             
-            result = cm.updateLog(hostAddress, logId, data);
+            result = cm.updateLog(logId, data);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + Log.toLogger(data));
@@ -233,7 +236,7 @@ public class LogsResource {
     @Path("{logId}")
     public Response remove(@PathParam("logId") Long logId) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         UserManager um = UserManager.getInstance();
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             if (!um.userHasAdminRole()) {

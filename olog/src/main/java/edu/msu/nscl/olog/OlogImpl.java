@@ -17,14 +17,14 @@ import javax.ws.rs.core.Response;
  * 
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-public class OLogManager {
+public class OlogImpl {
 
-    private static OLogManager instance = new OLogManager();
+    private static OlogImpl instance = new OlogImpl();
 
     /**
      * Create an instance of OlogManager
      */
-    private OLogManager() {
+    private OlogImpl() {
     }
 
     /**
@@ -32,7 +32,7 @@ public class OLogManager {
      *
      * @return the instance of OlogManager
      */
-    public static OLogManager getInstance() {
+    public static OlogImpl getInstance() {
         return instance;
     }
 
@@ -391,7 +391,7 @@ public class OLogManager {
         currentProperties.add(data);
         currentLog.setXmlProperties(currentProperties);
 
-        return createOrReplaceLog(hostAddress, logId, currentLog);
+        return createOrReplaceLog(logId, currentLog);
     }
 
     /**
@@ -439,7 +439,7 @@ public class OLogManager {
         currentLog.setXmlProperties(currentProperties);
 
         // Create new log with the correct properties removed
-        return createOrReplaceLog(hostAddress, logId, currentLog);
+        return createOrReplaceLog(logId, currentLog);
     }
 
     /**
@@ -451,8 +451,10 @@ public class OLogManager {
      * @param data Log data
      * @throws CFException on ownership or name mismatch, or wrapping an SQLException
      */
-    public Log createOrReplaceLog(String hostAddress, Long logId, Log data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        data.setSource(hostAddress);
+    public Log createOrReplaceLog(Long logId, Log data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        UserManager um = UserManager.getInstance();
+        data.setSource(um.getHostAddress());
+        data.setOwner(um.getUserName());
         return LogManager.create(data);
     }
 
@@ -462,12 +464,12 @@ public class OLogManager {
      * @param data Logs data
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public Logs createOrReplaceLogs(String hostAddress, Logs data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Logs createOrReplaceLogs(Logs data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         Logs xmlLogs = new Logs();
         for (Log log : data.getLogs()) {
-            log.setSource(hostAddress);
+            
             //removeLog(log.getId());
-            xmlLogs.addXmlLog(createOneLog(log));
+            xmlLogs.addLog(createOneLog(log));
         }
         return xmlLogs;
     }
@@ -479,6 +481,9 @@ public class OLogManager {
      * @throws CFException on ownership or name mismatch, or wrapping an SQLException
      */
     private Log createOneLog(Log data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        UserManager um = UserManager.getInstance();
+        data.setSource(um.getHostAddress());
+        data.setOwner(um.getUserName());
         return LogManager.create(data);
     }
 
@@ -489,7 +494,7 @@ public class OLogManager {
      * @param data Log data containing logbooks and tags
      * @throws CFException on name or owner mismatch, or wrapping an SQLException
      */
-    public Log updateLog(String hostAddress, Long logId, Log data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Log updateLog(Long logId, Log data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
         Log dest = findLogById(logId);
         if (dest == null) {
             throw new CFException(Response.Status.NOT_FOUND,
@@ -498,7 +503,7 @@ public class OLogManager {
         dest.setId(data.getId());
         dest.setOwner(data.getOwner());
         mergeXmlLogs(dest, data);
-        return createOrReplaceLog(hostAddress, logId, dest);
+        return createOrReplaceLog(logId, dest);
     }
     
 
@@ -706,7 +711,6 @@ public class OLogManager {
         if (data == null) {
             return;
         }
-        UserManager um = UserManager.getInstance();
         for (Logbook logbook: data.getLogbooks()){
             checkUserBelongsToGroup(user, LogbookManager.findLogbook(logbook.getName()));
         }

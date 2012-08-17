@@ -4,11 +4,8 @@
  */
 package edu.msu.nscl.olog;
 
-
-
 import javax.persistence.*;
 import org.apache.log4j.Logger;
-
 
 /**
  *
@@ -18,7 +15,6 @@ public class JPAUtil {
 
     private static final EntityManagerFactory factory;
     private static final Logger logger = Logger.getLogger(edu.msu.nscl.olog.JPAUtil.class);
-
 
     static {
         try {
@@ -88,6 +84,36 @@ public class JPAUtil {
         }
     }
 
+    public static void refresh(Object o) {
+        EntityManager em = null;
+
+        try {
+            em = JPAUtil.getEntityManagerFactory().createEntityManager();
+            JPAUtil.startTransaction(em);
+            em.refresh(o);
+            JPAUtil.finishTransacton(em);
+
+        } catch (PersistenceException e) {
+            JPAUtil.transactionFailed(em);
+            throw e;
+        }
+    }
+
+    public static void flush() {
+        EntityManager em = null;
+
+        try {
+            em = JPAUtil.getEntityManagerFactory().createEntityManager();
+            JPAUtil.startTransaction(em);
+            em.flush();
+            JPAUtil.finishTransacton(em);
+
+        } catch (PersistenceException e) {
+            JPAUtil.transactionFailed(em);
+            throw e;
+        }
+    }
+
     public static void remove(Class type, long id) {
         EntityManager em = null;
 
@@ -95,7 +121,7 @@ public class JPAUtil {
             em = JPAUtil.getEntityManagerFactory().createEntityManager();
             JPAUtil.startTransaction(em);
 
-            Query query = em.createQuery("UPDATE " + type.getName() + " c  SET c.status='"+State.Inactive+"' WHERE c.id = ?");
+            Query query = em.createQuery("UPDATE " + type.getName() + " c  SET c.status='" + State.Inactive + "' WHERE c.id = ?");
             query.setParameter(1, id);
             query.executeUpdate();
 

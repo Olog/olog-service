@@ -56,7 +56,7 @@ public class Logs {
      *
      * @param item the Log to add
      */
-    public void addXmlLog(Log item) {
+    public void addLog(Log item) {
         this.logs.add(item);
     }
 

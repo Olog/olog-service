@@ -36,9 +36,9 @@ public class LogManager {
         CriteriaQuery<Log> cq = cb.createQuery(Log.class);
         Root<Log> from = cq.from(Log.class);
         CriteriaQuery<Log> select = cq.select(from);
-        Predicate statusPredicate = cb.equal(from.get("status"), State.Active);
+        Predicate statusPredicate = cb.equal(from.get(Log_.state), State.Active);
         select.where(statusPredicate);
-        select.orderBy(cb.desc(from.get("createdDate")));
+        select.orderBy(cb.desc(from.get(Log_.createdDate)));
         TypedQuery<Log> typedQuery = em.createQuery(select);
         JPAUtil.startTransaction(em);
         try {
@@ -48,7 +48,7 @@ public class LogManager {
             if (rs != null) {
                 Iterator<Log> iterator = rs.iterator();
                 while (iterator.hasNext()) {
-                    result.addXmlLog(iterator.next());
+                    result.addLog(iterator.next());
                 }
             }
 
@@ -78,6 +78,9 @@ public class LogManager {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Log> cq = cb.createQuery(Log.class);
         Root<Log> from = cq.from(Log.class);
+        //Root<Log> fromParent = cq.from(Log.class);
+        //from.fetch(Log_.tags, JoinType.LEFT);
+        Join<Log, Log> parent = from.join(Log_.parent, JoinType.LEFT);
         SetJoin<Log, Tag> tags = from.join(Log_.tags, JoinType.LEFT);
         SetJoin<Log, Logbook> logbooks = from.join(Log_.logbooks, JoinType.LEFT);
 
@@ -190,7 +193,8 @@ public class LogManager {
         Predicate statusPredicate = cb.equal(from.get(Log_.state), State.Active);
         Predicate finalPredicate = cb.and(statusPredicate, p2, p3, p1);
         cq.where(finalPredicate);
-        cq.orderBy(cb.desc(from.get(Log_.createdDate)));
+        //https://bugs.eclipse.org/bugs/show_bug.cgi?id=381250
+        cq.orderBy(cb.desc(cb.selectCase().when(cb.isNotNull(from.get(Log_.parent)),parent.get(Log_.createdDate)).otherwise(from.get(Log_.createdDate))));
         TypedQuery<Log> typedQuery = em.createQuery(cq);
 
         if (!paginate_matches.isEmpty()) {
@@ -220,7 +224,7 @@ public class LogManager {
             if (rs != null) {
                 Iterator<Log> iterator = rs.iterator();
                 while (iterator.hasNext()) {
-                    result.addXmlLog(iterator.next());
+                    result.addLog(iterator.next());
                 }
             }
 
@@ -245,7 +249,7 @@ public class LogManager {
         CriteriaQuery<Log> cq = cb.createQuery(Log.class);
         Root<Log> from = cq.from(Log.class);
 
-        from.fetch("children");
+        from.fetch("children", JoinType.LEFT);
         CriteriaQuery<Log> select = cq.select(from);
         Predicate idPredicate = cb.equal(from.get(Log_.id), id);
 
@@ -264,6 +268,10 @@ public class LogManager {
                 Iterator<Log> iterator = rs.iterator();
                 while (iterator.hasNext()) {
                     result = iterator.next();
+                    if (result.getChildren().size() > 0) {
+                        Collection<Log> siblings = result.getChildren();
+                        result = Collections.max(siblings);
+                    }
                 }
             }
 
@@ -285,19 +293,47 @@ public class LogManager {
      */
     public static Log create(Log log) throws CFException {
         Log parentLog = null;
+        if (log.getLogbooks() != null) {
+            Iterator<Logbook> iterator = log.getLogbooks().iterator();
+            Set<Logbook> logbooks = new HashSet<Logbook>();
+            while (iterator.hasNext()) {
+                logbooks.add(LogbookManager.findLogbook(iterator.next().getName()));
+            }
+            log.setLogbooks(logbooks);
+        }
+        if (log.getTags() != null) {
+            Iterator<Tag> iterator2 = log.getTags().iterator();
+            Set<Tag> tags = new HashSet<Tag>();
+            while (iterator2.hasNext()) {
+                tags.add(TagManager.findTag(iterator2.next().getName()));
+            }
+            log.setTags(tags);
+        }
         try {
             if (log.getId() != null) {
                 parentLog = (Log) JPAUtil.findByID(Log.class, log.getId());
             }
             if (parentLog != null) {
+                if (parentLog.getChildren() != null) {
+                    Collection<Log> siblings = parentLog.getChildren();
+                    Iterator<Log> iteratorChild = siblings.iterator();
+                    while (iteratorChild.hasNext()) {
+                        Log sibling = iteratorChild.next();
+                        sibling.setState(State.Inactive);
+                        JPAUtil.update(sibling);
+                    }
+                    siblings.add(log);
+                    parentLog.setChildren(siblings);
+                }
+                log.setState(State.Active);
+                log.setId(null);
                 log.setParent(parentLog);
                 parentLog.setState(State.Inactive);
                 JPAUtil.update(parentLog);
-                JPAUtil.save(log);
                 return findLog(log.getId());
             } else {
                 log.setState(State.Active);
-                JPAUtil.save(log);
+                JPAUtil.update(log);
                 return findLog(log.getId());
             }
         } catch (Exception e) {
@@ -305,6 +341,7 @@ public class LogManager {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         }
+
     }
 
     /**
@@ -313,10 +350,23 @@ public class LogManager {
      * @param name tag name
      */
     public static void remove(Long id) throws CFException {
-
         try {
-            Log fullLog = (Log) JPAUtil.findByID(Log.class, id);
-            JPAUtil.remove(Log.class, fullLog.getInternalId());
+            Log log = (Log) JPAUtil.findByID(Log.class, id);
+            if (log
+                    != null) {
+                if (log.getChildren() != null) {
+                    Collection<Log> siblings = log.getChildren();
+                    Iterator<Log> iteratorChild = siblings.iterator();
+                    while (iteratorChild.hasNext()) {
+                        Log sibling = iteratorChild.next();
+                        sibling.setState(State.Inactive);
+                        JPAUtil.update(sibling);
+                    }
+                    log.setChildren(siblings);
+                }
+                log.setState(State.Inactive);
+                JPAUtil.update(log);
+            }
         } catch (Exception e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);

@@ -47,7 +47,7 @@ public class PropertiesResource {
     @GET
     @Produces({"application/xml", "application/json"})
     public Response listProperties() {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlProperties result = null;
         try {
@@ -74,7 +74,7 @@ public class PropertiesResource {
     @Path("{propName}")
     @Produces({"application/xml", "application/json"})
     public Response addProperty(@PathParam("propName") String newProperty, XmlProperty data) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlProperty result = null;
         try {
@@ -99,7 +99,7 @@ public class PropertiesResource {
     @Path("{propName}")
     @Produces({"application/xml", "application/json"})
     public Response listAttributes(@PathParam("propName") String property) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlProperty result = null;
         try {
@@ -125,7 +125,7 @@ public class PropertiesResource {
     @Path("{propName}")
     @Produces({"application/xml", "application/json"})
     public Response appendProperty(@PathParam("propName") String newProperty, XmlProperty data) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlProperty result = null;
         try {
@@ -152,7 +152,7 @@ public class PropertiesResource {
     @Path("{propName}")
     @Produces({"application/xml", "application/json"})
     public Response removeProperty(@PathParam("propName") String property, XmlProperty data) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
             cm.removeProperty(property, data);
@@ -178,7 +178,7 @@ public class PropertiesResource {
     @Path("{propName}/{logId}")
     @Produces({"application/xml", "application/json"})
     public Response addAttribute(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("propName") String property, @PathParam("logId") Long logId, XmlProperty data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         Log result = null;
@@ -207,7 +207,7 @@ public class PropertiesResource {
     @Path("{propName}/{logId}")
     @Produces({"application/xml", "application/json"})
     public Response removeAttribute(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("propName") String property, @PathParam("logId") Long logId, XmlProperty data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         Log result = null;

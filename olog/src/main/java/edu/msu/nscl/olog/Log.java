@@ -22,10 +22,10 @@ import javax.xml.bind.annotation.*;
 @Entity
 @Table(name = "logs")
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlType(propOrder = {"id","createdDate","modifiedDate","owner","source","version","description","logbooks","tags","xmlProperties","xmlAttachments","children"})
+@XmlType(propOrder = {"id", "createdDate", "modifiedDate", "owner", "source", "version", "description", "logbooks", "tags", "xmlProperties", "xmlAttachments"})
 @XmlRootElement(name = "log")
-public class Log implements Serializable {
-    
+public class Log implements Serializable, Comparable<Log> {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -34,54 +34,52 @@ public class Log implements Serializable {
     @Transient
     private int version;
     
-    @Column(name = "owner", nullable = false, length = 50, insertable = true)
+    @Column(name = "owner", nullable = false, length = 50, insertable = true, updatable = false)
     private String owner;
     
-    @Column(name = "source", nullable = false, length = 50, insertable = true)
+    @Column(name = "source", nullable = false, length = 50, insertable = true, updatable = false)
     private String source;
-
-    @ManyToOne(optional = false,cascade = CascadeType.ALL)
-    @JoinColumn(name = "level_id", referencedColumnName="id", insertable=false, updatable=false)
+    
+    @Enumerated(EnumType.STRING)
     private Level level;
     
     @Enumerated(EnumType.STRING)
     private State state;
     
-    @Column(name = "created", nullable = false, length = 50, insertable = false)
+    @Column(name = "created", nullable = false, insertable = true, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
     
     @Transient
     private Date modifiedDate;
     
-    @Column(name = "description", nullable = false, length = 50, insertable = true)
+    @Column(name = "description", nullable = false, insertable = true, updatable = false)
     private String description;
     
     @Transient
     private Collection<XmlProperty> properties = new ArrayList<XmlProperty>();
     
-
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "logs_logbooks", joinColumns = {
         @JoinColumn(name = "log_id", unique = true)
     },
     inverseJoinColumns = {
-        @JoinColumn(name = "logbook_id",insertable=false,updatable=false)
+        @JoinColumn(name = "logbook_id", insertable = false, updatable = false)
     })
     @NotNull
-    private Set<Logbook> logbooks;
-        
+    private Set<Logbook> logbooks = new HashSet<Logbook>();
+    
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "logs_logbooks", joinColumns = {
         @JoinColumn(name = "log_id", unique = true)
     },
     inverseJoinColumns = {
-        @JoinColumn(name = "logbook_id",insertable=false,updatable=false)
+        @JoinColumn(name = "logbook_id", insertable = false, updatable = false)
     })
-    private Set<Tag> tags;
-
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name = "parent_id",insertable=false,updatable=false)
+    private Set<Tag> tags = new HashSet<Tag>();
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id", insertable = false, updatable = false)
     private Log parent;
     
     @OneToMany
@@ -91,9 +89,16 @@ public class Log implements Serializable {
     @Transient
     private Collection<XmlAttachment> attachments = new ArrayList<XmlAttachment>();
 
-    /** Creates a new instance of Log */
+    @PrePersist
+    public void setUpdated() {
+        this.setCreatedDate(new Date());
+    }
+
+    /**
+     * Creates a new instance of Log
+     */
     public Log() {
-       // this.level = new Level();
+        // this.level = new Level();
     }
 
     /**
@@ -102,7 +107,7 @@ public class Log implements Serializable {
      * @param logId log id
      */
     public Log(Long logId) {
-  //      this.level = new Level();
+        //      this.level = new Level();
         this.id = logId;
     }
 
@@ -113,7 +118,7 @@ public class Log implements Serializable {
      */
     public Log(String owner) {
 //        this.subject = subject;
-    //    this.level = new Level();
+        //    this.level = new Level();
         this.owner = owner;
     }
 
@@ -124,7 +129,7 @@ public class Log implements Serializable {
      * @param owner log owner
      */
     public Log(Long logId, String owner) {
-    //    this.level = new Level();
+        //    this.level = new Level();
         this.id = logId;
         this.owner = owner;
     }
@@ -136,13 +141,14 @@ public class Log implements Serializable {
      */
     @XmlAttribute
     public Long getId() {
-        if(parent!=null)
+        if (parent != null) {
             return parent.id;
+        }
         return id;
     }
-    
+
     @XmlTransient
-    public Long getInternalId(){
+    public Long getInternalId() {
         return id;
     }
 
@@ -154,7 +160,7 @@ public class Log implements Serializable {
     public void setId(Long logId) {
         this.id = logId;
     }
-    
+
     /**
      * @return the status
      */
@@ -169,7 +175,7 @@ public class Log implements Serializable {
     public void setState(State state) {
         this.state = state;
     }
-    
+
     /**
      * Getter for log version id.
      *
@@ -177,8 +183,9 @@ public class Log implements Serializable {
      */
     @XmlAttribute
     public int getVersion() {
-        if(parent!=null)
+        if (parent != null) {
             return parent.children.size();
+        }
         return version;
     }
 
@@ -215,8 +222,7 @@ public class Log implements Serializable {
      *
      * @return level
      */
-    @XmlTransient
-    //@XmlAttribute
+    @XmlAttribute
     public Level getLevel() {
         return level;
     }
@@ -237,8 +243,9 @@ public class Log implements Serializable {
      */
     @XmlAttribute
     public Date getCreatedDate() {
-        if(parent!=null)
+        if (parent != null) {
             return parent.createdDate;
+        }
         return createdDate;
     }
 
@@ -258,8 +265,9 @@ public class Log implements Serializable {
      */
     @XmlAttribute
     public Date getModifiedDate() {
-        if(parent!=null)
+        if (parent != null) {
             return createdDate;
+        }
         return modifiedDate;
     }
 
@@ -309,7 +317,7 @@ public class Log implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
-    
+
     /**
      * Getter for log's XmlProperties.
      *
@@ -393,7 +401,7 @@ public class Log implements Serializable {
      *
      * @param tag
      */
-    public void addXmlTag(Tag tag) {
+    public void addTag(Tag tag) {
         this.tags.add(tag);
     }
 
@@ -428,10 +436,11 @@ public class Log implements Serializable {
     /**
      * @return the children
      */
-    @XmlElementWrapper(name = "edits")
-    @XmlElement(name = "log")
+    //@XmlElementWrapper(name = "edits")
+    //@XmlElement(name = "log")
+    @XmlTransient
     public Collection<Log> getChildren() {
-        return children;        
+        return children;
     }
 
     /**
@@ -454,7 +463,12 @@ public class Log implements Serializable {
     public void setParent(Log parent) {
         this.parent = parent;
     }
-    
+
+    public int compareTo(Log num) {
+        int x = createdDate.compareTo(num.createdDate);
+        return x;
+    }
+
     /**
      * Creates a compact string representation for the log.
      *
@@ -462,13 +476,10 @@ public class Log implements Serializable {
      * @return string representation
      */
     public static String toLogger(Log data) {
-        Logbooks xl = new Logbooks();
-        xl.setLogbooks(data.logbooks);
-        
-        Tags xt = new Tags();
-        xt.setTags(data.tags);
-        
-        return data.getId() + "-v." + data.getVersion() + " : " + /*data.getSubject() +*/ "(" + data.getOwner() + "):["
+        Set<Logbook> xl = data.getLogbooks();
+        Set<Tag> xt = data.getTags();
+
+        return data.getId() + "-v." + data.getVersion() + " : " + "(" + data.getOwner() + "):["
                 + Logbooks.toLogger(xl)
                 + Tags.toLogger(xt)
                 + "]\n";

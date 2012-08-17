@@ -703,7 +703,7 @@ public class FindLogsQuery {
         if (logs != null) {
             Iterator<Log> iterator = logs.iterator();
             while (iterator.hasNext()) {
-                xmlLogs.addXmlLog(iterator.next());
+                xmlLogs.addLog(iterator.next());
             }
         }
 

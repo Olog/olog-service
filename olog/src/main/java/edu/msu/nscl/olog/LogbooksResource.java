@@ -49,7 +49,7 @@ public class LogbooksResource {
     @GET
     @Produces({"application/xml", "application/json"})
     public Response list() {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         Logbooks result = null;
         try {
@@ -75,7 +75,7 @@ public class LogbooksResource {
     @POST
     @Consumes({"application/xml", "application/json"})
     public Response add(Logbooks data) throws IOException {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Logbooks result = null;
@@ -107,7 +107,7 @@ public class LogbooksResource {
     @Path("{logbookName}")
     @Produces({"application/xml", "application/json"})
     public Response read(@PathParam("logbookName") String logbook) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         Logbook result = null;
         try {
@@ -142,7 +142,7 @@ public class LogbooksResource {
     @Path("{logbookName}")
     @Consumes({"application/xml", "application/json"})
     public Response create(@PathParam("logbookName") String logbook, Logbook data) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Logbook result = null;
@@ -178,7 +178,7 @@ public class LogbooksResource {
     @Path("{logbookName}")
     @Consumes({"application/xml", "application/json"})
     public Response update(@PathParam("logbookName") String logbook, Logbook data) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Logbook result = null;
@@ -209,7 +209,7 @@ public class LogbooksResource {
     @DELETE
     @Path("{logbookName}")
     public Response remove(@PathParam("logbookName") String logbook) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
@@ -240,7 +240,7 @@ public class LogbooksResource {
     @Path("{logbookName}/{logId}")
     @Consumes({"application/xml", "application/json"})
     public Response addSingle(@PathParam("logbookName") String logbook, @PathParam("logId") Long logId) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         Logbook data = null;
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
@@ -273,7 +273,7 @@ public class LogbooksResource {
     @DELETE
     @Path("{logbookName}/{logId}")
     public Response removeSingle(@PathParam("logbookName") String logbook, @PathParam("logId") Long logId) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {

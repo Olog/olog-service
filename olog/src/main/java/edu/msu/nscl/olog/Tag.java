@@ -31,17 +31,14 @@ public class Tag implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id = null;
-    
     @Column(name = "name", nullable = false, length = 250, insertable = true)
     private String name = null;
-    
     @Enumerated(EnumType.STRING)
     private State state;
-    
     //for joing the tables (many-to-many)
-    @ManyToMany(mappedBy="tags", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "tags", fetch = FetchType.EAGER)
     private Collection<Log> logs;
-    
+
     public Tag() {
     }
 
@@ -53,7 +50,8 @@ public class Tag implements Serializable {
     public Tag(String name) {
         this.name = name;
     }
-     /**
+
+    /**
      * Getter for tag id.
      *
      * @return id tag id
@@ -117,7 +115,7 @@ public class Tag implements Serializable {
             Iterator<Log> iterator = logs.iterator();
             Logs xmlLogs = new Logs();
             while (iterator.hasNext()) {
-                xmlLogs.addXmlLog(iterator.next());
+                xmlLogs.addLog(iterator.next());
             }
             return xmlLogs;
         } else {
@@ -143,11 +141,37 @@ public class Tag implements Serializable {
      * @return string representation for log
      */
     public static String toLogger(Tag data) {
-        if (data.logs == null) {
-            return data.getName() + "(" + data.getState() + ")";
-        } else {
-            return data.getName() + "(" + data.getState() + ")"
-                    + Logs.toLogger(data.getLogs());
+        return data.getName();
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((name == null) ? 0
+                : name.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
         }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Tag other = (Tag) obj;
+        if (name == null) {
+            if (other.name != null) {
+                return false;
+            }
+        } else if (!name.equals(other.name)) {
+            return false;
+        }
+        return true;
     }
 }

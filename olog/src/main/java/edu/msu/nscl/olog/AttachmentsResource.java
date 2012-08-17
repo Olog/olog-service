@@ -47,7 +47,7 @@ public class AttachmentsResource {
     @Path("{logId}")
     @Produces({"application/xml", "application/json"})
     public Response read(@PathParam("logId") Long logId) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlAttachments result;
         try {
@@ -71,7 +71,7 @@ public class AttachmentsResource {
     @GET
     @Path("{logId}/{fileName}")
     public Response getFile(@PathParam("logId") Long logId, @PathParam("fileName") String fileName ) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         Attachment result;
         try {
@@ -100,7 +100,7 @@ public class AttachmentsResource {
     @GET
     @Path("{logId}/{fileName}:thumbnail")
     public Response getThumbnail(@PathParam("logId") Long logId, @PathParam("fileName") String fileName ) {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         Attachment result;
         try {
@@ -137,7 +137,7 @@ public class AttachmentsResource {
                                   @FormDataParam("file") InputStream uploadedInputStream,
                                   @FormDataParam("file") FormDataContentDisposition disposition,
                                   @FormDataParam("file") FormDataBodyPart body) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For"));
@@ -184,7 +184,7 @@ public class AttachmentsResource {
                                   @FormDataParam("file") InputStream uploadedInputStream,
                                   @FormDataParam("file") FormDataContentDisposition disposition,
                                   @FormDataParam("file") FormDataBodyPart body) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For"));
@@ -229,7 +229,7 @@ public class AttachmentsResource {
                                      @PathParam("fileName") String fileName, 
                                      @PathParam("logId") Long logId) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         UserManager um = UserManager.getInstance();
-        OLogManager cm = OLogManager.getInstance();
+        OlogImpl cm = OlogImpl.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             if (!um.userHasAdminRole()) {
