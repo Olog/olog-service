@@ -69,14 +69,15 @@ public class JPAUtil {
         }
     }
 
-    public static void update(Object o) {
+    public static Object update(Object o) {
         EntityManager em = null;
 
         try {
             em = JPAUtil.getEntityManagerFactory().createEntityManager();
             JPAUtil.startTransaction(em);
-            em.merge(o);
+            o = em.merge(o);
             JPAUtil.finishTransacton(em);
+            return o;
 
         } catch (PersistenceException e) {
             JPAUtil.transactionFailed(em);
@@ -84,45 +85,14 @@ public class JPAUtil {
         }
     }
 
-    public static void refresh(Object o) {
-        EntityManager em = null;
-
-        try {
-            em = JPAUtil.getEntityManagerFactory().createEntityManager();
-            JPAUtil.startTransaction(em);
-            em.refresh(o);
-            JPAUtil.finishTransacton(em);
-
-        } catch (PersistenceException e) {
-            JPAUtil.transactionFailed(em);
-            throw e;
-        }
-    }
-
-    public static void flush() {
-        EntityManager em = null;
-
-        try {
-            em = JPAUtil.getEntityManagerFactory().createEntityManager();
-            JPAUtil.startTransaction(em);
-            em.flush();
-            JPAUtil.finishTransacton(em);
-
-        } catch (PersistenceException e) {
-            JPAUtil.transactionFailed(em);
-            throw e;
-        }
-    }
-
-    public static void remove(Class type, long id) {
+    public static void remove(Class type, Long id) {
         EntityManager em = null;
 
         try {
             em = JPAUtil.getEntityManagerFactory().createEntityManager();
             JPAUtil.startTransaction(em);
 
-            Query query = em.createQuery("UPDATE " + type.getName() + " c  SET c.status='" + State.Inactive + "' WHERE c.id = ?");
-            query.setParameter(1, id);
+            Query query = em.createQuery("UPDATE " + type.getName() + " c  SET c.state= edu.msu.nscl.olog.State.Inactive  WHERE c.id = "+id.toString());
             query.executeUpdate();
 
             JPAUtil.finishTransacton(em);

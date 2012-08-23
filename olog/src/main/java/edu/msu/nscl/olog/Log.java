@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.*;
 @Entity
 @Table(name = "logs")
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlType(propOrder = {"id", "createdDate", "modifiedDate", "owner", "source", "version", "description", "logbooks", "tags", "xmlProperties", "xmlAttachments"})
+@XmlType(propOrder = {"createdDate", "modifiedDate", "owner", "source", "version", "description", "logbooks", "tags", "xmlProperties", "xmlAttachments"})
 @XmlRootElement(name = "log")
 public class Log implements Serializable, Comparable<Log> {
 
@@ -46,11 +46,8 @@ public class Log implements Serializable, Comparable<Log> {
     @Enumerated(EnumType.STRING)
     private State state;
     
-    @Column(name = "created", nullable = false, insertable = true, updatable = false)
+    @Column(name = "modified", nullable = false, insertable = true, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    private Date createdDate;
-    
-    @Transient
     private Date modifiedDate;
     
     @Column(name = "description", nullable = false, insertable = true, updatable = false)
@@ -78,20 +75,16 @@ public class Log implements Serializable, Comparable<Log> {
     })
     private Set<Tag> tags = new HashSet<Tag>();
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id", insertable = false, updatable = false)
-    private Log parent;
-    
-    @OneToMany
-    @JoinColumn(name = "parent_id")
-    private Collection<Log> children = new ArrayList<Log>();
+    @ManyToOne
+    @JoinColumn(name = "entry_id", unique = true)
+    private Entry entry;
     
     @Transient
     private Collection<XmlAttachment> attachments = new ArrayList<XmlAttachment>();
 
     @PrePersist
     public void setUpdated() {
-        this.setCreatedDate(new Date());
+        this.setModifiedDate(new Date());
     }
 
     /**
@@ -114,17 +107,6 @@ public class Log implements Serializable, Comparable<Log> {
     /**
      * Creates a new instance of Log.
      *
-     * @param owner log owner
-     */
-    public Log(String owner) {
-//        this.subject = subject;
-        //    this.level = new Level();
-        this.owner = owner;
-    }
-
-    /**
-     * Creates a new instance of Log.
-     *
      * @param logId log id
      * @param owner log owner
      */
@@ -139,18 +121,11 @@ public class Log implements Serializable, Comparable<Log> {
      *
      * @return id
      */
-    @XmlAttribute
+    @XmlTransient
     public Long getId() {
-        if (parent != null) {
-            return parent.id;
-        }
         return id;
     }
 
-    @XmlTransient
-    public Long getInternalId() {
-        return id;
-    }
 
     /**
      * Setter for log id.
@@ -159,6 +134,11 @@ public class Log implements Serializable, Comparable<Log> {
      */
     public void setId(Long logId) {
         this.id = logId;
+    }
+    
+    @XmlAttribute(name="id")
+    public Long getEntryId(){
+        return entry.getId();
     }
 
     /**
@@ -183,9 +163,6 @@ public class Log implements Serializable, Comparable<Log> {
      */
     @XmlAttribute
     public int getVersion() {
-        if (parent != null) {
-            return parent.children.size();
-        }
         return version;
     }
 
@@ -237,37 +214,12 @@ public class Log implements Serializable, Comparable<Log> {
     }
 
     /**
-     * Getter for log created date.
-     *
-     * @return createdDate
-     */
-    @XmlAttribute
-    public Date getCreatedDate() {
-        if (parent != null) {
-            return parent.createdDate;
-        }
-        return createdDate;
-    }
-
-    /**
-     * Setter for log created date.
-     *
-     * @param createdDate
-     */
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    /**
      * Getter for log modified date.
      *
      * @return modifiedDate
      */
     @XmlAttribute
     public Date getModifiedDate() {
-        if (parent != null) {
-            return createdDate;
-        }
         return modifiedDate;
     }
 
@@ -279,7 +231,18 @@ public class Log implements Serializable, Comparable<Log> {
     public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
+    
+    /**
+     * Getter for log created date.
+     *
+     * @return createdDate
+     */
+    @XmlAttribute
+    public Date getCreatedDate() {
+        return entry.getCreatedDate();
+    }
 
+    
     /**
      * Getter for log source IP.
      *
@@ -434,38 +397,21 @@ public class Log implements Serializable, Comparable<Log> {
     }
 
     /**
-     * @return the children
+     * @return the entry
      */
-    //@XmlElementWrapper(name = "edits")
-    //@XmlElement(name = "log")
-    @XmlTransient
-    public Collection<Log> getChildren() {
-        return children;
+    public Entry getEntry() {
+        return entry;
     }
 
     /**
-     * @param children the children to set
+     * @param entry the entry to set
      */
-    public void setChildren(Collection<Log> children) {
-        this.children = children;
-    }
-
-    /**
-     * @return the parent
-     */
-    public Log getParent() {
-        return parent;
-    }
-
-    /**
-     * @param parent the parent to set
-     */
-    public void setParent(Log parent) {
-        this.parent = parent;
+    public void setEntry(Entry entry) {
+        this.entry = entry;
     }
 
     public int compareTo(Log num) {
-        int x = createdDate.compareTo(num.createdDate);
+        int x = modifiedDate.compareTo(num.modifiedDate);
         return x;
     }
 

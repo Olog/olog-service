@@ -73,8 +73,8 @@ public class TagManager {
         Root<Tag> from = cq.from(Tag.class);
         CriteriaQuery<Tag> select = cq.select(from);
         Predicate namePredicate = cb.equal(from.get("name"), name);
-        Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
-        select.where(cb.and(namePredicate,statusPredicate));
+        //Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
+        select.where(namePredicate);
         select.orderBy(cb.asc(from.get("name")));
         TypedQuery<Tag> typedQuery = em.createQuery(select);
         JPAUtil.startTransaction(em);
@@ -103,17 +103,20 @@ public class TagManager {
      * @param owner owner of tag
      * @throws CFException wrapping an SQLException
      */
-    public static void create(String name) throws CFException {
+    public static Tag create(String name) throws CFException {
 
         try {
             Tag xmlTag = new Tag();
             Tag tag = findTag(name);
             if (tag != null) {
                 tag.setState(State.Active);
-                JPAUtil.update(tag);
+                tag = (Tag)JPAUtil.update(tag);
+                return tag;
             } else {
-                xmlTag.setName(name);    
+                xmlTag.setName(name);
+                xmlTag.setState(State.Active);
                 JPAUtil.save(xmlTag);
+                return xmlTag;
             }    
         } catch (Exception e) {
 
@@ -130,7 +133,9 @@ public class TagManager {
      public static void remove(String name) throws CFException {
         
         try {
-                JPAUtil.remove(Tag.class,findTag(name).getId());
+                Tag tag = findTag(name);
+                tag.setState(State.Inactive);
+                JPAUtil.update(tag);
         } catch (Exception e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);

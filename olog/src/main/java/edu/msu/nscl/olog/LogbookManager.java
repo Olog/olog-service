@@ -73,8 +73,8 @@ public class LogbookManager {
         Root<Logbook> from = cq.from(Logbook.class);
         CriteriaQuery<Logbook> select = cq.select(from);
         Predicate namePredicate = cb.equal(from.get("name"), name);
-        Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
-        select.where(cb.and(namePredicate,statusPredicate));
+        //Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
+        select.where(namePredicate);
         select.orderBy(cb.asc(from.get("name")));
         TypedQuery<Logbook> typedQuery = em.createQuery(select);
         JPAUtil.startTransaction(em);
@@ -104,7 +104,7 @@ public class LogbookManager {
      * @param owner owner of logbook
      * @throws CFException wrapping an SQLException
      */
-    public static void create(String name, String owner) throws CFException {
+    public static Logbook create(String name, String owner) throws CFException {
 
         try {
             Logbook xmlLogbook = new Logbook();
@@ -112,12 +112,16 @@ public class LogbookManager {
             if (logbook != null) {
                 logbook.setState(State.Active);
                 logbook.setOwner(owner);
-                JPAUtil.update(logbook);
+                logbook = (Logbook)JPAUtil.update(logbook);
+                return logbook;
             } else {
                 xmlLogbook.setName(name);
-                xmlLogbook.setOwner(owner);    
+                xmlLogbook.setOwner(owner);
+                xmlLogbook.setState(State.Active);
                 JPAUtil.save(xmlLogbook);
-            }    
+                return xmlLogbook;
+            }
+             
         } catch (Exception e) {
 
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
@@ -133,7 +137,9 @@ public class LogbookManager {
     public static void remove(String name) throws CFException {
         
         try {
-                JPAUtil.remove(Logbook.class, findLogbook(name).getId());
+                Logbook logbook = findLogbook(name);
+                logbook.setState(State.Inactive);
+                JPAUtil.update(logbook);
         } catch (Exception e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);

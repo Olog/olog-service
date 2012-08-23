@@ -3,7 +3,6 @@
  * Copyright (c) 2010 Helmholtz-Zentrum Berlin fuer Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
-
 package edu.msu.nscl.olog;
 
 import java.util.ArrayList;
@@ -16,16 +15,28 @@ import javax.xml.bind.annotation.XmlElement;
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-
 @XmlRootElement(name = "logs")
-public class Logs {
-    private Collection<Log> logs = new ArrayList<Log>();
-  
-    /** Creates a new instance of Logs. */
+public class Logs extends ArrayList {
+
+    private ArrayList<Log> logs;
+
+    /**
+     * Creates a new instance of Logs.
+     */
     public Logs() {
+        logs = new ArrayList<Log>();
     }
 
-    /** Creates a new instance of Logs with one initial log.
+    /**
+     * Creates a new instance of Logs with initial capacity.
+     */
+    public Logs(int initialCapacity) {
+        logs = new ArrayList<Log>(initialCapacity);
+    }
+
+    /**
+     * Creates a new instance of Logs with one initial log.
+     *
      * @param log Log initial element
      */
     public Logs(Log log) {
@@ -38,7 +49,7 @@ public class Logs {
      * @return logs a collection of Log
      */
     @XmlElement(name = "log")
-    public Collection<Log> getLogs() {
+    public ArrayList<Log> getLogs() {
         return logs;
     }
 
@@ -47,7 +58,7 @@ public class Logs {
      *
      * @param items new log collection
      */
-    public void setLogs(Collection<Log> items) {
+    public void setLogs(ArrayList<Log> items) {
         this.logs = items;
     }
 
@@ -75,7 +86,7 @@ public class Logs {
             for (Log c : data.getLogs()) {
                 s.append(Log.toLogger(c) + ",");
             }
-            s.delete(s.length()-1, s.length());
+            s.delete(s.length() - 1, s.length());
             s.append("]");
             return s.toString();
         }
