@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Properties (collection) object that can be represented as XML/JSON in payload data.
+ * XmlProperties (collection) object that can be represented as XML/JSON in payload data.
  *
  * @author Eric Beryman taken from Ralph Lange <Ralph.Lange@helmholtz-berlin.de>
  */
@@ -33,9 +33,9 @@ public class XmlProperties {
     }
 
     /**
-     * Returns a collection of XmlProperty.
+     * Returns a collection of Property.
      *
-     * @return a collection of XmlProperty
+     * @return a collection of Property
      */
     @XmlElement(name = "property")
     public Collection<XmlProperty> getProperties() {
@@ -54,9 +54,9 @@ public class XmlProperties {
     /**
      * Adds a property to the property collection.
      *
-     * @param item the XmlProperty to add
+     * @param item the Property to add
      */
-    public void addXmlProperty(XmlProperty item) {
+    public void addProperty(XmlProperty item) {
         this.properties.add(item);
     }
 

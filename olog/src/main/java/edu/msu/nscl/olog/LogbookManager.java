@@ -47,7 +47,7 @@ public class LogbookManager {
             if (rs != null) {
                 Iterator<Logbook> iterator = rs.iterator();
                 while (iterator.hasNext()) {
-                    result.addXmlLogbook(iterator.next());
+                    result.addLogbook(iterator.next());
                 }
             }
 

@@ -66,10 +66,9 @@ public class LogsResource {
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
             Logs result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
-            //Logs result = cm.findLogsTest();
             Response r = Response.ok(result).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
-                    + "|returns " + result.getLogs().size() + " logs");
+                    + "|returns " + result.getLogList().size() + " logs");
             return r;
         } catch (CFException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
@@ -88,7 +87,7 @@ public class LogsResource {
     @POST
     @Consumes({"application/xml", "application/json"})
     @Produces({"application/xml", "application/json"})
-    public Response add(@Context HttpServletRequest req, @Context HttpHeaders headers,Logs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
+    public Response add(@Context HttpServletRequest req, @Context HttpHeaders headers, Logs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
@@ -96,7 +95,7 @@ public class LogsResource {
         um.setHostAddress(hostAddress);
         try {
             Logs data_temp = new Logs();
-            for(Log datum : data.getLogs()){
+            for(Log datum : data.getLogList()){
                 datum.setOwner(um.getUserName());
                 data_temp.addLog(datum);
             }

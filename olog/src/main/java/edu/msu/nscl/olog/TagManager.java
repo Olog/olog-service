@@ -47,7 +47,7 @@ public class TagManager {
             if (rs != null) {
                 Iterator<Tag> iterator = rs.iterator();
                 while (iterator.hasNext()) {
-                    result.addXmlTag(iterator.next());
+                    result.addTag(iterator.next());
                 }
             }
 

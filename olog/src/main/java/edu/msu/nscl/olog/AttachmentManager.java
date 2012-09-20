@@ -94,8 +94,8 @@ public class AttachmentManager {
             Node rn = session.getRootNode();
             Node folderNode = rn.getNode(filePath);
             Node contentNode = folderNode.getNode(fileName).getNode(JcrConstants.JCR_CONTENT);
-            Property dataProperty = contentNode.getProperty(JcrConstants.JCR_DATA);
-            Property mimeProperty = contentNode.getProperty(JcrConstants.JCR_MIMETYPE);
+            javax.jcr.Property dataProperty = contentNode.getProperty(JcrConstants.JCR_DATA);
+            javax.jcr.Property mimeProperty = contentNode.getProperty(JcrConstants.JCR_MIMETYPE);
 
             mimeType = mimeProperty.getString();
 
@@ -214,7 +214,6 @@ public class AttachmentManager {
 
 
     public static void remove(String fileName, Long logId) throws CFException {
-        XmlAttachments xmlAttachments = new XmlAttachments();
         try {
             Session session = JCRUtil.getSession();
             Node rn = session.getRootNode();

@@ -73,6 +73,7 @@ public class LogManager {
         List<String> property_patterns = new ArrayList();
         Multimap<String, String> date_matches = ArrayListMultimap.create();
         Multimap<String, String> paginate_matches = ArrayListMultimap.create();
+        Multimap<String, String> value_patterns = ArrayListMultimap.create();
 
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -81,18 +82,39 @@ public class LogManager {
         ListJoin<Entry, Log> entry = from.join(Entry_.logs, JoinType.LEFT);
         SetJoin<Log, Tag> tags = entry.join(Log_.tags, JoinType.LEFT);
         SetJoin<Log, Logbook> logbooks = entry.join(Log_.logbooks, JoinType.LEFT);
+        Join<Attribute, Property> property = entry.join(Log_.attributes, JoinType.LEFT).join(LogAttribute_.attribute, JoinType.LEFT).join(Attribute_.property, JoinType.LEFT);
+        Join<LogAttribute, Attribute> attribute = entry.join(Log_.attributes, JoinType.LEFT).join(LogAttribute_.attribute, JoinType.LEFT);
+        Join<Log, LogAttribute> logAttribute = entry.join(Log_.attributes, JoinType.LEFT);
 
         for (Map.Entry<String, List<String>> match : matches.entrySet()) {
             String key = match.getKey().toLowerCase();
             Collection<String> matchesValues = match.getValue();
             if (key.equals("search")) {
-                log_patterns.addAll(match.getValue());
+                for (String m : matchesValues) {
+                    if (m.contains("?") || m.contains("*")) {
+                        if (m.contains("\\?") || m.contains("\\*")) {
+                            m = m.replace("\\", "");
+                            log_patterns.add(m);
+                        } else {
+                            m = m.replace("*", "%");
+                            m = m.replace("?", "_");
+                            log_patterns.add(m);
+                        }
+                    } else {
+                        log_patterns.add(m);
+                    }
+                }
             } else if (key.equals("tag")) {
                 for (String m : matchesValues) {
                     if (m.contains("?") || m.contains("*")) {
-                        m = m.replace("*", "%");
-                        m = m.replace("?", "_");
-                        tag_patterns.add(m);
+                        if (m.contains("\\?") || m.contains("\\*")) {
+                            m = m.replace("\\", "");
+                            tag_matches.add(m);
+                        } else {
+                            m = m.replace("*", "%");
+                            m = m.replace("?", "_");
+                            tag_patterns.add(m);
+                        }
                     } else {
                         tag_matches.add(m);
                     }
@@ -105,9 +127,14 @@ public class LogManager {
             } else if (key.equals("logbook")) {
                 for (String m : matchesValues) {
                     if (m.contains("?") || m.contains("*")) {
-                        m = m.replace("*", "%");
-                        m = m.replace("?", "_");
-                        logbook_patterns.add(m);
+                        if (m.contains("\\?") || m.contains("\\*")) {
+                            m = m.replace("\\", "");
+                            logbook_matches.add(m);
+                        } else {
+                            m = m.replace("*", "%");
+                            m = m.replace("?", "_");
+                            logbook_patterns.add(m);
+                        }
                     } else {
                         logbook_matches.add(m);
                     }
@@ -120,9 +147,14 @@ public class LogManager {
             } else if (key.equals("property")) {
                 for (String m : matchesValues) {
                     if (m.contains("?") || m.contains("*")) {
-                        m = m.replace("*", "%");
-                        m = m.replace("?", "_");
-                        property_patterns.add(m);
+                        if (m.contains("\\?") || m.contains("\\*")) {
+                            m = m.replace("\\", "");
+                            property_matches.add(m);
+                        } else {
+                            m = m.replace("*", "%");
+                            m = m.replace("?", "_");
+                            property_patterns.add(m);
+                        }
                     } else {
                         property_matches.add(m);
                     }
@@ -135,6 +167,23 @@ public class LogManager {
                 date_matches.putAll(key, match.getValue());
             } else if (key.equals("end")) {
                 date_matches.putAll(key, match.getValue());
+            } else {
+                Collection<String> cleanedMatchesValues = new HashSet<String>();
+                for (String m : matchesValues) {
+                    if (m.contains("?") || m.contains("*")) {
+                        if (m.contains("\\?") || m.contains("\\*")) {
+                            m = m.replace("\\", "");
+                            cleanedMatchesValues.add(m);
+                        } else {
+                            m = m.replace("*", "%");
+                            m = m.replace("?", "_");
+                            cleanedMatchesValues.add(m);
+                        }
+                    } else {
+                        cleanedMatchesValues.add(m);
+                    }
+                }
+                value_patterns.putAll(key,cleanedMatchesValues);
             }
         }
         //cb.or() causes an error in eclipselink with p1 as first argument
@@ -154,9 +203,29 @@ public class LogManager {
             logbookPredicate = cb.and(logbookPredicate, cb.like(logbooks.get(Logbook_.name), s));
         }
 
+        Predicate propertyPredicate = cb.disjunction();
+        if (!property_matches.isEmpty()) {
+            propertyPredicate = cb.and(propertyPredicate, property.get(Property_.name).in(property_matches));
+        }
+        for (String s : property_patterns) {
+            propertyPredicate = cb.and(propertyPredicate, cb.like(property.get(Property_.name), s));
+        }
+
+        Predicate propertyAttributePredicate = cb.disjunction();
+        for (Map.Entry<String, String> match : value_patterns.entries()) {
+            // Key is coming in as property.attribute
+            List<String> group = Arrays.asList(match.getKey().split("\\."));
+            if (group.size() == 2) {
+                propertyAttributePredicate = cb.and(propertyAttributePredicate, 
+                        cb.like(logAttribute.get(LogAttribute_.value), 
+                        match.getValue()), property.get(Property_.name).in(group.get(0), 
+                        attribute.get(Attribute_.name).in(group.get(1))));
+            }
+        }
+
         Predicate searchPredicate = cb.disjunction();
         for (String s : log_patterns) {
-            searchPredicate = cb.and(searchPredicate, cb.like(entry.get(Log_.description), s));
+            searchPredicate = cb.or(cb.like(entry.get(Log_.description), s), searchPredicate);
         }
 
         Predicate datePredicate = cb.disjunction();
@@ -194,7 +263,7 @@ public class LogManager {
         cq.distinct(true);
 
         Predicate statusPredicate = cb.equal(entry.get(Log_.state), State.Active);
-        Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, datePredicate, searchPredicate);
+        Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, propertyPredicate, propertyAttributePredicate, datePredicate, searchPredicate);
         cq.where(finalPredicate);
         cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
         TypedQuery<Entry> typedQuery = em.createQuery(cq);
@@ -229,6 +298,16 @@ public class LogManager {
                     Collection<Log> logs = e.getLogs();
                     Log log = Collections.max(logs);
                     log.setVersion(logs.size());
+                    Iterator<LogAttribute> iter = log.getAttributes().iterator();
+                    while (iter.hasNext()) {
+                        LogAttribute logattr = iter.next();
+                        Attribute attr = logattr.getAttribute();
+                        XmlProperty xmlProperty = attr.getProperty().toXmlProperty();
+                        Map<String, String> map = xmlProperty.getAttributes();
+                        map.put(attr.getName(), logattr.getValue());
+                        xmlProperty.setAttributes(map);
+                        log.addProperty(xmlProperty);
+                    }
                     result.addLog(log);
                 }
             }
@@ -254,6 +333,20 @@ public class LogManager {
             Collection<Log> logs = entry.getLogs();
             Log result = Collections.max(logs);
             result.setVersion(logs.size());
+            Iterator<LogAttribute> iter = result.getAttributes().iterator();
+            Set<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
+            while (iter.hasNext()) {
+                XmlProperty xmlProperty = new XmlProperty();
+                HashMap<String, String> map = new HashMap<String, String>();
+                LogAttribute logattr = iter.next();
+                Attribute attr = logattr.getAttribute();
+                xmlProperty.setName(attr.getProperty().getName());
+                xmlProperty.setId(attr.getProperty().getId());
+                map.put(attr.getName(), logattr.getValue());
+                xmlProperty.setAttributes(map);
+                xmlProperties.add(xmlProperty);
+            }
+            result.setXmlProperties(xmlProperties);
             return result;
         } catch (Exception e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
@@ -301,16 +394,34 @@ public class LogManager {
                 }
                 log.setState(State.Active);
                 log.setId(null);
-                log.setEntry(entry);
-                entry = (Entry) JPAUtil.update(entry);
-                return Collections.max(entry.getLogs());
             } else {
                 log.setState(State.Active);
                 entry.addLog(log);
-                log.setEntry(entry);
-                entry = (Entry) JPAUtil.update(entry);
-                return Collections.max(entry.getLogs());
             }
+            log.setEntry(entry);
+            entry = (Entry) JPAUtil.update(entry);
+            Log newLog = Collections.max(entry.getLogs());
+            if (log.getXmlProperties() != null) {
+                for (XmlProperty p : log.getXmlProperties()) {
+                    Property prop = PropertyManager.findProperty(p.getName());
+                    Set<LogAttribute> logattrs = new HashSet<LogAttribute>();
+                    LogAttribute logattr = new LogAttribute();
+                    for (Map.Entry<String, String> att : p.getAttributes().entrySet()) {
+                        Attribute newAtt = AttributeManager.findAttribute(prop, att.getKey());
+                        logattr.setAttribute(newAtt);
+                        logattr.setLog(newLog);
+                        logattr.setAttributeId(newAtt.getId());
+                        logattr.setLogId(newLog.getId());
+                        logattr.setValue(att.getValue());
+                        logattr.setGroupingNum(0L);
+                        logattrs.add(logattr);
+                    }
+                    newLog.setAttributes(logattrs);
+                }
+            }
+            newLog.setXmlProperties(log.getXmlProperties());
+            newLog = (Log) JPAUtil.update(newLog);
+            return newLog;
         } catch (Exception e) {
 
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
@@ -335,9 +446,8 @@ public class LogManager {
                         Log sibling = iterator.next();
                         sibling.setState(State.Inactive);
                         iterator.set(sibling);
+                        JPAUtil.update(sibling);
                     }
-                    entry.setLogs(logs);
-                    JPAUtil.update(entry);
                 }
             }
         } catch (Exception e) {

@@ -61,7 +61,7 @@ public class Logbooks {
      *
      * @param item the Logbook to add
      */
-    public void addXmlLogbook(Logbook item) {
+    public void addLogbook(Logbook item) {
         this.logbooks.add(item);
     }
 

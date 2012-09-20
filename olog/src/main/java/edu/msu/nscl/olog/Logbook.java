@@ -112,7 +112,7 @@ public class Logbook implements Serializable {
     /**
      * @return the status
      */
-    @XmlTransient
+    @XmlAttribute
     public State getState() {
         return state;
     }
@@ -150,7 +150,7 @@ public class Logbook implements Serializable {
      * @param logs Logs object
      */
     public void setLogs(Logs logs) {
-        for (Log xmlLog : logs.getLogs()) {
+        for (Log xmlLog : logs.getLogList()) {
             this.logs.add(xmlLog);
         }
     }

@@ -187,7 +187,7 @@ public class LogbooksResource {
                 cm.checkUserBelongsToGroupOfLogbook(um.getUserName(), logbook);
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
-            result = cm.updateLogbook(logbook, data);
+            result = cm.updateLogbook(data);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + Logbook.toLogger(data));

@@ -60,7 +60,7 @@ public class Tags {
      *
      * @param item the Tag to add
      */
-    public void addXmlTag(Tag item) {
+    public void addTag(Tag item) {
         this.tags.add(item);
     }
 

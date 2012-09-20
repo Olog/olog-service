@@ -7,6 +7,7 @@ package edu.msu.nscl.olog;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -31,13 +32,16 @@ public class Tag implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id = null;
+    
     @Column(name = "name", nullable = false, length = 250, insertable = true)
     private String name = null;
+    
     @Enumerated(EnumType.STRING)
     private State state;
+    
     //for joing the tables (many-to-many)
     @ManyToMany(mappedBy = "tags", fetch = FetchType.EAGER)
-    private Collection<Log> logs;
+    private List<Log> logs;
 
     public Tag() {
     }
@@ -91,7 +95,7 @@ public class Tag implements Serializable {
     /**
      * @return the status
      */
-    @XmlTransient
+    @XmlAttribute
     public State getState() {
         return state;
     }
@@ -111,16 +115,7 @@ public class Tag implements Serializable {
     //@XmlElement(name = "logs")
     @XmlTransient
     public Logs getLogs() {
-        if (logs != null) {
-            Iterator<Log> iterator = logs.iterator();
-            Logs xmlLogs = new Logs();
-            while (iterator.hasNext()) {
-                xmlLogs.addLog(iterator.next());
-            }
-            return xmlLogs;
-        } else {
-            return null;
-        }
+        return (Logs)logs;
     }
 
     /**
@@ -129,9 +124,7 @@ public class Tag implements Serializable {
      * @param logs Logs object
      */
     public void setLogs(Logs logs) {
-        for (Log xmlLog : logs.getLogs()) {
-            this.logs.add(xmlLog);
-        }
+            this.logs = logs;
     }
 
     /**

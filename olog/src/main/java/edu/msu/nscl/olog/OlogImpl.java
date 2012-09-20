@@ -144,8 +144,8 @@ public class OlogImpl {
      * @param data Logbook data with all logs
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
-    public Logbook updateLogbook(String logbook, Logbook data) throws CFException {
-        return UpdateValuesQuery.updateLogbook(logbook, data);
+    public Logbook updateLogbook(Logbook data) throws CFException {
+        return LogbookManager.create(data.getOwner(), data.getName());
     }
 
     /**
@@ -173,7 +173,7 @@ public class OlogImpl {
         Logbooks xmlLogbooks = null;
         for (Logbook logbook : data.getLogbooks()) {
             //removeLogbook(logbook.getName());
-            xmlLogbooks.addXmlLogbook(createOrReplaceLogbook(logbook.getName(), logbook));
+            xmlLogbooks.addLogbook(createOrReplaceLogbook(logbook.getName(), logbook));
         }
         return xmlLogbooks;
     }
@@ -295,7 +295,7 @@ public class OlogImpl {
         Tags xmlTags = null;
         for (Tag tag : data.getTags()) {
             //removeTag(tag.getName());
-            xmlTags.addXmlTag(createOrReplaceTag(tag.getName(), tag));
+            xmlTags.addTag(createOrReplaceTag(tag.getName(), tag));
         }
         return xmlTags;
     }
@@ -361,7 +361,12 @@ public class OlogImpl {
      * @throws CFException wrapping an SQLException
      */
     public XmlProperties listProperties() throws CFException {
-        return ListPropertiesQuery.getProperties();
+        Set<Property> prop = PropertyManager.findAll();
+        XmlProperties xmlProp = new XmlProperties();
+        for(Property p : prop){
+            xmlProp.addProperty(p.toXmlProperty());
+        }
+        return xmlProp;
     }
 
     /**
@@ -371,38 +376,45 @@ public class OlogImpl {
      * @throws CFException wrapping an SQLException
      */
     XmlProperty listAttributes(String property) throws CFException {
-        return ListPropertiesQuery.getAttributes(property);
+        return PropertyManager.findProperty(property).toXmlProperty();
     }
 
     /**
      * Adds a new property.
      *
-     * @param String newProperty name of the new property
-     * @param XmlProperty data incoming payload
+     * @param Property data incoming payload
      * @param boolean destructive is this action to be destructive (true) or not
      * @throws CFException wrapping an SQLException
      */
-    XmlProperty addProperty(String newProperty, XmlProperty data, boolean destructive) throws CFException {
-        return CreatePropertyQuery.addProperty(newProperty, data, destructive);
+    XmlProperty addProperty(XmlProperty data, boolean destructive) throws CFException {       
+        if (destructive) {
+            return PropertyManager.create(data.toProperty()).toXmlProperty();
+        } else {
+            Property property = PropertyManager.findProperty(data.getName());
+            Set<Attribute> attributes = property.getAttributes();
+            for (Map.Entry<String, String> att : data.getAttributes().entrySet()) {
+                attributes.add(new Attribute(att.getKey()));
+            }
+            property.setAttributes(attributes);
+            return PropertyManager.create(property).toXmlProperty();
+        }
     }
 
     /**
      * Adds a new property attribute to a log entry.
      *
-     * @param String hostAddress IP from where the call is coming from
      * @param String property name of the property
      * @param Long logId log that the property attribute will be associated with
-     * @param XmlProperty data incoming payload
+     * @param Property data incoming payload
      * @throws CFException wrapping an SQLException
      */
-    Log addAttribute(String hostAddress, String property, Long logId, XmlProperty data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        Log currentLog = findLogById(logId);
+    Log addAttribute(Long logId, XmlProperty data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
 
-        Collection<XmlProperty> currentProperties = currentLog.getXmlProperties();
+        Log log = LogManager.findLog(logId);
+        Collection<XmlProperty> currentProperties = log.getXmlProperties();
         currentProperties.add(data);
-        currentLog.setXmlProperties(currentProperties);
-
-        return createOrReplaceLog(logId, currentLog);
+        log.setXmlProperties(currentProperties);
+        return LogManager.create(log);
     }
 
     /**
@@ -411,46 +423,23 @@ public class OlogImpl {
      * @param String property name of the property to be removed
      * @throws CFException wrapping an SQLException
      */
-    void removeProperty(String property, XmlProperty data) throws CFException {
-        DeletePropertyQuery.removeProperty(property, data);
+    void removeProperty(String propertyName) throws CFException {
+        PropertyManager.remove(propertyName);
     }
 
     /**
      * Removes a properties attribute from a log entry.
      *
-     * @param String hostAddress IP from where the call is coming from
-     * @param String property name of the property
-     * @param XmlProperty data incoming payload
+     * @param Long logId log that the property attribute will be associated with
+     * @param Property data incoming payload
      * @throws CFException wrapping an SQLException
      */
-    Log removeAttribute(String hostAddress, String property, Long logId, XmlProperty data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        Log currentLog = findLogById(logId);
-
-        // Remove attributes from incoming payload from the current log
-        Collection<XmlProperty> currentProperties = currentLog.getXmlProperties();
-        if (currentProperties.isEmpty() || currentProperties == null) {
-            throw new CFException(Response.Status.NOT_FOUND,
-                    "Log entry " + logId + " could not be updated: Property '" + data.getName() + "' is not associated with this log.");
-        }
-        for (XmlProperty prop : currentProperties) {
-            if (prop.getName().equals(data.getName())) {
-                Map<String, String> attributes = prop.getAttributes();
-                Set<String> attributesToDelete = data.getAttributes().keySet();
-                for (String attr : attributesToDelete) {
-                    if (attributes.containsKey(attr)) {
-                        attributes.remove(attr);
-                    }
-                }
-                prop.setAttributes(attributes);
-            } else {
-                throw new CFException(Response.Status.NOT_FOUND,
-                        "Log entry " + logId + " could not be updated: Property '" + data.getName() + "' is not associated with this log.");
-            }
-        }
-        currentLog.setXmlProperties(currentProperties);
-
-        // Create new log with the correct properties removed
-        return createOrReplaceLog(logId, currentLog);
+    Log removeAttribute(Long logId, XmlProperty data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        Log log = LogManager.findLog(logId);
+        Collection<XmlProperty> currentProperties = log.getXmlProperties();
+        currentProperties.remove(data);
+        log.setXmlProperties(currentProperties);
+        return LogManager.create(log);
     }
 
     /**
@@ -556,10 +545,10 @@ public class OlogImpl {
      * @throws CFException on error
      */
     public void checkValidOwner(Logs data) throws CFException {
-        if (data == null || data.getLogs() == null) {
+        if (data == null || data.getLogList() == null) {
             return;
         }
-        for (Log c : data.getLogs()) {
+        for (Log c : data.getLogList()) {
             checkValidOwner(c);
         }
     }
@@ -600,7 +589,24 @@ public class OlogImpl {
      * URL.
      *
      * @param propertyName name coming from the URL
-     * @param data XmlProperty data
+     * @param data Property data
+     * @throws CFException on name mismatch
+     */
+    public void checkPropertyName(String propertyName, Property data) throws CFException {
+        if (data.getName() == null || !data.getName().equals(propertyName)) {
+            throw new CFException(Response.Status.BAD_REQUEST,
+                    "The property name in the URL '" + propertyName
+                    + "' and the property name in the payload '" + data.getName()
+                    + "' do not match");
+        }
+    }
+
+    /**
+     * Check the property name in <tt>data</tt> with the property name in the
+     * URL.
+     *
+     * @param propertyName name coming from the URL
+     * @param data Property data
      * @throws CFException on name mismatch
      */
     public void checkPropertyName(String propertyName, XmlProperty data) throws CFException {
@@ -686,7 +692,7 @@ public class OlogImpl {
         if (logId == 0) {
             return;
         }
-        checkUserBelongsToGroup(user, FindLogsQuery.findLogById(logId));
+        checkUserBelongsToGroup(user, LogManager.findLog(logId));
     }
 
     /**
@@ -730,10 +736,10 @@ public class OlogImpl {
      * @throws CFException on name mismatch
      */
     public void checkUserBelongsToGroup(String user, Logs data) throws CFException {
-        if (data == null || data.getLogs() == null) {
+        if (data == null || data.getLogList() == null) {
             return;
         }
-        for (Log log : data.getLogs()) {
+        for (Log log : data.getLogList()) {
             checkUserBelongsToGroup(user, log);
         }
     }

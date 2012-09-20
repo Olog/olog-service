@@ -56,6 +56,11 @@ public class Log implements Serializable, Comparable<Log> {
     @Transient
     private Collection<XmlProperty> properties = new ArrayList<XmlProperty>();
     
+    @OneToMany(mappedBy = "log")
+    private Set<LogAttribute> attributes = new HashSet<LogAttribute>();
+    
+    //private Map<String,LogAttribute> tests = new HashMap<String,LogAttribute>();
+    
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "logs_logbooks", joinColumns = {
         @JoinColumn(name = "log_id", unique = true)
@@ -75,7 +80,7 @@ public class Log implements Serializable, Comparable<Log> {
     })
     private Set<Tag> tags = new HashSet<Tag>();
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "entry_id", unique = true)
     private Entry entry;
     
@@ -126,7 +131,6 @@ public class Log implements Serializable, Comparable<Log> {
         return id;
     }
 
-
     /**
      * Setter for log id.
      *
@@ -135,16 +139,20 @@ public class Log implements Serializable, Comparable<Log> {
     public void setId(Long logId) {
         this.id = logId;
     }
-    
-    @XmlAttribute(name="id")
-    public Long getEntryId(){
-        return entry.getId();
+
+    @XmlAttribute(name = "id")
+    public Long getEntryId() {
+        if (entry != null) {
+            return entry.getId();
+        } else {
+            return null;
+        }
     }
 
     /**
      * @return the status
      */
-    @XmlTransient
+    @XmlAttribute
     public State getState() {
         return state;
     }
@@ -231,7 +239,7 @@ public class Log implements Serializable, Comparable<Log> {
     public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
-    
+
     /**
      * Getter for log created date.
      *
@@ -239,10 +247,13 @@ public class Log implements Serializable, Comparable<Log> {
      */
     @XmlAttribute
     public Date getCreatedDate() {
-        return entry.getCreatedDate();
+        if (entry != null) {
+            return entry.getCreatedDate();
+        } else {
+            return null;
+        }
     }
 
-    
     /**
      * Getter for log source IP.
      *
@@ -302,11 +313,11 @@ public class Log implements Serializable, Comparable<Log> {
     }
 
     /**
-     * Adds an XmlProperty to the log.
+     * Adds an Property to the log.
      *
-     * @param property single XmlProperty
+     * @param property single Property
      */
-    public void addXmlProperty(XmlProperty property) {
+    public void addProperty(XmlProperty property) {
         this.properties.add(property);
     }
 
@@ -409,6 +420,25 @@ public class Log implements Serializable, Comparable<Log> {
     public void setEntry(Entry entry) {
         this.entry = entry;
     }
+    
+    @XmlTransient
+    public Set<LogAttribute> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Set<LogAttribute> attributes) {
+        this.attributes = attributes;
+    }
+    
+    //@XmlElementWrapper(name = "tests")
+   // @XmlElement(name = "test")
+    //public Map<String, LogAttribute> getTests() {
+    //    return tests;
+    //}
+
+   // public void setTests(Map<String, LogAttribute> tests) {
+   //     this.tests = tests;
+   // }
 
     public int compareTo(Log num) {
         int x = modifiedDate.compareTo(num.modifiedDate);

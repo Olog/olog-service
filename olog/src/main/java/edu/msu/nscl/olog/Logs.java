@@ -7,8 +7,11 @@ package edu.msu.nscl.olog;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * Logs (collection) object that can be represented as XML/JSON in payload data.
@@ -16,22 +19,12 @@ import javax.xml.bind.annotation.XmlElement;
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 @XmlRootElement(name = "logs")
-public class Logs extends ArrayList {
-
-    private ArrayList<Log> logs;
+public class Logs extends ArrayList<Log> {
 
     /**
      * Creates a new instance of Logs.
      */
     public Logs() {
-        logs = new ArrayList<Log>();
-    }
-
-    /**
-     * Creates a new instance of Logs with initial capacity.
-     */
-    public Logs(int initialCapacity) {
-        logs = new ArrayList<Log>(initialCapacity);
     }
 
     /**
@@ -40,7 +33,7 @@ public class Logs extends ArrayList {
      * @param log Log initial element
      */
     public Logs(Log log) {
-        logs.add(log);
+        this.add(log);
     }
 
     /**
@@ -48,9 +41,14 @@ public class Logs extends ArrayList {
      *
      * @return logs a collection of Log
      */
-    @XmlElement(name = "log")
-    public ArrayList<Log> getLogs() {
-        return logs;
+    @XmlElementRef(type=Log.class, name = "log")
+    public List<Log> getLogList() {
+        return this;
+    }
+    
+    @XmlTransient
+    public List<Log> getLogs() {
+        return this;
     }
 
     /**
@@ -58,8 +56,9 @@ public class Logs extends ArrayList {
      *
      * @param items new log collection
      */
-    public void setLogs(ArrayList<Log> items) {
-        this.logs = items;
+    public void setLogs(List<Log> items) {
+        this.clear();
+        this.addAll(items);
     }
 
     /**
@@ -68,7 +67,7 @@ public class Logs extends ArrayList {
      * @param item the Log to add
      */
     public void addLog(Log item) {
-        this.logs.add(item);
+        this.add(item);
     }
 
     /**

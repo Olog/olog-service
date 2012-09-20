@@ -79,7 +79,7 @@ public class PropertiesResource {
         XmlProperty result = null;
         try {
             cm.checkPropertyName(newProperty, data);
-            result = cm.addProperty(newProperty, data, true);
+            result = cm.addProperty(data, true);
             Response r = Response.ok(result).build();
             audit.info(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
             return r;
@@ -130,7 +130,7 @@ public class PropertiesResource {
         XmlProperty result = null;
         try {
             cm.checkPropertyName(newProperty, data);
-            result = cm.addProperty(newProperty, data, false);
+            result = cm.addProperty(data, false);
             Response r = Response.ok(result).build();
             audit.info(user + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus());
             return r;
@@ -145,7 +145,7 @@ public class PropertiesResource {
      * DELETE method for removing a property.
      *
      * @param String property property to be removed or that will contain attributes to be removed
-     * @param XmlProperty data payload containing attributes to be removed
+     * @param Property data payload containing attributes to be removed
      * @return
      */
     @DELETE
@@ -155,7 +155,7 @@ public class PropertiesResource {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
-            cm.removeProperty(property, data);
+            cm.removeProperty(property);
             Response r = Response.ok().build();
             audit.info(user + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
@@ -184,7 +184,7 @@ public class PropertiesResource {
         Log result = null;
         try {
             cm.checkPropertyName(property, data);
-            result = cm.addAttribute(hostAddress, property, logId, data);
+            result = cm.addAttribute(logId, data);
             Response r = Response.ok(result).build();
             audit.info(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
             return r;
@@ -213,7 +213,7 @@ public class PropertiesResource {
         Log result = null;
         try {
             cm.checkPropertyName(property, data);
-            result = cm.removeAttribute(hostAddress, property, logId, data);
+            result = cm.removeAttribute(logId, data);
             Response r = Response.ok(result).build();
             audit.info(user + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
