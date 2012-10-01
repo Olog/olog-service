@@ -1,4 +1,4 @@
--- MySQL Administrator dump 1.4
+﻿-- MySQL Administrator dump 1.4
 --
 -- ------------------------------------------------------
 -- Server version	5.1.41
@@ -184,7 +184,8 @@ CREATE TABLE `properties` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(200) NOT NULL,
   `state` enum('Active','Inactive') NOT NULL DEFAULT 'Active',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -193,28 +194,6 @@ CREATE TABLE `properties` (
 
 /*!40000 ALTER TABLE `properties` DISABLE KEYS */;
 /*!40000 ALTER TABLE `properties` ENABLE KEYS */;
-
-
---
--- Definition of table `statuses`
---
-
-DROP TABLE IF EXISTS `statuses`;
-CREATE TABLE `statuses` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(45) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `statuses`
---
-
-/*!40000 ALTER TABLE `statuses` DISABLE KEYS */;
-INSERT INTO `statuses` (`id`,`name`) VALUES 
- (1,'Active'),
- (2,'Inactive');
-/*!40000 ALTER TABLE `statuses` ENABLE KEYS */;
 
 
 --

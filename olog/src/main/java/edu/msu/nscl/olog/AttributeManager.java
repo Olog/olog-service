@@ -18,10 +18,12 @@ import javax.ws.rs.core.Response;
  * @author berryman
  */
 public class AttributeManager {
+
     private static EntityManager em = null;
-    
+
     private AttributeManager() {
     }
+
     /**
      * Returns the list of set attribute in the database.
      *
@@ -38,7 +40,7 @@ public class AttributeManager {
         Predicate namePredicate = cb.equal(from.get(Property_.name), property.getName());
         Predicate pstatusPredicate = cb.equal(from.get(Property_.state), State.Active);
         Predicate astatusPredicate = cb.equal(attributes.get(Attribute_.state), State.Active);
-        Predicate andPredicate = cb.and(namePredicate,pstatusPredicate,astatusPredicate);
+        Predicate andPredicate = cb.and(namePredicate, pstatusPredicate, astatusPredicate);
         select.where(andPredicate);
         select.orderBy(cb.asc(attributes.get(Attribute_.name)));
         TypedQuery<Attribute> typedQuery = em.createQuery(select);
@@ -58,7 +60,7 @@ public class AttributeManager {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-           JPAUtil.finishTransacton(em);
+            JPAUtil.finishTransacton(em);
         }
     }
 
@@ -79,7 +81,7 @@ public class AttributeManager {
         //Predicate pstatusPredicate = cb.equal(from.get(Property_.state), State.Active);
         //Predicate astatusPredicate = cb.equal(attributes.get(Attribute_.state), State.Active);
         Predicate anamePredicate = cb.equal(attributes.get(Attribute_.name), attributeName);
-        Predicate andPredicate = cb.and(pnamePredicate,anamePredicate);
+        Predicate andPredicate = cb.and(pnamePredicate, anamePredicate);
         select.where(andPredicate);
         select.orderBy(cb.asc(attributes.get(Attribute_.name)));
         TypedQuery<Attribute> typedQuery = em.createQuery(select);
@@ -99,10 +101,11 @@ public class AttributeManager {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-           JPAUtil.finishTransacton(em);
+            JPAUtil.finishTransacton(em);
         }
     }
-            /**
+
+    /**
      * Creates a property in the database.
      *
      * @param property property
@@ -112,39 +115,42 @@ public class AttributeManager {
     public static Property create(Property property, String attributeName) throws CFException {
 
         try {
-            Attribute newAttribute = new Attribute();
             property = PropertyManager.findProperty(property.getName());
-            Attribute attribute = findAttribute(property,attributeName);
-            if (attribute != null) {
+            Attribute attribute = findAttribute(property, attributeName);
+            if (attribute.getId() != null) {
                 attribute.setState(State.Active);
                 property.addAttribute(attribute);
-                property = (Property)JPAUtil.update(property);
+                property = (Property) JPAUtil.update(property);
                 return property;
             } else {
+                Attribute newAttribute = new Attribute();
                 newAttribute.setName(attributeName);
                 newAttribute.setState(State.Active);
-                property.addAttribute(attribute);
-                property = (Property)JPAUtil.update(property);
+                newAttribute.setProperty(property);
+                JPAUtil.save(newAttribute);
+                newAttribute = findAttribute(property, newAttribute.getName());
+                property.addAttribute(newAttribute);
+                property = (Property) JPAUtil.update(property);
                 return property;
-            }    
+            }
         } catch (Exception e) {
 
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         }
     }
-    
+
     /**
      * Remove a attribute (mark as Inactive).
      *
      * @param name attribute name
      */
-     public static void remove(Property property, String attributeName) throws CFException {
-        
+    public static void remove(Property property, String attributeName) throws CFException {
+
         try {
-                Attribute attribute = findAttribute(property, attributeName);
-                attribute.setState(State.Inactive);
-                JPAUtil.update(attribute);
+            Attribute attribute = findAttribute(property, attributeName);
+            attribute.setState(State.Inactive);
+            JPAUtil.update(attribute);
         } catch (Exception e) {
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);

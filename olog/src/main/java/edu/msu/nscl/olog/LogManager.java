@@ -77,14 +77,14 @@ public class LogManager {
 
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
-        Root<Entry> from = cq.from(Entry.class);
-        ListJoin<Entry, Log> entry = from.join(Entry_.logs, JoinType.LEFT);
-        SetJoin<Log, Tag> tags = entry.join(Log_.tags, JoinType.LEFT);
-        SetJoin<Log, Logbook> logbooks = entry.join(Log_.logbooks, JoinType.LEFT);
-        Join<Attribute, Property> property = entry.join(Log_.attributes, JoinType.LEFT).join(LogAttribute_.attribute, JoinType.LEFT).join(Attribute_.property, JoinType.LEFT);
-        Join<LogAttribute, Attribute> attribute = entry.join(Log_.attributes, JoinType.LEFT).join(LogAttribute_.attribute, JoinType.LEFT);
-        Join<Log, LogAttribute> logAttribute = entry.join(Log_.attributes, JoinType.LEFT);
+        CriteriaQuery<Log> cq = cb.createQuery(Log.class);
+        Root<Log> from = cq.from(Log.class);
+        Join<Log, Entry> entry = from.join(Log_.entry, JoinType.LEFT);
+        SetJoin<Log, Tag> tags = from.join(Log_.tags, JoinType.LEFT);
+        SetJoin<Log, Logbook> logbooks = from.join(Log_.logbooks, JoinType.LEFT);
+        Join<Attribute, Property> property = from.join(Log_.attributes, JoinType.LEFT).join(LogAttribute_.attribute, JoinType.LEFT).join(Attribute_.property, JoinType.LEFT);
+        Join<LogAttribute, Attribute> attribute = from.join(Log_.attributes, JoinType.LEFT).join(LogAttribute_.attribute, JoinType.LEFT);
+        Join<Log, LogAttribute> logAttribute = from.join(Log_.attributes, JoinType.LEFT);
 
         for (Map.Entry<String, List<String>> match : matches.entrySet()) {
             String key = match.getKey().toLowerCase();
@@ -183,7 +183,7 @@ public class LogManager {
                         cleanedMatchesValues.add(m);
                     }
                 }
-                value_patterns.putAll(key,cleanedMatchesValues);
+                value_patterns.putAll(key, cleanedMatchesValues);
             }
         }
         //cb.or() causes an error in eclipselink with p1 as first argument
@@ -216,16 +216,16 @@ public class LogManager {
             // Key is coming in as property.attribute
             List<String> group = Arrays.asList(match.getKey().split("\\."));
             if (group.size() == 2) {
-                propertyAttributePredicate = cb.and(propertyAttributePredicate, 
-                        cb.like(logAttribute.get(LogAttribute_.value), 
-                        match.getValue()), property.get(Property_.name).in(group.get(0), 
+                propertyAttributePredicate = cb.and(propertyAttributePredicate,
+                        cb.like(logAttribute.get(LogAttribute_.value),
+                        match.getValue()), property.get(Property_.name).in(group.get(0),
                         attribute.get(Attribute_.name).in(group.get(1))));
             }
         }
 
         Predicate searchPredicate = cb.disjunction();
         for (String s : log_patterns) {
-            searchPredicate = cb.or(cb.like(entry.get(Log_.description), s), searchPredicate);
+            searchPredicate = cb.or(cb.like(from.get(Log_.description), s), searchPredicate);
         }
 
         Predicate datePredicate = cb.disjunction();
@@ -242,19 +242,19 @@ public class LogManager {
             if (start != null && end == null) {
                 Date jStart = new java.util.Date(Long.valueOf(start) * 1000);
                 Date jEndNow = new java.util.Date(Calendar.getInstance().getTime().getTime());
-                datePredicate = cb.between(from.get(Entry_.createdDate),
+                datePredicate = cb.between(entry.get(Entry_.createdDate),
                         jStart,
                         jEndNow);
             } else if (start == null && end != null) {
                 Date jStart1970 = new java.util.Date(0);
                 Date jEnd = new java.util.Date(Long.valueOf(end) * 1000);
-                datePredicate = cb.between(from.get(Entry_.createdDate),
+                datePredicate = cb.between(entry.get(Entry_.createdDate),
                         jStart1970,
                         jEnd);
             } else {
                 Date jStart = new java.util.Date(Long.valueOf(start) * 1000);
                 Date jEnd = new java.util.Date(Long.valueOf(end) * 1000);
-                datePredicate = cb.between(from.get(Entry_.createdDate),
+                datePredicate = cb.between(entry.get(Entry_.createdDate),
                         jStart,
                         jEnd);
             }
@@ -262,11 +262,11 @@ public class LogManager {
 
         cq.distinct(true);
 
-        Predicate statusPredicate = cb.equal(entry.get(Log_.state), State.Active);
+        Predicate statusPredicate = cb.equal(from.get(Log_.state), State.Active);
         Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, propertyPredicate, propertyAttributePredicate, datePredicate, searchPredicate);
         cq.where(finalPredicate);
-        cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
-        TypedQuery<Entry> typedQuery = em.createQuery(cq);
+        cq.orderBy(cb.desc(entry.get(Entry_.createdDate)));
+        TypedQuery<Log> typedQuery = em.createQuery(cq);
 
         if (!paginate_matches.isEmpty()) {
             String page = null, limit = null;
@@ -289,15 +289,18 @@ public class LogManager {
 
         try {
             Logs result = new Logs();
-            List<Entry> rs = typedQuery.getResultList();
+            List<Log> rs = typedQuery.getResultList();
 
             if (rs != null) {
-                Iterator<Entry> iterator = rs.iterator();
+                Iterator<Log> iterator = rs.iterator();
                 while (iterator.hasNext()) {
-                    Entry e = iterator.next();
+                    //Entry e = iterator.next();
+                    //Collection<Log> logs = e.getLogs();
+                    //Log log = Collections.max(logs);
+                    Log log = iterator.next();
+                    Entry e = log.getEntry();
                     Collection<Log> logs = e.getLogs();
-                    Log log = Collections.max(logs);
-                    log.setVersion(logs.size());
+                    log.setVersion(String.valueOf(logs.size()));
                     Iterator<LogAttribute> iter = log.getAttributes().iterator();
                     while (iter.hasNext()) {
                         LogAttribute logattr = iter.next();
@@ -306,7 +309,7 @@ public class LogManager {
                         Map<String, String> map = xmlProperty.getAttributes();
                         map.put(attr.getName(), logattr.getValue());
                         xmlProperty.setAttributes(map);
-                        log.addProperty(xmlProperty);
+                        log.addXmlProperty(xmlProperty);
                     }
                     result.addLog(log);
                 }
@@ -332,7 +335,7 @@ public class LogManager {
             Entry entry = (Entry) JPAUtil.findByID(Entry.class, id);
             Collection<Log> logs = entry.getLogs();
             Log result = Collections.max(logs);
-            result.setVersion(logs.size());
+            result.setVersion(String.valueOf(logs.size()));
             Iterator<LogAttribute> iter = result.getAttributes().iterator();
             Set<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
             while (iter.hasNext()) {
@@ -363,31 +366,49 @@ public class LogManager {
      */
     public static Log create(Log log) throws CFException {
         Entry entry = new Entry();
-        if (log.getLogbooks() != null) {
+        if (!log.getLogbooks().isEmpty()) {
             Iterator<Logbook> iterator = log.getLogbooks().iterator();
             Set<Logbook> logbooks = new HashSet<Logbook>();
             while (iterator.hasNext()) {
-                logbooks.add(LogbookManager.findLogbook(iterator.next().getName()));
+                String logbookName = iterator.next().getName();
+                Logbook logbook = LogbookManager.findLogbook(logbookName);
+                if (logbook != null) {
+                    logbooks.add(logbook);
+                } else {
+                    throw new CFException(Response.Status.NOT_FOUND,
+                            "Log entry " + log.getId() + " logbook:" + logbookName + " does not exists.");
+                }
             }
             log.setLogbooks(logbooks);
+        } else {
+            throw new CFException(Response.Status.NOT_FOUND,
+                            "Log entry " + log.getId() + " must be in at least one logbook.");
         }
         if (log.getTags() != null) {
             Iterator<Tag> iterator2 = log.getTags().iterator();
             Set<Tag> tags = new HashSet<Tag>();
             while (iterator2.hasNext()) {
-                tags.add(TagManager.findTag(iterator2.next().getName()));
+                String tagName = iterator2.next().getName();
+                Tag tag = TagManager.findTag(tagName);
+                if (tag != null) {
+                    tags.add(tag);
+                } else {
+                    throw new CFException(Response.Status.NOT_FOUND,
+                            "Log entry " + log.getId() + " tag:" + tagName + " does not exists.");
+                }
             }
             log.setTags(tags);
         }
         try {
-            if (log.getId() != null) {
-                entry = (Entry) JPAUtil.findByID(Entry.class, log.getId());
+            if (log.getEntryId() != null) {
+                entry = (Entry) JPAUtil.findByID(Entry.class, log.getEntryId());
                 if (entry.getLogs() != null) {
                     List<Log> logs = entry.getLogs();
                     ListIterator<Log> iterator = logs.listIterator();
                     while (iterator.hasNext()) {
                         Log sibling = iterator.next();
                         sibling.setState(State.Inactive);
+                        JPAUtil.update(sibling);
                         iterator.set(sibling);
                     }
                     entry.addLog(log);

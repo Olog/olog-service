@@ -4,14 +4,12 @@
  */
 package edu.msu.nscl.olog;
 
+import java.util.List;
 import java.util.Map;
+import javax.persistence.Transient;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Property object that can be represented as XML/JSON in payload data.
@@ -25,7 +23,7 @@ public class XmlProperty {
     private int groupingNum;
     private String name = null;
     private Map<String, String> attributes;
-    private Logs logs = null;
+    private List<Log> logs = new Logs();
 
     /**
      * Creates a new instance of XmlProperty.
@@ -129,9 +127,9 @@ public class XmlProperty {
      *
      * @return XmlChannels object
      */
-    @XmlElement(name = "logs")
-    public Logs getXmlLogs() {
-        return logs;
+    @XmlJavaTypeAdapter(XmlLogAdapter.class)
+    public Logs getLogs() {
+        return new Logs(logs);
     }
 
     /**
@@ -139,7 +137,7 @@ public class XmlProperty {
      *
      * @param logs Logs object
      */
-    public void setXmlLogs(Logs logs) {
+    public void setLogs(Logs logs) {
         this.logs = logs;
     }
 

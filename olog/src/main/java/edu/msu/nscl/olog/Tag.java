@@ -5,15 +5,12 @@
 package edu.msu.nscl.olog;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.persistence.*;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  *
@@ -23,7 +20,7 @@ import javax.xml.bind.annotation.XmlType;
 @Table(name = "logbooks")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "is_tag", discriminatorType = DiscriminatorType.INTEGER)
-@XmlType(propOrder = {"id", "name"})
+@XmlType(propOrder = {"id", "name", "logs"})
 @DiscriminatorValue("1")
 @XmlRootElement(name = "tag")
 public class Tag implements Serializable {
@@ -32,16 +29,12 @@ public class Tag implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id = null;
-    
     @Column(name = "name", nullable = false, length = 250, insertable = true)
     private String name = null;
-    
     @Enumerated(EnumType.STRING)
     private State state;
-    
-    //for joing the tables (many-to-many)
-    @ManyToMany(mappedBy = "tags", fetch = FetchType.EAGER)
-    private List<Log> logs;
+    @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
+    private List<Log> logs = new Logs();
 
     public Tag() {
     }
@@ -60,6 +53,7 @@ public class Tag implements Serializable {
      *
      * @return id tag id
      */
+    @XmlElement
     public Long getId() {
         return id;
     }
@@ -112,10 +106,9 @@ public class Tag implements Serializable {
      *
      * @return logs Logs object
      */
-    //@XmlElement(name = "logs")
-    @XmlTransient
+    @XmlJavaTypeAdapter(XmlLogAdapter.class)
     public Logs getLogs() {
-        return (Logs)logs;
+        return new Logs(logs);
     }
 
     /**
@@ -124,7 +117,11 @@ public class Tag implements Serializable {
      * @param logs Logs object
      */
     public void setLogs(Logs logs) {
-            this.logs = logs;
+        this.logs = logs;
+    }
+
+    public void addLog(Log item) {
+        this.logs.add(item);
     }
 
     /**

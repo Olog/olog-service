@@ -13,6 +13,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Log object that can be represented as XML/JSON in payload data.
@@ -32,7 +33,7 @@ public class Log implements Serializable, Comparable<Log> {
     private Long id;
     
     @Transient
-    private int version;
+    private String version;
     
     @Column(name = "owner", nullable = false, length = 50, insertable = true, updatable = false)
     private String owner;
@@ -58,8 +59,6 @@ public class Log implements Serializable, Comparable<Log> {
     
     @OneToMany(mappedBy = "log")
     private Set<LogAttribute> attributes = new HashSet<LogAttribute>();
-    
-    //private Map<String,LogAttribute> tests = new HashMap<String,LogAttribute>();
     
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "logs_logbooks", joinColumns = {
@@ -148,6 +147,17 @@ public class Log implements Serializable, Comparable<Log> {
             return null;
         }
     }
+    
+    public void setEntryId(Long id) {
+        if (entry != null) {
+            entry.setId(id);
+        } else {
+            Entry newEntry = new Entry();
+            newEntry.setId(id);
+            newEntry.addLog(this);
+            this.entry = newEntry;
+        }
+    }
 
     /**
      * @return the status
@@ -170,7 +180,7 @@ public class Log implements Serializable, Comparable<Log> {
      * @return versionId
      */
     @XmlAttribute
-    public int getVersion() {
+    public String getVersion() {
         return version;
     }
 
@@ -179,7 +189,7 @@ public class Log implements Serializable, Comparable<Log> {
      *
      * @param version
      */
-    public void setVersion(int version) {
+    public void setVersion(String version) {
         this.version = version;
     }
 
@@ -317,8 +327,12 @@ public class Log implements Serializable, Comparable<Log> {
      *
      * @param property single Property
      */
-    public void addProperty(XmlProperty property) {
+    public void addXmlProperty(XmlProperty property) {
         this.properties.add(property);
+    }
+    
+    public void removeXmlProperty(XmlProperty property) {
+        this.properties.remove(property);
     }
 
     /**
@@ -349,6 +363,10 @@ public class Log implements Serializable, Comparable<Log> {
     public void addLogbook(Logbook logbook) {
         this.logbooks.add(logbook);
     }
+    
+    public void removeLogbook(Logbook logbook) {
+        this.logbooks.remove(logbook);
+    }
 
     /**
      * Getter for the log's Tags.
@@ -378,6 +396,10 @@ public class Log implements Serializable, Comparable<Log> {
     public void addTag(Tag tag) {
         this.tags.add(tag);
     }
+    
+    public void removeTag(Tag tag) {
+        this.tags.remove(tag);
+    }
 
     /**
      * Getter for the log's XmlAttachments.
@@ -405,6 +427,10 @@ public class Log implements Serializable, Comparable<Log> {
      */
     public void addXmlAttachment(XmlAttachment attachment) {
         this.attachments.add(attachment);
+    }
+    
+    public void removeXmlAttachment(XmlAttachment attachment) {
+        this.attachments.remove(attachment);
     }
 
     /**

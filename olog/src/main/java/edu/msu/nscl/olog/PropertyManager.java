@@ -7,10 +7,7 @@ package edu.msu.nscl.olog;
 import java.util.*;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import javax.ws.rs.core.Response;
 
 /**
@@ -36,7 +33,7 @@ public class PropertyManager {
         CriteriaQuery<Property> cq = cb.createQuery(Property.class);
         Root<Property> from = cq.from(Property.class);
         CriteriaQuery<Property> select = cq.select(from);
-        Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
+        Predicate statusPredicate = cb.equal(from.get(Property_.state), State.Active);
         select.where(statusPredicate);
         select.orderBy(cb.asc(from.get(Property_.name)));
         TypedQuery<Property> typedQuery = em.createQuery(select);
@@ -107,17 +104,17 @@ public class PropertyManager {
     public static Property create(String propertyName) throws CFException {
 
         try {
-            Property xmlProperty = new Property();
+            Property newProperty = new Property();
             Property property = findProperty(propertyName);
             if (property != null) {
                 property.setState(State.Active);
                 property = (Property) JPAUtil.update(property);
                 return property;
             } else {
-                xmlProperty.setName(propertyName);
-                xmlProperty.setState(State.Active);
-                JPAUtil.save(xmlProperty);
-                return xmlProperty;
+                newProperty.setName(propertyName);
+                newProperty.setState(State.Active);
+                JPAUtil.save(newProperty);
+                return newProperty;
             }
         } catch (Exception e) {
 
@@ -138,22 +135,24 @@ public class PropertyManager {
             Iterator<Attribute> iterator = property.getAttributes().iterator();
             while (iterator.hasNext()) {
                 Attribute att = AttributeManager.findAttribute(property, iterator.next().getName());
-                if ( att.getId() != null) {
+                if (att.getId() != null) {
                     property.addAttribute(att);
                 }
             }
 
         }
         try {
-            if (property.getId() != 0) {
-                property = (Property) JPAUtil.findByID(Property.class, property.getId());
-                property.setState(State.Active);
-                property = (Property) JPAUtil.update(property);
-                return property;
+            Property Inactiveproperty = findProperty(property.getName());
+            if (Inactiveproperty != null) {
+                Inactiveproperty.setState(State.Active);
+                Inactiveproperty = (Property) JPAUtil.update(Inactiveproperty);
+                return Inactiveproperty;
             } else {
-                property.setState(State.Active);
-                property = (Property) JPAUtil.update(property);
-                return property;
+                Property newProperty = new Property();
+                newProperty.setName(property.getName());
+                newProperty.setState(State.Active);
+                JPAUtil.save(newProperty);
+                return newProperty;
             }
         } catch (Exception e) {
 

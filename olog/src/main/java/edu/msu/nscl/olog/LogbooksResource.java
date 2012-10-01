@@ -141,18 +141,18 @@ public class LogbooksResource {
     @PUT
     @Path("{logbookName}")
     @Consumes({"application/xml", "application/json"})
-    public Response create(@PathParam("logbookName") String logbook, Logbook data) {
+    public Response create(@PathParam("logbookName") String logbookName, Logbook data) {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Logbook result = null;
         try {
             cm.checkValidNameAndOwner(data);
-            cm.checkNameMatchesPayload(logbook, data);
+            cm.checkNameMatchesPayload(logbookName, data);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
-            result = cm.createOrReplaceLogbook(logbook, data);
+            result = cm.createOrReplaceLogbook(logbookName, data);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + Logbook.toLogger(data));
@@ -187,7 +187,7 @@ public class LogbooksResource {
                 cm.checkUserBelongsToGroupOfLogbook(um.getUserName(), logbook);
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
-            result = cm.updateLogbook(data);
+            result = cm.createOrReplaceLogbook(logbook, data);
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + Logbook.toLogger(data));

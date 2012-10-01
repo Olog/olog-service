@@ -36,16 +36,20 @@ public class Logs extends ArrayList<Log> {
         this.add(log);
     }
 
+    public Logs(List<Log> logs) {
+        this.addAll(logs);
+    }
+
     /**
      * Returns a collection of Log.
      *
      * @return logs a collection of Log
      */
-    @XmlElementRef(type=Log.class, name = "log")
+    @XmlElementRef(type = Log.class, name = "log")
     public List<Log> getLogList() {
         return this;
     }
-    
+
     @XmlTransient
     public List<Log> getLogs() {
         return this;
@@ -83,6 +87,21 @@ public class Logs extends ArrayList<Log> {
             StringBuilder s = new StringBuilder();
             s.append("[");
             for (Log c : data.getLogs()) {
+                s.append(Log.toLogger(c) + ",");
+            }
+            s.delete(s.length() - 1, s.length());
+            s.append("]");
+            return s.toString();
+        }
+    }
+
+    public static String toLogger(List<Log> data) {
+        if (data.size() == 0) {
+            return "[None]";
+        } else {
+            StringBuilder s = new StringBuilder();
+            s.append("[");
+            for (Log c : data) {
                 s.append(Log.toLogger(c) + ",");
             }
             s.delete(s.length() - 1, s.length());

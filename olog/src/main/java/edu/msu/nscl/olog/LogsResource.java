@@ -100,7 +100,7 @@ public class LogsResource {
                 data_temp.addLog(datum);
             }
             data = data_temp;
-            cm.checkValidOwner(data);
+            cm.checkValid(data);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
             }
@@ -168,7 +168,7 @@ public class LogsResource {
         Log result = null;
         try {
             data.setOwner(um.getUserName());
-            cm.checkValidOwner(data);
+            cm.checkValid(data);
             cm.checkIdMatchesPayload(logId, data);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), data);
@@ -206,7 +206,7 @@ public class LogsResource {
         Log result = null;
         try {
             data.setOwner(um.getUserName());
-            cm.checkValidOwner(data);
+            cm.checkValid(data);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroupOfLog(um.getUserName(), logId);
                 cm.checkUserBelongsToGroup(um.getUserName(), data);

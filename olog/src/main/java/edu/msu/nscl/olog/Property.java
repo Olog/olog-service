@@ -163,7 +163,9 @@ public class Property implements Serializable {
         xmlProperty.setName(this.getName());
         xmlProperty.setId(this.getId());
         for (Attribute attr : this.getAttributes()) {
-            map.put(attr.getName(), null);
+            if (attr.getState() == State.Active) {
+                map.put(attr.getName(), null);
+            }
         }
         xmlProperty.setAttributes(map);
         return xmlProperty;

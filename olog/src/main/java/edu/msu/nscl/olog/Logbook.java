@@ -6,11 +6,10 @@
 package edu.msu.nscl.olog;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Logbook object that can be represented as XML/JSON in payload data.
@@ -22,7 +21,7 @@ import javax.xml.bind.annotation.*;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "is_tag", discriminatorType = DiscriminatorType.INTEGER)
 @DiscriminatorValue("0")
-@XmlType(propOrder = {"owner", "id", "name"})
+@XmlType(propOrder = {"owner", "id", "name", "logs"})
 @XmlRootElement(name = "logbook")
 public class Logbook implements Serializable {
 
@@ -36,9 +35,8 @@ public class Logbook implements Serializable {
     private String owner = null;
     @Enumerated(EnumType.STRING)
     private State state;
-    //for joing the tables (many-to-many)
-    @ManyToMany(mappedBy = "logbooks", fetch = FetchType.EAGER)
-    private Collection<Log> logs;
+    @ManyToMany(mappedBy = "logbooks", fetch = FetchType.LAZY)
+    private List<Log> logs = new Logs();
 
     /**
      * Creates a new instance of Logbook.
@@ -125,34 +123,26 @@ public class Logbook implements Serializable {
     }
 
     /**
-     * Getter for tag's Logs.
+     * Getter for logbook's Logs.
      *
      * @return logs Logs object
      */
-    //@XmlElement(name = "logs")
-    @XmlTransient
+    @XmlJavaTypeAdapter(XmlLogAdapter.class)
     public Logs getLogs() {
-        if (logs != null) {
-            Iterator<Log> iterator = logs.iterator();
-            Logs xmlLogs = new Logs();
-            while (iterator.hasNext()) {
-                xmlLogs.addLog(iterator.next());
-            }
-            return xmlLogs;
-        } else {
-            return null;
-        }
+        return new Logs(logs);
     }
 
     /**
-     * Setter for tag's Logs.
+     * Setter for logbook's Logs.
      *
      * @param logs Logs object
      */
     public void setLogs(Logs logs) {
-        for (Log xmlLog : logs.getLogList()) {
-            this.logs.add(xmlLog);
-        }
+        this.logs = logs;
+    }
+
+    public void addLog(Log item) {
+        this.logs.add(item);
     }
 
     /**

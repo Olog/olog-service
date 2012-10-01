@@ -200,7 +200,7 @@ public class PropertiesResource {
      *
      * @param String newProperty the property being added
      * @param Long logId the id of the log entry that the property is being added to
-     * @param data the XML payload containing attributes and their values to be added to be associated with the log entry
+     * @param data the XML payload containing attributes and their values to be removed from the log entry
      * @return
      */
     @DELETE
