@@ -15,36 +15,51 @@
 
 
 --
--- Create schema ologdb4
+-- Create schema olog
 --
-DROP DATABASE IF EXISTS olog;
-CREATE DATABASE olog;
+
+CREATE DATABASE IF NOT EXISTS olog;
 USE olog;
 
 --
--- Definition of table `levels`
+-- Definition of table `attributes`
 --
 
-DROP TABLE IF EXISTS `levels`;
-CREATE TABLE `levels` (
+DROP TABLE IF EXISTS `attributes`;
+CREATE TABLE `attributes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `property_id` int(11) NOT NULL,
   `name` varchar(200) NOT NULL,
+  `state` enum('Active','Inactive') NOT NULL DEFAULT 'Active',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+  KEY `attributes_property_id_fk` (`property_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
--- Dumping data for table `levels`
+-- Dumping data for table `attributes`
 --
 
-/*!40000 ALTER TABLE `levels` DISABLE KEYS */;
-INSERT INTO `levels` (`id`,`name`) VALUES
- (1,'Info'),
- (4,'Problem'),
- (3,'Request'),
- (2,'Suggestion'),
- (5,'Urgent');
-/*!40000 ALTER TABLE `levels` ENABLE KEYS */;
+/*!40000 ALTER TABLE `attributes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `attributes` ENABLE KEYS */;
+
+
+--
+-- Definition of table `entries`
+--
+
+DROP TABLE IF EXISTS `entries`;
+CREATE TABLE `entries` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `created` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `entries`
+--
+
+/*!40000 ALTER TABLE `entries` DISABLE KEYS */;
+/*!40000 ALTER TABLE `entries` ENABLE KEYS */;
 
 
 --
@@ -57,11 +72,9 @@ CREATE TABLE `logbooks` (
   `name` varchar(45) NOT NULL,
   `is_tag` int(1) NOT NULL DEFAULT '0',
   `owner` varchar(45) DEFAULT NULL,
-  `status_id` int(11) NOT NULL DEFAULT '1',
+  `state` enum('Active','Inactive') NOT NULL DEFAULT 'Active',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`),
-  KEY `logbooks_status_id_fk` (`status_id`),
-  CONSTRAINT `logbooks_status_id_fk` FOREIGN KEY (`status_id`) REFERENCES `statuses` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
 
 --
@@ -69,18 +82,18 @@ CREATE TABLE `logbooks` (
 --
 
 /*!40000 ALTER TABLE `logbooks` DISABLE KEYS */;
-INSERT INTO `logbooks` (`id`,`name`,`is_tag`,`owner`,`status_id`) VALUES 
- (1,'Operations',0,NULL,1),
- (2,'Electronics Maintenance',0,NULL,1),
- (3,'Mechanical Technicians',0,NULL,1),
- (4,'LOTO',0,NULL,1),
- (5,'Inverpower Power Supplies',1,NULL,1),
- (6,'RF Area',1,NULL,1),
- (7,'Kicker',1,NULL,1),
- (8,'Bumps',1,NULL,1),
- (9,'Septums',1,NULL,1),
- (10,'Large Power Supplies',1,NULL,1),
- (11,'Timing Systems',1,NULL,1);
+INSERT INTO `logbooks` (`id`,`name`,`is_tag`,`owner`,`state`) VALUES 
+ (1,'Operations',0,'LAB.FRIB.ASD','Active'),
+ (2,'Electronics Maintenance',0,NULL,'Active'),
+ (3,'Mechanical Technicians',0,NULL,'Active'),
+ (4,'LOTO',0,NULL,'Active'),
+ (5,'Inverpower Power Supplies',1,NULL,'Active'),
+ (6,'RF Area',1,NULL,'Active'),
+ (7,'Kicker',1,NULL,'Active'),
+ (8,'Bumps',1,NULL,'Active'),
+ (9,'Septums',1,NULL,'Active'),
+ (10,'Large Power Supplies',1,NULL,'Active'),
+ (11,'Timing Systems',1,NULL,'Active');
 /*!40000 ALTER TABLE `logbooks` ENABLE KEYS */;
 
 
@@ -91,24 +104,51 @@ INSERT INTO `logbooks` (`id`,`name`,`is_tag`,`owner`,`status_id`) VALUES
 DROP TABLE IF EXISTS `logs`;
 CREATE TABLE `logs` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` datetime NOT NULL,
   `source` varchar(80) NOT NULL DEFAULT '',
   `owner` varchar(32) NOT NULL,
-  `level_id` int(11) NOT NULL DEFAULT '1',
-  `status_id` int(11) NOT NULL DEFAULT '1',
-  `subject` varchar(75) NOT NULL DEFAULT '',
   `description` mediumtext NOT NULL,
   `md5entry` varchar(32) NOT NULL DEFAULT '',
-  `md5recent` mediumtext NOT NULL,
-  `parent_id` int(11) DEFAULT NULL,
+  `state` enum('Active','Inactive') NOT NULL DEFAULT 'Active',
+  `level` enum('Info','Problem','Request','Suggestion','Urgent') NOT NULL DEFAULT 'Info',
+  `entry_id` int(11) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `level_id_fk` (`level_id`),
-  KEY `log_parent_id_fk` (`parent_id`),
-  KEY `status_id_fk` (`status_id`),
-  CONSTRAINT `level_id_fk` FOREIGN KEY (`level_id`) REFERENCES `levels` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `log_parent_id_fk` FOREIGN KEY (`parent_id`) REFERENCES `logs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `status_id_fk` FOREIGN KEY (`status_id`) REFERENCES `statuses` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+  KEY `entry_id_fk` (`entry_id`),
+  CONSTRAINT `entry_id_fk` FOREIGN KEY (`entry_id`) REFERENCES `entries` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `logs`
+--
+
+/*!40000 ALTER TABLE `logs` DISABLE KEYS */;
+/*!40000 ALTER TABLE `logs` ENABLE KEYS */;
+
+
+--
+-- Definition of table `logs_attributes`
+--
+
+DROP TABLE IF EXISTS `logs_attributes`;
+CREATE TABLE `logs_attributes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `log_id` int(11) NOT NULL,
+  `attribute_id` int(11) NOT NULL,
+  `value` varchar(200) NOT NULL,
+  `grouping_num` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `logs_attributes_attribute_id_fk` (`attribute_id`),
+  KEY `logs_attributes_log_id_fk` (`log_id`),
+  CONSTRAINT `logs_attributes_attribute_id_fk` FOREIGN KEY (`attribute_id`) REFERENCES `attributes` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `logs_attributes_log_id_fk` FOREIGN KEY (`log_id`) REFERENCES `logs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `logs_attributes`
+--
+
+/*!40000 ALTER TABLE `logs_attributes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `logs_attributes` ENABLE KEYS */;
 
 
 --
@@ -120,17 +160,19 @@ CREATE TABLE `logs_logbooks` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `log_id` int(11) NOT NULL,
   `logbook_id` int(11) NOT NULL,
-  `state` enum('open','closed') DEFAULT NULL,
-  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `status_id` int(11) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `log_id_fk` (`log_id`),
   KEY `logbook_id_fk` (`logbook_id`) USING BTREE,
-  KEY `logs_logbooks_status_id_fk` (`status_id`),
-  CONSTRAINT `logs_logbooks_status_id_fk` FOREIGN KEY (`status_id`) REFERENCES `statuses` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `logs_logbooks_logbook_id_fk` FOREIGN KEY (`logbook_id`) REFERENCES `logbooks` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `logs_logbooks_log_id_fk` FOREIGN KEY (`log_id`) REFERENCES `logs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `logs_logbooks`
+--
+
+/*!40000 ALTER TABLE `logs_logbooks` DISABLE KEYS */;
+/*!40000 ALTER TABLE `logs_logbooks` ENABLE KEYS */;
 
 
 --
@@ -138,12 +180,13 @@ CREATE TABLE `logs_logbooks` (
 --
 
 DROP TABLE IF EXISTS `properties`;
-CREATE TABLE  `properties` (
+CREATE TABLE `properties` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(200) NOT NULL,
-  `status_id` tinyint(1) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+  `state` enum('Active','Inactive') NOT NULL DEFAULT 'Active',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `properties`
@@ -151,60 +194,6 @@ CREATE TABLE  `properties` (
 
 /*!40000 ALTER TABLE `properties` DISABLE KEYS */;
 /*!40000 ALTER TABLE `properties` ENABLE KEYS */;
-
---
--- Definition of table `attributes`
---
-
-DROP TABLE IF EXISTS `attributes`;
-CREATE TABLE  `attributes` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `property_id` int(11) NOT NULL,
-  `name` varchar(200) NOT NULL,
-  `status_id` tinyint(1) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `attributes_property_id_fk` (`property_id`),
-  CONSTRAINT `attributes_property_id_fk` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
-
---
--- Definition of table `logs_attributes`
---
-
-DROP TABLE IF EXISTS `logs_attributes`;
-CREATE TABLE  `logs_attributes` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `log_id` int(11) NOT NULL,
-  `attribute_id` int(11) NOT NULL,
-  `value` varchar(200) NOT NULL,
-  `grouping_num` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `logs_attributes_attribute_id_fk` (`attribute_id`),
-  KEY `logs_attributes_log_id_fk` (`log_id`),
-  CONSTRAINT `logs_attributes_attribute_id_fk` FOREIGN KEY (`attribute_id`) REFERENCES `attributes` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `logs_attributes_log_id_fk` FOREIGN KEY (`log_id`) REFERENCES `logs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=179 DEFAULT CHARSET=latin1;
-
---
--- Definition of table `statuses`
---
-
-DROP TABLE IF EXISTS `statuses`;
-CREATE TABLE `statuses` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(45) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `statuses`
---
-
-/*!40000 ALTER TABLE `statuses` DISABLE KEYS */;
-INSERT INTO `statuses` (`id`,`name`) VALUES 
- (1,'Active'),
- (2,'Inactive');
-/*!40000 ALTER TABLE `statuses` ENABLE KEYS */;
 
 
 --
