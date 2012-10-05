@@ -15,9 +15,9 @@
 
 
 --
--- Create schema olog
+-- Create schema olog_new
 --
-
+DROP DATABASE IF EXISTS olog;
 CREATE DATABASE IF NOT EXISTS olog;
 USE olog;
 

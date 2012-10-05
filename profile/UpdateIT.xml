@@ -1,0 +1,1001 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExportedView Name="Live Profiling Results" type="table">
+ <TableData NumRows="165" NumColumns="4">
+  <TableHeader>   <TableColumn><![CDATA[Hot Spots - Method]]></TableColumn>
+   <TableColumn><![CDATA[Self time [%]]]></TableColumn>
+   <TableColumn><![CDATA[Self time]]></TableColumn>
+   <TableColumn><![CDATA[Invocations]]></TableColumn>
+  </TableHeader>
+  <TableBody>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.JPAUtil.finishTransacton(javax.persistence.EntityManager)]]></TableColumn>
+    <TableColumn><![CDATA[77.57%]]></TableColumn>
+    <TableColumn><![CDATA[2444.432 ms]]></TableColumn>
+    <TableColumn><![CDATA[239]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogManager.findLog(javax.ws.rs.core.MultivaluedMap)]]></TableColumn>
+    <TableColumn><![CDATA[8.91%]]></TableColumn>
+    <TableColumn><![CDATA[280.907 ms]]></TableColumn>
+    <TableColumn><![CDATA[19]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogbookManager.findLogbook(String)]]></TableColumn>
+    <TableColumn><![CDATA[2.96%]]></TableColumn>
+    <TableColumn><![CDATA[93.119 ms]]></TableColumn>
+    <TableColumn><![CDATA[37]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.JPAUtil.update(Object)]]></TableColumn>
+    <TableColumn><![CDATA[2.47%]]></TableColumn>
+    <TableColumn><![CDATA[77.977 ms]]></TableColumn>
+    <TableColumn><![CDATA[97]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.ADLDAPUserManager.getGroups(java.security.Principal)]]></TableColumn>
+    <TableColumn><![CDATA[1.58%]]></TableColumn>
+    <TableColumn><![CDATA[49.857 ms]]></TableColumn>
+    <TableColumn><![CDATA[42]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.TagManager.findTag(String)]]></TableColumn>
+    <TableColumn><![CDATA[1.06%]]></TableColumn>
+    <TableColumn><![CDATA[33.352 ms]]></TableColumn>
+    <TableColumn><![CDATA[14]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogManager.findLog(Long)]]></TableColumn>
+    <TableColumn><![CDATA[0.72%]]></TableColumn>
+    <TableColumn><![CDATA[22.581 ms]]></TableColumn>
+    <TableColumn><![CDATA[23]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.AttributeManager.findAttribute(edu.msu.nscl.olog.Property, String)]]></TableColumn>
+    <TableColumn><![CDATA[0.57%]]></TableColumn>
+    <TableColumn><![CDATA[17.842 ms]]></TableColumn>
+    <TableColumn><![CDATA[9]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.PropertyManager.findProperty(String)]]></TableColumn>
+    <TableColumn><![CDATA[0.51%]]></TableColumn>
+    <TableColumn><![CDATA[16.104 ms]]></TableColumn>
+    <TableColumn><![CDATA[10]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.JPAUtil.startTransaction(javax.persistence.EntityManager)]]></TableColumn>
+    <TableColumn><![CDATA[0.36%]]></TableColumn>
+    <TableColumn><![CDATA[11.459 ms]]></TableColumn>
+    <TableColumn><![CDATA[239]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogsResource.add(javax.servlet.http.HttpServletRequest, javax.ws.rs.core.HttpHeaders, edu.msu.nscl.olog.Logs)]]></TableColumn>
+    <TableColumn><![CDATA[0.21%]]></TableColumn>
+    <TableColumn><![CDATA[6.467 ms]]></TableColumn>
+    <TableColumn><![CDATA[11]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogManager.create(edu.msu.nscl.olog.Log)]]></TableColumn>
+    <TableColumn><![CDATA[0.20%]]></TableColumn>
+    <TableColumn><![CDATA[6.175 ms]]></TableColumn>
+    <TableColumn><![CDATA[22]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogManager.remove(Long)]]></TableColumn>
+    <TableColumn><![CDATA[0.18%]]></TableColumn>
+    <TableColumn><![CDATA[5.809 ms]]></TableColumn>
+    <TableColumn><![CDATA[12]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogsResource.remove(Long)]]></TableColumn>
+    <TableColumn><![CDATA[0.18%]]></TableColumn>
+    <TableColumn><![CDATA[5.738 ms]]></TableColumn>
+    <TableColumn><![CDATA[12]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.ResponseCorsFilter.filter(com.sun.jersey.spi.container.ContainerRequest, com.sun.jersey.spi.container.ContainerResponse)]]></TableColumn>
+    <TableColumn><![CDATA[0.15%]]></TableColumn>
+    <TableColumn><![CDATA[4.687 ms]]></TableColumn>
+    <TableColumn><![CDATA[68]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logs.<init>(java.util.List)]]></TableColumn>
+    <TableColumn><![CDATA[0.10%]]></TableColumn>
+    <TableColumn><![CDATA[3.085 ms]]></TableColumn>
+    <TableColumn><![CDATA[80]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.TagsResource.create(String, edu.msu.nscl.olog.Tag)]]></TableColumn>
+    <TableColumn><![CDATA[0.05%]]></TableColumn>
+    <TableColumn><![CDATA[1.699 ms]]></TableColumn>
+    <TableColumn><![CDATA[3]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.JPAUtil.save(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.05%]]></TableColumn>
+    <TableColumn><![CDATA[1.672 ms]]></TableColumn>
+    <TableColumn><![CDATA[7]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogbooksResource.create(String, edu.msu.nscl.olog.Logbook)]]></TableColumn>
+    <TableColumn><![CDATA[0.05%]]></TableColumn>
+    <TableColumn><![CDATA[1.646 ms]]></TableColumn>
+    <TableColumn><![CDATA[3]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogbooksResource.remove(String)]]></TableColumn>
+    <TableColumn><![CDATA[0.05%]]></TableColumn>
+    <TableColumn><![CDATA[1.538 ms]]></TableColumn>
+    <TableColumn><![CDATA[3]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.TagsResource.addSingle(String, Long)]]></TableColumn>
+    <TableColumn><![CDATA[0.05%]]></TableColumn>
+    <TableColumn><![CDATA[1.488 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.TagsResource.remove(String)]]></TableColumn>
+    <TableColumn><![CDATA[0.04%]]></TableColumn>
+    <TableColumn><![CDATA[1.306 ms]]></TableColumn>
+    <TableColumn><![CDATA[3]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogsResource.query()]]></TableColumn>
+    <TableColumn><![CDATA[0.04%]]></TableColumn>
+    <TableColumn><![CDATA[1.19 ms]]></TableColumn>
+    <TableColumn><![CDATA[19]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log.<init>()]]></TableColumn>
+    <TableColumn><![CDATA[0.04%]]></TableColumn>
+    <TableColumn><![CDATA[1.172 ms]]></TableColumn>
+    <TableColumn><![CDATA[486]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogbooksResource.addSingle(String, Long)]]></TableColumn>
+    <TableColumn><![CDATA[0.03%]]></TableColumn>
+    <TableColumn><![CDATA[1.019 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.JPAUtil.findByID(Class, long)]]></TableColumn>
+    <TableColumn><![CDATA[0.03%]]></TableColumn>
+    <TableColumn><![CDATA[0.949 ms]]></TableColumn>
+    <TableColumn><![CDATA[46]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogsResource.<init>()]]></TableColumn>
+    <TableColumn><![CDATA[0.03%]]></TableColumn>
+    <TableColumn><![CDATA[0.945 ms]]></TableColumn>
+    <TableColumn><![CDATA[43]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.PropertiesResource.addAttribute(javax.servlet.http.HttpServletRequest, javax.ws.rs.core.HttpHeaders, String, Long, edu.msu.nscl.olog.XmlProperty)]]></TableColumn>
+    <TableColumn><![CDATA[0.03%]]></TableColumn>
+    <TableColumn><![CDATA[0.843 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.PropertiesResource.removeProperty(String, edu.msu.nscl.olog.XmlProperty)]]></TableColumn>
+    <TableColumn><![CDATA[0.02%]]></TableColumn>
+    <TableColumn><![CDATA[0.78 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.addSingleLogbook(String, Long)]]></TableColumn>
+    <TableColumn><![CDATA[0.02%]]></TableColumn>
+    <TableColumn><![CDATA[0.755 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logbook.<init>()]]></TableColumn>
+    <TableColumn><![CDATA[0.02%]]></TableColumn>
+    <TableColumn><![CDATA[0.701 ms]]></TableColumn>
+    <TableColumn><![CDATA[270]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Property.toXmlProperty()]]></TableColumn>
+    <TableColumn><![CDATA[0.02%]]></TableColumn>
+    <TableColumn><![CDATA[0.682 ms]]></TableColumn>
+    <TableColumn><![CDATA[8]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogsResource.update(javax.servlet.http.HttpServletRequest, javax.ws.rs.core.HttpHeaders, Long, edu.msu.nscl.olog.Log)]]></TableColumn>
+    <TableColumn><![CDATA[0.02%]]></TableColumn>
+    <TableColumn><![CDATA[0.656 ms]]></TableColumn>
+    <TableColumn><![CDATA[1]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logbook.hashCode()]]></TableColumn>
+    <TableColumn><![CDATA[0.02%]]></TableColumn>
+    <TableColumn><![CDATA[0.646 ms]]></TableColumn>
+    <TableColumn><![CDATA[437]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.PropertiesResource.addProperty(String, edu.msu.nscl.olog.XmlProperty)]]></TableColumn>
+    <TableColumn><![CDATA[0.02%]]></TableColumn>
+    <TableColumn><![CDATA[0.638 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.PropertyManager.remove(String)]]></TableColumn>
+    <TableColumn><![CDATA[0.02%]]></TableColumn>
+    <TableColumn><![CDATA[0.597 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogbooksResource.update(String, edu.msu.nscl.olog.Logbook)]]></TableColumn>
+    <TableColumn><![CDATA[0.02%]]></TableColumn>
+    <TableColumn><![CDATA[0.51 ms]]></TableColumn>
+    <TableColumn><![CDATA[1]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logs.<init>()]]></TableColumn>
+    <TableColumn><![CDATA[0.02%]]></TableColumn>
+    <TableColumn><![CDATA[0.492 ms]]></TableColumn>
+    <TableColumn><![CDATA[413]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Entry.<init>()]]></TableColumn>
+    <TableColumn><![CDATA[0.02%]]></TableColumn>
+    <TableColumn><![CDATA[0.476 ms]]></TableColumn>
+    <TableColumn><![CDATA[352]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log.addLogbook(edu.msu.nscl.olog.Logbook)]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.423 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.mergeXmlLogs(edu.msu.nscl.olog.Log, edu.msu.nscl.olog.Log)]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.419 ms]]></TableColumn>
+    <TableColumn><![CDATA[1]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.TagsResource.update(String, edu.msu.nscl.olog.Tag)]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.413 ms]]></TableColumn>
+    <TableColumn><![CDATA[1]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.addProperty(edu.msu.nscl.olog.XmlProperty, boolean)]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.397 ms]]></TableColumn>
+    <TableColumn><![CDATA[3]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.addSingleTag(String, Long)]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.385 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Property.addAttribute(edu.msu.nscl.olog.Attribute)]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.383 ms]]></TableColumn>
+    <TableColumn><![CDATA[5]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogbooksResource.<init>()]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.361 ms]]></TableColumn>
+    <TableColumn><![CDATA[9]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.UserManager.setUser(java.security.Principal, boolean)]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.323 ms]]></TableColumn>
+    <TableColumn><![CDATA[42]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.PropertiesResource.listAttributes(String)]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.265 ms]]></TableColumn>
+    <TableColumn><![CDATA[1]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.MyJAXBContextResolver.getContext(Class)]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.257 ms]]></TableColumn>
+    <TableColumn><![CDATA[75]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Tag.<init>()]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.249 ms]]></TableColumn>
+    <TableColumn><![CDATA[83]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log.addTag(edu.msu.nscl.olog.Tag)]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.234 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.TagsResource.<init>()]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.224 ms]]></TableColumn>
+    <TableColumn><![CDATA[9]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.MyJAXBContextResolver.getContext(Class)]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.21 ms]]></TableColumn>
+    <TableColumn><![CDATA[75]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.UserManager.getUserName()]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.207 ms]]></TableColumn>
+    <TableColumn><![CDATA[66]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.JPAUtil.getEntityManagerFactory()]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.204 ms]]></TableColumn>
+    <TableColumn><![CDATA[239]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.PropertyManager.create(edu.msu.nscl.olog.Property)]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.188 ms]]></TableColumn>
+    <TableColumn><![CDATA[3]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.PropertiesResource.<init>()]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.187 ms]]></TableColumn>
+    <TableColumn><![CDATA[8]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log.toLogger(edu.msu.nscl.olog.Log)]]></TableColumn>
+    <TableColumn><![CDATA[0.01%]]></TableColumn>
+    <TableColumn><![CDATA[0.171 ms]]></TableColumn>
+    <TableColumn><![CDATA[12]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logbooks.toLogger(java.util.Set)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.138 ms]]></TableColumn>
+    <TableColumn><![CDATA[12]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlLogAdapter.marshal(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.132 ms]]></TableColumn>
+    <TableColumn><![CDATA[71]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Tag.hashCode()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.122 ms]]></TableColumn>
+    <TableColumn><![CDATA[85]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logbook.getLogs()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.116 ms]]></TableColumn>
+    <TableColumn><![CDATA[52]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Entry.addLog(edu.msu.nscl.olog.Log)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.116 ms]]></TableColumn>
+    <TableColumn><![CDATA[27]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logbook$JaxbAccessorM_getId_setId_java_lang_Long.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.111 ms]]></TableColumn>
+    <TableColumn><![CDATA[144]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logs.toLogger(edu.msu.nscl.olog.Logs)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.103 ms]]></TableColumn>
+    <TableColumn><![CDATA[11]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log.setUpdated()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.092 ms]]></TableColumn>
+    <TableColumn><![CDATA[22]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.createOrReplaceLogs(edu.msu.nscl.olog.Logs)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.089 ms]]></TableColumn>
+    <TableColumn><![CDATA[11]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.getInstance()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.086 ms]]></TableColumn>
+    <TableColumn><![CDATA[69]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log.getEntryId()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.081 ms]]></TableColumn>
+    <TableColumn><![CDATA[72]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getDescription_setDescription_java_lang_String.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.081 ms]]></TableColumn>
+    <TableColumn><![CDATA[105]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getEntryId_setEntryId_java_lang_Long.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.08 ms]]></TableColumn>
+    <TableColumn><![CDATA[35]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.createOneLog(edu.msu.nscl.olog.Log)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.08 ms]]></TableColumn>
+    <TableColumn><![CDATA[11]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Property.<init>()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.08 ms]]></TableColumn>
+    <TableColumn><![CDATA[67]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlLogAdapter.<init>()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.077 ms]]></TableColumn>
+    <TableColumn><![CDATA[44]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getXmlAttachments_setXmlAttachments_java_util_Collection.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.077 ms]]></TableColumn>
+    <TableColumn><![CDATA[51]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logs.getLogList()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.073 ms]]></TableColumn>
+    <TableColumn><![CDATA[95]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getXmlProperties_setXmlProperties_java_util_Collection.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.071 ms]]></TableColumn>
+    <TableColumn><![CDATA[51]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getTags_setTags_java_util_Set.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.071 ms]]></TableColumn>
+    <TableColumn><![CDATA[51]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.removeLog(Long)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.068 ms]]></TableColumn>
+    <TableColumn><![CDATA[12]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getLogbooks_setLogbooks_java_util_Set.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.064 ms]]></TableColumn>
+    <TableColumn><![CDATA[51]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log.compareTo(edu.msu.nscl.olog.Log)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.061 ms]]></TableColumn>
+    <TableColumn><![CDATA[23]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logbook$JaxbAccessorM_getOwner_setOwner_java_lang_String.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.06 ms]]></TableColumn>
+    <TableColumn><![CDATA[48]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Attribute.<init>()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.059 ms]]></TableColumn>
+    <TableColumn><![CDATA[77]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.checkValid(edu.msu.nscl.olog.Logs)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.056 ms]]></TableColumn>
+    <TableColumn><![CDATA[11]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.UserManager.getInstance()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.056 ms]]></TableColumn>
+    <TableColumn><![CDATA[54]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logbook.toLogger(edu.msu.nscl.olog.Logbook)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.055 ms]]></TableColumn>
+    <TableColumn><![CDATA[18]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.findLogsByMultiMatch(javax.ws.rs.core.MultivaluedMap)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.055 ms]]></TableColumn>
+    <TableColumn><![CDATA[19]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log.compareTo(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.055 ms]]></TableColumn>
+    <TableColumn><![CDATA[23]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log.getCreatedDate()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.053 ms]]></TableColumn>
+    <TableColumn><![CDATA[35]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getModifiedDate_setModifiedDate_java_util_Date.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.051 ms]]></TableColumn>
+    <TableColumn><![CDATA[35]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getOwner_setOwner_java_lang_String.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.05 ms]]></TableColumn>
+    <TableColumn><![CDATA[35]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logbook$JaxbAccessorM_getName_setName_java_lang_String.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.047 ms]]></TableColumn>
+    <TableColumn><![CDATA[48]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logbook$JaxbAccessorM_getState_setState_edu_msu_nscl_olog_State.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.046 ms]]></TableColumn>
+    <TableColumn><![CDATA[48]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.createOrReplaceLogbook(String, edu.msu.nscl.olog.Logbook)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.046 ms]]></TableColumn>
+    <TableColumn><![CDATA[4]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.checkValid(edu.msu.nscl.olog.Log)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.045 ms]]></TableColumn>
+    <TableColumn><![CDATA[12]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.UserManager.userHasAdminRole()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.045 ms]]></TableColumn>
+    <TableColumn><![CDATA[33]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Tag.getLogs()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.044 ms]]></TableColumn>
+    <TableColumn><![CDATA[20]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlLogAdapter.marshal(edu.msu.nscl.olog.Logs)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.044 ms]]></TableColumn>
+    <TableColumn><![CDATA[71]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logs.addLog(edu.msu.nscl.olog.Log)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.039 ms]]></TableColumn>
+    <TableColumn><![CDATA[32]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlProperty.<init>()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.038 ms]]></TableColumn>
+    <TableColumn><![CDATA[17]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getState_setState_edu_msu_nscl_olog_State.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.037 ms]]></TableColumn>
+    <TableColumn><![CDATA[35]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.addAttribute(Long, edu.msu.nscl.olog.XmlProperty)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.037 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Entry.setUpdated()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.035 ms]]></TableColumn>
+    <TableColumn><![CDATA[11]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getLevel_setLevel_edu_msu_nscl_olog_Level.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.034 ms]]></TableColumn>
+    <TableColumn><![CDATA[35]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Tag$JaxbAccessorM_getId_setId_java_lang_Long.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.033 ms]]></TableColumn>
+    <TableColumn><![CDATA[45]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.updateLog(Long, edu.msu.nscl.olog.Log)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.033 ms]]></TableColumn>
+    <TableColumn><![CDATA[1]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlAttachment.<init>()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.033 ms]]></TableColumn>
+    <TableColumn><![CDATA[16]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getVersion_setVersion_java_lang_String.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.032 ms]]></TableColumn>
+    <TableColumn><![CDATA[35]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getSource_setSource_java_lang_String.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.032 ms]]></TableColumn>
+    <TableColumn><![CDATA[35]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogbookManager.create(String, String)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.028 ms]]></TableColumn>
+    <TableColumn><![CDATA[4]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logbook$JaxbAccessorM_getName_setName_java_lang_String.set(Object, Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.027 ms]]></TableColumn>
+    <TableColumn><![CDATA[16]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.TagManager.create(String)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.027 ms]]></TableColumn>
+    <TableColumn><![CDATA[4]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.updateTag(String, edu.msu.nscl.olog.Tag)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.026 ms]]></TableColumn>
+    <TableColumn><![CDATA[1]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.AttributeManager.create(edu.msu.nscl.olog.Property, String)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.025 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlProperty_JaxbXducedAccessor_groupingNum.print(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.025 ms]]></TableColumn>
+    <TableColumn><![CDATA[8]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getXmlAttachments_setXmlAttachments_java_util_Collection.set(Object, Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.024 ms]]></TableColumn>
+    <TableColumn><![CDATA[16]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getLogbooks_setLogbooks_java_util_Set.set(Object, Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.024 ms]]></TableColumn>
+    <TableColumn><![CDATA[16]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getVersion_setVersion_java_lang_String.set(Object, Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.024 ms]]></TableColumn>
+    <TableColumn><![CDATA[16]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlProperty.toProperty()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.024 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Tags.toLogger(java.util.Set)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.023 ms]]></TableColumn>
+    <TableColumn><![CDATA[12]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlProperty_JaxbXducedAccessor_groupingNum.parse(Object, CharSequence)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.022 ms]]></TableColumn>
+    <TableColumn><![CDATA[7]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log.setEntryId(Long)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.022 ms]]></TableColumn>
+    <TableColumn><![CDATA[5]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getLevel_setLevel_edu_msu_nscl_olog_Level.set(Object, Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.022 ms]]></TableColumn>
+    <TableColumn><![CDATA[12]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogAttribute.<init>()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.022 ms]]></TableColumn>
+    <TableColumn><![CDATA[24]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getDescription_setDescription_java_lang_String.set(Object, Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.022 ms]]></TableColumn>
+    <TableColumn><![CDATA[12]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getTags_setTags_java_util_Set.set(Object, Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.021 ms]]></TableColumn>
+    <TableColumn><![CDATA[16]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.UserManager.setHostAddress(String)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.021 ms]]></TableColumn>
+    <TableColumn><![CDATA[12]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlLogAdapter.unmarshal(edu.msu.nscl.olog.Logs)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.021 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logbook$JaxbAccessorM_getOwner_setOwner_java_lang_String.set(Object, Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.021 ms]]></TableColumn>
+    <TableColumn><![CDATA[16]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getXmlProperties_setXmlProperties_java_util_Collection.set(Object, Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.02 ms]]></TableColumn>
+    <TableColumn><![CDATA[16]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Tag$JaxbAccessorM_getName_setName_java_lang_String.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.019 ms]]></TableColumn>
+    <TableColumn><![CDATA[15]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.createOrReplaceTag(String, edu.msu.nscl.olog.Tag)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.017 ms]]></TableColumn>
+    <TableColumn><![CDATA[3]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.LogbookManager.remove(String)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.017 ms]]></TableColumn>
+    <TableColumn><![CDATA[3]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.TagManager.remove(String)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.016 ms]]></TableColumn>
+    <TableColumn><![CDATA[3]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Tag$JaxbAccessorM_getState_setState_edu_msu_nscl_olog_State.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.016 ms]]></TableColumn>
+    <TableColumn><![CDATA[15]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Logs.getLogs()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.016 ms]]></TableColumn>
+    <TableColumn><![CDATA[22]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getEntryId_setEntryId_java_lang_Long.set(Object, Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.015 ms]]></TableColumn>
+    <TableColumn><![CDATA[5]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlProperty.getLogs()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.012 ms]]></TableColumn>
+    <TableColumn><![CDATA[8]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlProperty_JaxbXducedAccessor_groupingNum.print(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.012 ms]]></TableColumn>
+    <TableColumn><![CDATA[8]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlProperty$JaxbAccessorM_getAttributes_setAttributes_java_util_Map.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.011 ms]]></TableColumn>
+    <TableColumn><![CDATA[13]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log$JaxbAccessorM_getModifiedDate_setModifiedDate_java_util_Date.set(Object, Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.011 ms]]></TableColumn>
+    <TableColumn><![CDATA[1]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.UserManager.getHostAddress()]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.01 ms]]></TableColumn>
+    <TableColumn><![CDATA[12]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Tag$JaxbAccessorM_getName_setName_java_lang_String.set(Object, Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.008 ms]]></TableColumn>
+    <TableColumn><![CDATA[5]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.removeExistingTag(String)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.008 ms]]></TableColumn>
+    <TableColumn><![CDATA[3]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.removeExistingLogbook(String)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.008 ms]]></TableColumn>
+    <TableColumn><![CDATA[3]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.checkPropertyName(String, edu.msu.nscl.olog.XmlProperty)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.007 ms]]></TableColumn>
+    <TableColumn><![CDATA[5]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.checkValidNameAndOwner(edu.msu.nscl.olog.Logbook)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.007 ms]]></TableColumn>
+    <TableColumn><![CDATA[3]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.createOrReplaceLog(Long, edu.msu.nscl.olog.Log)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.007 ms]]></TableColumn>
+    <TableColumn><![CDATA[1]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlProperty$JaxbAccessorM_getId_setId_java_lang_Long.set(Object, Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.007 ms]]></TableColumn>
+    <TableColumn><![CDATA[7]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlProperty$JaxbAccessorM_getId_setId_java_lang_Long.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.006 ms]]></TableColumn>
+    <TableColumn><![CDATA[8]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlProperty$JaxbAccessorM_getName_setName_java_lang_String.set(Object, Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.006 ms]]></TableColumn>
+    <TableColumn><![CDATA[7]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.PropertiesResource.appendProperty(String, edu.msu.nscl.olog.XmlProperty)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.006 ms]]></TableColumn>
+    <TableColumn><![CDATA[1]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlProperty$JaxbAccessorM_getAttributes_setAttributes_java_util_Map.set(Object, Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.006 ms]]></TableColumn>
+    <TableColumn><![CDATA[5]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Tag.toLogger(edu.msu.nscl.olog.Tag)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.005 ms]]></TableColumn>
+    <TableColumn><![CDATA[5]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlLogAdapter.unmarshal(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.005 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.checkValidNameAndOwner(edu.msu.nscl.olog.Tag)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.005 ms]]></TableColumn>
+    <TableColumn><![CDATA[3]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Property.<init>(String)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.005 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.XmlProperty$JaxbAccessorM_getName_setName_java_lang_String.get(Object)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.005 ms]]></TableColumn>
+    <TableColumn><![CDATA[8]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Attribute.<init>(String)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.004 ms]]></TableColumn>
+    <TableColumn><![CDATA[4]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.checkNameMatchesPayload(String, edu.msu.nscl.olog.Logbook)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.003 ms]]></TableColumn>
+    <TableColumn><![CDATA[3]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.Log.addXmlProperty(edu.msu.nscl.olog.XmlProperty)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.003 ms]]></TableColumn>
+    <TableColumn><![CDATA[5]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.listAttributes(String)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.003 ms]]></TableColumn>
+    <TableColumn><![CDATA[1]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.removeProperty(String)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.003 ms]]></TableColumn>
+    <TableColumn><![CDATA[2]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.checkNameMatchesPayload(String, edu.msu.nscl.olog.Tag)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.003 ms]]></TableColumn>
+    <TableColumn><![CDATA[3]]></TableColumn>
+  </TableRow>
+   <TableRow>
+    <TableColumn><![CDATA[edu.msu.nscl.olog.OlogImpl.findLogById(Long)]]></TableColumn>
+    <TableColumn><![CDATA[0.00%]]></TableColumn>
+    <TableColumn><![CDATA[0.002 ms]]></TableColumn>
+    <TableColumn><![CDATA[1]]></TableColumn>
+  </TableRow>
+  </TableBody> </TableData>
+</ExportedView>

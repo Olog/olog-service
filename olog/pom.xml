@@ -166,6 +166,16 @@
             <artifactId>thumbnailator</artifactId>
             <version>0.4.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.googlecode.flyway</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.21</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -220,6 +230,17 @@
                             <artifact>${project.build.directory}/${project.build.finalName}.war</artifact>
                         </component>
                     </components>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.googlecode.flyway</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>1.6.1</version>
+                <configuration>
+                    <driver>${database.driver}</driver>
+                    <url>${database.url}</url>
+                    <serverId>${database.serverId}</serverId>
+                    <schemas>${database.schemas}</schemas>
                 </configuration>
             </plugin>
         </plugins>
