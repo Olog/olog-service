@@ -365,7 +365,15 @@ public class LogManager {
      * @throws CFException wrapping an SQLException
      */
     public static Log create(Log log) throws CFException {
-        Entry entry = new Entry();
+        em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        JPAUtil.startTransaction(em);
+        Log newLog = new Log();
+        newLog.setState(State.Active);
+        newLog.setLevel(log.getLevel());
+        newLog.setOwner(log.getOwner());
+        newLog.setDescription(log.getDescription());
+        newLog.setSource(log.getSource());
+        em.persist(newLog);
         if (!log.getLogbooks().isEmpty()) {
             Iterator<Logbook> iterator = log.getLogbooks().iterator();
             Set<Logbook> logbooks = new HashSet<Logbook>();
@@ -373,16 +381,18 @@ public class LogManager {
                 String logbookName = iterator.next().getName();
                 Logbook logbook = LogbookManager.findLogbook(logbookName);
                 if (logbook != null) {
+                    logbook = em.merge(logbook);
+                    logbook.addLog(newLog);
                     logbooks.add(logbook);
                 } else {
                     throw new CFException(Response.Status.NOT_FOUND,
                             "Log entry " + log.getId() + " logbook:" + logbookName + " does not exists.");
                 }
             }
-            log.setLogbooks(logbooks);
+            newLog.setLogbooks(logbooks);
         } else {
             throw new CFException(Response.Status.NOT_FOUND,
-                            "Log entry " + log.getId() + " must be in at least one logbook.");
+                    "Log entry " + log.getId() + " must be in at least one logbook.");
         }
         if (log.getTags() != null) {
             Iterator<Tag> iterator2 = log.getTags().iterator();
@@ -391,41 +401,45 @@ public class LogManager {
                 String tagName = iterator2.next().getName();
                 Tag tag = TagManager.findTag(tagName);
                 if (tag != null) {
+                    tag = em.merge(tag);
+                    tag.addLog(newLog);
                     tags.add(tag);
                 } else {
                     throw new CFException(Response.Status.NOT_FOUND,
                             "Log entry " + log.getId() + " tag:" + tagName + " does not exists.");
                 }
             }
-            log.setTags(tags);
+            newLog.setTags(tags);
         }
-        try {
+        try {          
             if (log.getEntryId() != null) {
-                entry = (Entry) JPAUtil.findByID(Entry.class, log.getEntryId());
+                Entry entry = (Entry) JPAUtil.findByID(Entry.class, log.getEntryId());
                 if (entry.getLogs() != null) {
                     List<Log> logs = entry.getLogs();
                     ListIterator<Log> iterator = logs.listIterator();
                     while (iterator.hasNext()) {
                         Log sibling = iterator.next();
+                        sibling = em.merge(sibling);
                         sibling.setState(State.Inactive);
-                        JPAUtil.update(sibling);
                         iterator.set(sibling);
                     }
-                    entry.addLog(log);
+                    entry.addLog(newLog);
                 }
-                log.setState(State.Active);
-                log.setId(null);
+                newLog.setState(State.Active);
+                newLog.setEntry(entry);
+                em.merge(entry);
             } else {
-                log.setState(State.Active);
-                entry.addLog(log);
+                Entry entry = new Entry();
+                newLog.setState(State.Active);        
+                entry.addLog(newLog);
+                newLog.setEntry(entry);
+                em.persist(entry);
             }
-            log.setEntry(entry);
-            entry = (Entry) JPAUtil.update(entry);
-            Log newLog = Collections.max(entry.getLogs());
+            em.flush();
             if (log.getXmlProperties() != null) {
+                Set<LogAttribute> logattrs = new HashSet<LogAttribute>();
                 for (XmlProperty p : log.getXmlProperties()) {
                     Property prop = PropertyManager.findProperty(p.getName());
-                    Set<LogAttribute> logattrs = new HashSet<LogAttribute>();
                     LogAttribute logattr = new LogAttribute();
                     for (Map.Entry<String, String> att : p.getAttributes().entrySet()) {
                         Attribute newAtt = AttributeManager.findAttribute(prop, att.getKey());
@@ -435,16 +449,17 @@ public class LogManager {
                         logattr.setLogId(newLog.getId());
                         logattr.setValue(att.getValue());
                         logattr.setGroupingNum(0L);
+                        em.persist(logattr);
                         logattrs.add(logattr);
                     }
                     newLog.setAttributes(logattrs);
                 }
             }
             newLog.setXmlProperties(log.getXmlProperties());
-            newLog = (Log) JPAUtil.update(newLog);
+            JPAUtil.finishTransacton(em);
             return newLog;
         } catch (Exception e) {
-
+            JPAUtil.transactionFailed(em);
             throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         }

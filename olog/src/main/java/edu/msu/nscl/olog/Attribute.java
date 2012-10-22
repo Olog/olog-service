@@ -29,7 +29,7 @@ public class Attribute implements Serializable {
     private String name = null;
     @Enumerated(EnumType.STRING)
     private State state;
-    @OneToMany(mappedBy = "attribute")
+    @OneToMany(mappedBy = "attribute", cascade = CascadeType.PERSIST)
     private Set<LogAttribute> logs;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "property_id", unique = true)

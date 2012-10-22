@@ -18,6 +18,10 @@ import javax.xml.bind.annotation.XmlTransient;
 public class LogAttribute implements Serializable {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
+    @Id
     @Column(name = "log_id")
     private Long logId;
     @Id
@@ -35,6 +39,14 @@ public class LogAttribute implements Serializable {
     private Attribute attribute;
 
     public LogAttribute() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Attribute getAttribute() {

@@ -4,6 +4,6 @@ UPDATE `logs` SET `level`='Problem' WHERE `level_id`='2';
 UPDATE `logs` SET `level`='Request' WHERE `level_id`='3';
 UPDATE `logs` SET `level`='Suggestion' WHERE `level_id`='4';
 UPDATE `logs` SET `level`='Urgent' WHERE `level_id`='5';
-ALTER TABLE `olog`.`logs` DROP COLUMN `level_id`, 
+ALTER TABLE `logs` DROP COLUMN `level_id`, 
  DROP INDEX `level_id_fk`,
  DROP FOREIGN KEY `level_id_fk`;

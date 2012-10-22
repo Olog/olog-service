@@ -7,13 +7,9 @@ package edu.msu.nscl.olog;
 
 import java.io.Serializable;
 import java.util.*;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Log object that can be represented as XML/JSON in payload data.
@@ -57,7 +53,7 @@ public class Log implements Serializable, Comparable<Log> {
     @Transient
     private Collection<XmlProperty> properties = new ArrayList<XmlProperty>();
     
-    @OneToMany(mappedBy = "log")
+    @OneToMany(mappedBy = "log", cascade = CascadeType.PERSIST)
     private Set<LogAttribute> attributes = new HashSet<LogAttribute>();
     
     @ManyToMany(cascade = CascadeType.PERSIST)

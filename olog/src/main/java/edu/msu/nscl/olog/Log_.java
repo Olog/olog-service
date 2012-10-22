@@ -5,6 +5,7 @@
 package edu.msu.nscl.olog;
 
 import java.util.Date;
+import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SetAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
