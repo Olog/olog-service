@@ -74,6 +74,7 @@ public class LogManager {
         Multimap<String, String> date_matches = ArrayListMultimap.create();
         Multimap<String, String> paginate_matches = ArrayListMultimap.create();
         Multimap<String, String> value_patterns = ArrayListMultimap.create();
+        Boolean empty = false;
 
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -167,6 +168,8 @@ public class LogManager {
                 date_matches.putAll(key, match.getValue());
             } else if (key.equals("end")) {
                 date_matches.putAll(key, match.getValue());
+            } else if (key.equals("empty")) {
+                empty = true;
             } else {
                 Collection<String> cleanedMatchesValues = new HashSet<String>();
                 for (String m : matchesValues) {
@@ -289,14 +292,17 @@ public class LogManager {
 
         try {
             Logs result = new Logs();
+
+            result.setCount(JPAUtil.count(em, cq));
+            if (empty) {
+                return result;
+            }
+
             List<Log> rs = typedQuery.getResultList();
 
             if (rs != null) {
                 Iterator<Log> iterator = rs.iterator();
                 while (iterator.hasNext()) {
-                    //Entry e = iterator.next();
-                    //Collection<Log> logs = e.getLogs();
-                    //Log log = Collections.max(logs);
                     Log log = iterator.next();
                     Entry e = log.getEntry();
                     Collection<Log> logs = e.getLogs();
@@ -411,7 +417,7 @@ public class LogManager {
             }
             newLog.setTags(tags);
         }
-        try {          
+        try {
             if (log.getEntryId() != null) {
                 Entry entry = (Entry) JPAUtil.findByID(Entry.class, log.getEntryId());
                 if (entry.getLogs() != null) {
@@ -430,7 +436,7 @@ public class LogManager {
                 em.merge(entry);
             } else {
                 Entry entry = new Entry();
-                newLog.setState(State.Active);        
+                newLog.setState(State.Active);
                 entry.addLog(newLog);
                 newLog.setEntry(entry);
                 em.persist(entry);

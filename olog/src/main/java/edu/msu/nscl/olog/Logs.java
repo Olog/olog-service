@@ -8,6 +8,7 @@ package edu.msu.nscl.olog;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
@@ -21,6 +22,8 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlRootElement(name = "logs")
 public class Logs extends ArrayList<Log> {
 
+    private Long count;
+    
     /**
      * Creates a new instance of Logs.
      */
@@ -38,6 +41,15 @@ public class Logs extends ArrayList<Log> {
 
     public Logs(List<Log> logs) {
         this.addAll(logs);
+    }
+    
+    @XmlAttribute(name = "count")
+    public Long getCount() {
+        return this.count;
+    }
+    
+    public void setCount(Long count) {
+        this.count = count;
     }
 
     /**
