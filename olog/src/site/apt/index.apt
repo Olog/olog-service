@@ -39,6 +39,6 @@ properties and tags, as an XML or JSON document.
   Two design documents are available - these are also included in the WAR file as part
 of the internal web site of the application.
 
- * {{{http://olog.hg.sourceforge.net/hgweb/olog/olog-service/raw-file/tip/doc/Elog-Manuals-Arch.docx}Manuals}}
+ * {{{https://github.com/Olog/olog-service/raw/master/doc/Release%20Notes%20and%20Manuals.docx}Manuals}}
 
  * {{{http://code.google.com/p/acceldesign/wiki/Logbook}Design}}
