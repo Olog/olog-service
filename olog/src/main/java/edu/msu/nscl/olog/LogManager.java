@@ -311,6 +311,7 @@ public class LogManager {
                     Entry e = log.getEntry();
                     Collection<Log> logs = e.getLogs();
                     log.setVersion(String.valueOf(logs.size()));
+                    log.setXmlAttachments(AttachmentManager.findAll(log.getEntryId()).getAttachments());
                     Iterator<LogAttribute> iter = log.getAttributes().iterator();
                     while (iter.hasNext()) {
                         LogAttribute logattr = iter.next();
@@ -346,6 +347,7 @@ public class LogManager {
             Collection<Log> logs = entry.getLogs();
             Log result = Collections.max(logs);
             result.setVersion(String.valueOf(logs.size()));
+            result.setXmlAttachments(AttachmentManager.findAll(result.getEntryId()).getAttachments());
             Iterator<LogAttribute> iter = result.getAttributes().iterator();
             Set<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
             while (iter.hasNext()) {
