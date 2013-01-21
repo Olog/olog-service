@@ -229,6 +229,10 @@ public class LogManager {
         Predicate searchPredicate = cb.disjunction();
         for (String s : log_patterns) {
             searchPredicate = cb.or(cb.like(from.get(Log_.description), s), searchPredicate);
+            List<Long> ids = AttachmentManager.findAll(s);
+            if (!ids.isEmpty()) {
+                searchPredicate = cb.or(entry.get(Entry_.id).in(ids), searchPredicate);
+            }
         }
 
         Predicate datePredicate = cb.disjunction();
@@ -446,7 +450,7 @@ public class LogManager {
                 Set<LogAttribute> logattrs = new HashSet<LogAttribute>();
                 for (XmlProperty p : log.getXmlProperties()) {
                     Property prop = PropertyManager.findProperty(p.getName());
-                    
+
                     for (Map.Entry<String, String> att : p.getAttributes().entrySet()) {
                         Attribute newAtt = AttributeManager.findAttribute(prop, att.getKey());
                         LogAttribute logattr = new LogAttribute();
