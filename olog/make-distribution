@@ -1,0 +1,15 @@
+#!/bin/bash
+build=build/olog
+
+rm -rf dist
+rm -rf build
+
+mkdir dist
+mkdir -p ${build}/{war,sql,ldif}
+
+cp target/olog-service.war ${build}/war
+cp src/main/resources/db/migration/V1__Initial_version.sql ${build}/sql
+
+cd build
+tar -czvf ../dist/channelfinder.tar.gz channelfinder
+cd ..

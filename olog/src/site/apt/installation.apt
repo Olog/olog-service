@@ -131,11 +131,7 @@ relations are taken from an LDAP server or Unix "id".
 
   Once deployed, Olog should be listening for requests.
 
-  For a Glassfish default installation on localhost, the URL "http://localhost:8080/Olog/"
-should get you to the top page of the embedded web site, showing documentation, links to the
-SourceForge project site, and Build information.
-
-  For a list of all logs in your database, try pointing your browser to
+  For a Glassfish default installation on localhost, a list of all logs in your database, try pointing your browser to
 "http://localhost:8080/Olog/resources/logs".
 
 ** Using a Generic Client
