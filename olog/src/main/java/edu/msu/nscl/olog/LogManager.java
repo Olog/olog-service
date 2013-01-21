@@ -446,9 +446,10 @@ public class LogManager {
                 Set<LogAttribute> logattrs = new HashSet<LogAttribute>();
                 for (XmlProperty p : log.getXmlProperties()) {
                     Property prop = PropertyManager.findProperty(p.getName());
-                    LogAttribute logattr = new LogAttribute();
+                    
                     for (Map.Entry<String, String> att : p.getAttributes().entrySet()) {
                         Attribute newAtt = AttributeManager.findAttribute(prop, att.getKey());
+                        LogAttribute logattr = new LogAttribute();
                         logattr.setAttribute(newAtt);
                         logattr.setLog(newLog);
                         logattr.setAttributeId(newAtt.getId());
