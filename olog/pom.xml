@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <packaging>war</packaging>
-    <version>2.2.1</version>
+    <version>2.2.2</version>
     <name>Olog Directory Service</name>
     <description>Olog is a directory server, implemented as a REST style web service.</description>
     <url>http://olog.sourceforge.net/</url>
@@ -37,7 +37,7 @@
     </developers>
     <scm>
         <connection>scm:git:https://github.com/Olog/olog-service.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com:Olog/olog-service.git/</developerConnection>
+        <developerConnection>scm:git:https://github.com/Olog/olog-service.git</developerConnection>
         <url>https://github.com/Olog/olog-service</url>
     </scm>
     <issueManagement>
@@ -292,5 +292,5 @@
         </plugins>
     </reporting>
     <artifactId>olog-service</artifactId>
-    <groupId>edu.nscl.msu</groupId>
+    <groupId>edu.nscl.msu.olog</groupId>
 </project>
