@@ -313,15 +313,24 @@ public class LogManager {
                     log.setVersion(String.valueOf(logs.size()));
                     log.setXmlAttachments(AttachmentManager.findAll(log.getEntryId()).getAttachments());
                     Iterator<LogAttribute> iter = log.getAttributes().iterator();
+                    Set<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
                     while (iter.hasNext()) {
+                        XmlProperty xmlProperty = new XmlProperty();
+                        Map<String, String> map = new HashMap<String, String>();
                         LogAttribute logattr = iter.next();
                         Attribute attr = logattr.getAttribute();
-                        XmlProperty xmlProperty = attr.getProperty().toXmlProperty();
-                        Map<String, String> map = xmlProperty.getAttributes();
+                        xmlProperty.setName(attr.getProperty().getName());
+                        xmlProperty.setId(attr.getProperty().getId());
+                        for (XmlProperty prevXmlProperty : xmlProperties) {
+                            if (prevXmlProperty.getId().equals(xmlProperty.getId())) {
+                                map = prevXmlProperty.getAttributes();
+                            }
+                        }
                         map.put(attr.getName(), logattr.getValue());
                         xmlProperty.setAttributes(map);
-                        log.addXmlProperty(xmlProperty);
+                        xmlProperties.add(xmlProperty);
                     }
+                    log.setXmlProperties(xmlProperties);
                     result.addLog(log);
                 }
             }
@@ -352,11 +361,16 @@ public class LogManager {
             Set<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
             while (iter.hasNext()) {
                 XmlProperty xmlProperty = new XmlProperty();
-                HashMap<String, String> map = new HashMap<String, String>();
+                Map<String, String> map = new HashMap<String, String>();
                 LogAttribute logattr = iter.next();
                 Attribute attr = logattr.getAttribute();
                 xmlProperty.setName(attr.getProperty().getName());
                 xmlProperty.setId(attr.getProperty().getId());
+                for (XmlProperty prevXmlProperty : xmlProperties) {
+                    if (prevXmlProperty.getId().equals(xmlProperty.getId())) {
+                        map = prevXmlProperty.getAttributes();
+                    }
+                }
                 map.put(attr.getName(), logattr.getValue());
                 xmlProperty.setAttributes(map);
                 xmlProperties.add(xmlProperty);
@@ -450,6 +464,7 @@ public class LogManager {
             em.flush();
             if (log.getXmlProperties() != null) {
                 Set<LogAttribute> logattrs = new HashSet<LogAttribute>();
+                Long i = 0L;
                 for (XmlProperty p : log.getXmlProperties()) {
                     Property prop = PropertyManager.findProperty(p.getName());
 
@@ -461,11 +476,12 @@ public class LogManager {
                         logattr.setAttributeId(newAtt.getId());
                         logattr.setLogId(newLog.getId());
                         logattr.setValue(att.getValue());
-                        logattr.setGroupingNum(0L);
+                        logattr.setGroupingNum(i);
                         em.persist(logattr);
                         logattrs.add(logattr);
                     }
                     newLog.setAttributes(logattrs);
+                    i++;
                 }
             }
             newLog.setXmlProperties(log.getXmlProperties());

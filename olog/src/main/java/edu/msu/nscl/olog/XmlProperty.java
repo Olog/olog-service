@@ -4,6 +4,7 @@
  */
 package edu.msu.nscl.olog;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.persistence.Transient;
@@ -22,7 +23,7 @@ public class XmlProperty {
     private Long id;
     private int groupingNum;
     private String name = null;
-    private Map<String, String> attributes;
+    private Map<String, String> attributes = new HashMap<String, String>();;
     private List<Log> logs = new Logs();
 
     /**
@@ -168,4 +169,32 @@ public class XmlProperty {
                     + Logs.toLogger(data.logs);
         }
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final XmlProperty other = (XmlProperty) obj;
+        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
+            return false;
+        }
+        if (this.groupingNum != other.groupingNum) {
+            return false;
+        }
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        return true;
+    }
+
 }

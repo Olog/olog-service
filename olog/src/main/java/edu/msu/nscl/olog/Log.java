@@ -402,7 +402,8 @@ public class Log implements Serializable, Comparable<Log> {
      *
      * @return XmlAttachments for this log
      */
-    @XmlElement(name = "attachments")
+    @XmlElementWrapper(name = "attachments")
+    @XmlElement(name = "attachment")
     public Collection<XmlAttachment> getXmlAttachments() {
         return attachments;
     }
