@@ -189,7 +189,7 @@ public class OlogImpl {
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
     public Logbooks createOrReplaceLogbooks(Logbooks data) throws CFException {
-        Logbooks xmlLogbooks = null;
+        Logbooks xmlLogbooks = new Logbooks();
         for (Logbook logbook : data.getLogbooks()) {
             //removeLogbook(logbook.getName());
             xmlLogbooks.addLogbook(createOrReplaceLogbook(logbook.getName(), logbook));
@@ -351,7 +351,7 @@ public class OlogImpl {
      * @throws CFException on ownership mismatch, or wrapping an SQLException
      */
     public Tags createOrReplaceTags(Tags data) throws CFException {
-        Tags xmlTags = null;
+        Tags xmlTags = new Tags();
         for (Tag tag : data.getTags()) {
             //removeTag(tag.getName());
             xmlTags.addTag(createOrReplaceTag(tag.getName(), tag));
