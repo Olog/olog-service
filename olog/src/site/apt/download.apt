@@ -25,7 +25,10 @@ Download
 *----------------+----------------------+
 | Version 2.2.2  |  {{{http://downloads.sourceforge.net/olog/olog/olog-service-2.2.2.tar.gz}Download v2.2.2}} |
 *----------------+----------------------+
+*----------------+----------------------+
+| Version 2.2.3  |  {{{http://downloads.sourceforge.net/olog/olog/olog-service-2.2.3.tar.gz}Download v2.2.3}} |
+*----------------+----------------------+
 
   Latest unreleased version:
 
-  {{{https://irmis-dev.bnl.gov/jenkins/job/olog-service%20Build/lastSuccessfulBuild/artifact/olog/target/olog-service.war}Latest development build}}
+  {{{https://openepics.ci.cloudbees.com/view/Olog/job/OlogIntegrationTests/lastSuccessfulBuild/artifact/modules/olog-service/olog/target/olog-service.war}Latest development build}}
