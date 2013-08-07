@@ -6,10 +6,10 @@
         <artifactId>olog</artifactId>
         <groupId>edu.msu.nscl.olog</groupId>
         <relativePath>../../../</relativePath>
-        <version>2.2.3</version>
+        <version>2.2.3-SNAPSHOT</version>
     </parent>
     <packaging>war</packaging>
-    <version>2.2.3</version>
+    <version>2.2.3-SNAPSHOT</version>
     <name>Olog Directory Service</name>
     <description>Olog is a directory server, implemented as a REST style web service.</description>
     <url>http://olog.github.com/</url>
@@ -217,6 +217,11 @@
                     <serverId>${database.serverId}</serverId>
                     <schemas>${database.schemas}</schemas>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-scm-plugin</artifactId>
+                <version>1.8.1</version>
             </plugin>
         </plugins>
         <finalName>olog-service</finalName>
