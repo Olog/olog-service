@@ -9,6 +9,8 @@
         <version>2.2.3-SNAPSHOT</version>
     </parent>
     <packaging>war</packaging>
+    <artifactId>olog-service</artifactId>
+    <groupId>edu.nscl.msu.olog</groupId>
     <version>2.2.3-SNAPSHOT</version>
     <name>Olog Directory Service</name>
     <description>Olog is a directory server, implemented as a REST style web service.</description>
@@ -229,7 +231,6 @@
                 </configuration>
             </plugin>
         </plugins>
-        <finalName>olog-service</finalName>
     </build>
     <reporting>
         <plugins>
@@ -278,6 +279,4 @@
             </plugin>
         </plugins>
     </reporting>
-    <artifactId>olog-service</artifactId>
-    <groupId>edu.nscl.msu.olog</groupId>
 </project>
