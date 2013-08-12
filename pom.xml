@@ -5,7 +5,7 @@
     <parent>
         <artifactId>olog</artifactId>
         <groupId>edu.msu.nscl.olog</groupId>
-        <relativePath>../../../</relativePath>
+        <relativePath>../../</relativePath>
         <version>2.2.3-SNAPSHOT</version>
     </parent>
     <packaging>war</packaging>
