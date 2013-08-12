@@ -226,6 +226,7 @@
                 <version>2.4</version>
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <localRepoDirectory>../</localRepoDirectory>
                 </configuration>
             </plugin>
         </plugins>
