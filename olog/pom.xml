@@ -16,6 +16,8 @@
     <properties>
         <eclipselink.version>2.4.0</eclipselink.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <github.projectName>olog-service</github.projectName>
+	<github.projectOwner>Olog</github.projectOwner>
     </properties>
     <developers>
         <developer>
@@ -35,9 +37,9 @@
         </developer>
     </developers>
     <scm>
-        <connection>scm:git:ssh://git@github.com/Olog/olog-service.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/Olog/olog-service.git</developerConnection>
-        <url>ssh://git@github.com/Olog/olog-service.git</url>
+        <connection>scm:git:ssh://git@github.com/${github.projectOwner}/${github.projectName}.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/${github.projectOwner}/${github.projectName}.git</developerConnection>
+        <url>ssh://git@github.com/${github.projectOwner}/${github.projectName}.git</url>
     </scm>
     <issueManagement>
         <system>jira</system>
