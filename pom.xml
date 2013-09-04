@@ -1,12 +1,14 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+<!--
     <parent>
         <artifactId>olog</artifactId>
         <groupId>edu.msu.nscl.olog</groupId>
         <relativePath>../../</relativePath>
         <version>2.2.4-SNAPSHOT</version>
     </parent>
+-->
     <packaging>war</packaging>
     <artifactId>olog-service</artifactId>
     <groupId>edu.nscl.msu.olog</groupId>
@@ -174,11 +176,11 @@
             <artifactId>flyway-core</artifactId>
             <version>1.7</version>
         </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.21</version>
-        </dependency>
+		<dependency>
+			<groupId>org.apache.ddlutils</groupId>
+			<artifactId>ddlutils</artifactId>
+			<version>1.0</version>
+		</dependency>
     </dependencies>
     <build>
         <plugins>
@@ -279,4 +281,56 @@
             </plugin>
         </plugins>
     </reporting>
+    
+    <!--
+     - Will build by default a war for mysql and glassfish
+     - To build a war for postgres and tomcat use the following command:
+     - mvn -P 'tomcat,postgres,!mysql' clean package;
+     -->
+    <profiles>
+    	<profile>
+    		<id>mysql</id>
+    		<activation>
+    			<activeByDefault>true</activeByDefault>
+    		</activation>
+    		<dependencies>
+		        <dependency>
+		            <groupId>mysql</groupId>
+		            <artifactId>mysql-connector-java</artifactId>
+		            <version>5.1.21</version>
+		        </dependency>
+    		</dependencies>
+    	</profile>
+    	<profile>
+    		<id>postgres</id>
+    		<activation>
+    			<activeByDefault>false</activeByDefault>
+    		</activation>
+    		<dependencies>
+				<dependency> 
+					<groupId>postgresql</groupId>
+					<artifactId>postgresql</artifactId>
+					<version>9.2-1001.jdbc4</version>
+				</dependency>
+    		</dependencies>
+    	</profile>
+    	<profile>
+    		<id>tomcat</id>
+    		<activation>
+    			<activeByDefault>false</activeByDefault>
+    		</activation>
+    		<dependencies>
+				<dependency>
+					<groupId>org.glassfish</groupId>
+					<artifactId>javax.faces</artifactId>
+					<version>2.1.17</version>
+				</dependency>
+				<dependency>
+					<groupId>com.sun.jersey</groupId>
+					<artifactId>jersey-servlet</artifactId>
+					<version>1.13</version>
+				</dependency>
+    		</dependencies>
+    	</profile>
+    </profiles>
 </project>

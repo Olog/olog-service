@@ -13,6 +13,12 @@ import com.googlecode.flyway.core.migration.SchemaVersion;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.*;
+import javax.sql.DataSource;
+import javax.ws.rs.core.Response;
+
+import org.apache.ddlutils.PlatformUtils;
+import org.apache.ddlutils.platform.mysql.MySqlPlatform;
+import org.apache.ddlutils.platform.postgresql.PostgreSqlPlatform;
 import org.apache.jackrabbit.core.RepositoryImpl;
 
 public class OlogContextListener implements ServletContextListener {
@@ -21,6 +27,21 @@ public class OlogContextListener implements ServletContextListener {
     private static ServletContext context;
     private JCRUtil repo;
 
+	private enum DatabaseType {
+		mysql, pgsql;
+
+		public static DatabaseType determinefromDataSource(DataSource dataSource) {
+			String dbType = new PlatformUtils()
+					.determineDatabaseType(dataSource);
+			if (PostgreSqlPlatform.DATABASENAME.equals(dbType)) {
+				return pgsql;
+			}
+			if (MySqlPlatform.DATABASENAME.equals(dbType)) {
+				return pgsql;
+			}
+			return null;
+		}
+	}
     public static OlogContextListener getInstance() {
         return instance;
     }
@@ -54,10 +75,34 @@ public class OlogContextListener implements ServletContextListener {
             }
 
             Flyway flyway = new Flyway();
-            flyway.setDataSource(DbConnection.getInstance().getDataSource());
+			DataSource dataSource = DbConnection.getInstance().getDataSource();
+			if (dataSource == null) {
+				throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+						"Datasource is null");
+			}
+			flyway.setDataSource(dataSource);
+
+			DatabaseType dbType = DatabaseType
+					.determinefromDataSource(dataSource);
+			if (dbType == null) {
+				throw new CFException(
+						Response.Status.INTERNAL_SERVER_ERROR,
+						"Unable to determine database engine "
+								+ "or engine not supported (supported: Postgresql or MySQL).");
+			}
+
+			flyway.setLocations("db." + dbType.name() + ".migration");
             if (flyway.history().isEmpty()) {
+				switch (dbType) {
+				case mysql:
                 flyway.setInitialVersion(new SchemaVersion("1.00"));
                 flyway.setInitialDescription("Base version");
+					break;
+				case pgsql:
+					flyway.setInitialVersion(new SchemaVersion("2.11"));
+					flyway.setInitialDescription("Base version");
+					break;
+				}
                 flyway.init();
             }
             flyway.migrate();
