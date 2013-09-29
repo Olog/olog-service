@@ -6,9 +6,22 @@
         <init-param>
             <param-name>com.sun.jersey.spi.container.ContainerResponseFilters</param-name>
             <param-value>edu.msu.nscl.olog.ResponseCorsFilter</param-value>
-        </init-param>
+        </init-param>      
         <load-on-startup>4</load-on-startup>
     </servlet>
+    
+    <context-param>
+    	<param-name>edu.msu.nscl.olog.OlogContextListener.MIGRATION_PATH</param-name>
+    	<!-- This name of a directory name inside src/main/resources/db -->
+
+		<!-- Default Original Migration Path -->
+    	<param-value>migration</param-value>
+    	
+    	<!-- Migration Path that works on MySQL 5.6 and later  
+    	<param-value>migration_MySQL_5_6</param-value> 
+    	-->
+    </context-param>
+    
     <listener>
   	<listener-class>
   		edu.msu.nscl.olog.OlogContextListener
