@@ -9,10 +9,15 @@ package edu.msu.nscl.olog;
  * @author berryman
  */
 import com.googlecode.flyway.core.Flyway;
+import com.googlecode.flyway.core.api.MigrationVersion;
 import com.googlecode.flyway.core.migration.SchemaVersion;
+
+import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.servlet.*;
+
 import org.apache.jackrabbit.core.RepositoryImpl;
 
 public class OlogContextListener implements ServletContextListener {
@@ -20,7 +25,11 @@ public class OlogContextListener implements ServletContextListener {
     private static OlogContextListener instance = new OlogContextListener();
     private static ServletContext context;
     private JCRUtil repo;
-
+    
+    private static final String MIGRATION_PATH = "MIGRATION_PATH";    
+    private static final String DEFAULT_MIGRATION_PATH = "migration";
+    
+    
     public static OlogContextListener getInstance() {
         return instance;
     }
@@ -52,12 +61,20 @@ public class OlogContextListener implements ServletContextListener {
             } else {
                 System.out.println("Servlet context fetched from ServiceContext.");
             }
-
+            
+            // We could have different migration paths, as defined by directory names inside src/java/resources/db directory
+            // Migration path is configured via edu.msu.nscl.olog.OlogContextListener.MIGRATION parameter in web.xml
+            String migrationPath = context.getInitParameter(this.getClass().getName()+"."+MIGRATION_PATH);
+            if (migrationPath==null)
+            	migrationPath = DEFAULT_MIGRATION_PATH;
+            
             Flyway flyway = new Flyway();
+            flyway.setLocations("db" + File.separator + migrationPath);          
             flyway.setDataSource(DbConnection.getInstance().getDataSource());
-            if (flyway.history().isEmpty()) {
-                flyway.setInitialVersion(new SchemaVersion("1.00"));
-                flyway.setInitialDescription("Base version");
+                        
+            if (flyway.info().applied().length==0) {
+                flyway.setInitVersion(new MigrationVersion("1.00"));
+                flyway.setInitDescription("Base version");
                 flyway.init();
             }
             flyway.migrate();
