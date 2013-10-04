@@ -468,8 +468,17 @@ public class LogManager {
                 for (XmlProperty p : log.getXmlProperties()) {
                     Property prop = PropertyManager.findProperty(p.getName());
 
+                    if(prop==null) {
+                    	throw new CFException(Response.Status.BAD_REQUEST,
+                                "Log entry " + log.getId() + " property:" + p.getName() + " does not exists.");
+                    } else {
                     for (Map.Entry<String, String> att : p.getAttributes().entrySet()) {
                         Attribute newAtt = AttributeManager.findAttribute(prop, att.getKey());
+							if (newAtt.getId() == null) {
+								throw new CFException(Response.Status.BAD_REQUEST,
+										"Log entry " + log.getId() + " attribute:" + att.getKey() 
+										+ " does not exists for property " + p.getName() + ".");
+	                        } else {
                         LogAttribute logattr = new LogAttribute();
                         logattr.setAttribute(newAtt);
                         logattr.setLog(newLog);
@@ -479,6 +488,8 @@ public class LogManager {
                         logattr.setGroupingNum(i);
                         em.persist(logattr);
                         logattrs.add(logattr);
+	                        }
+	                    }
                     }
                     newLog.setAttributes(logattrs);
                     i++;
