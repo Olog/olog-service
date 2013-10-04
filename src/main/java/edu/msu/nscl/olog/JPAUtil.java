@@ -7,6 +7,7 @@ package edu.msu.nscl.olog;
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Fetch;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.Join;
@@ -149,9 +150,17 @@ public class JPAUtil {
     public static <T> CriteriaQuery<Long> countCriteria(EntityManager em, CriteriaQuery<T> criteria) {
         CriteriaBuilder builder = em.getCriteriaBuilder();
         CriteriaQuery<Long> countCriteria = builder.createQuery(Long.class);
-        copyCriteriaNoSelection(criteria, countCriteria);
-        countCriteria.select(builder.count(findRoot(countCriteria,
-                criteria.getResultType())));
+        copyCriteriaNoSelection(criteria, countCriteria, true);
+        Root<T> root = findRoot(countCriteria, criteria.getResultType());
+        
+        Expression<Long> countExpression;
+        if (criteria.isDistinct()) {
+        	countExpression = builder.countDistinct(root);
+		} else {
+			countExpression = builder.count(root);
+		}
+
+		countCriteria.select(countExpression);
 
         return countCriteria;
     }
@@ -162,7 +171,8 @@ public class JPAUtil {
      * @param from source Criteria
      * @param to destination Criteria
      */
-    public static void copyCriteriaNoSelection(CriteriaQuery<?> from, CriteriaQuery<?> to) {
+    public static void copyCriteriaNoSelection(CriteriaQuery<?> from,
+    		CriteriaQuery<?> to, boolean withoutOrderBy) {
 
         //for (Root<?> root : from.getRoots()) {
         //    Root<?> dest = to.from(root.getJavaType());
@@ -174,7 +184,9 @@ public class JPAUtil {
         to.distinct(from.isDistinct());
         //to.having(from.getGroupRestriction());
         to.where(from.getRestriction());
+        if (!withoutOrderBy) {
         to.orderBy(from.getOrderList());
+        }
     }
 
     /**
