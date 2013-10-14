@@ -98,8 +98,8 @@ public class OlogContextListener implements ServletContextListener {
             // We could have different migration paths, as defined by directory names inside src/java/resources/db directory
             // Migration path is configured via edu.msu.nscl.olog.OlogContextListener.MIGRATION parameter in web.xml
             String migrationPath = context.getInitParameter(this.getClass().getName()+"."+MIGRATION_PATH);
-            if (migrationPath==null)
-            	migrationPath = dbType.name();
+			if (migrationPath == null || "migration".equals(migrationPath))
+				migrationPath = dbType.name() + File.separator + "migration";
             
             Flyway flyway = new Flyway();
             flyway.setLocations("db" + File.separator + migrationPath);
