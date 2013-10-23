@@ -64,17 +64,19 @@ public class LogManager {
     public static Logs findLog(MultivaluedMap<String, String> matches) throws CFException {
 
 
-        List<String> log_patterns = new ArrayList();
-        List<String> logbook_matches = new ArrayList();
-        List<String> logbook_patterns = new ArrayList();
+        List<String> log_patterns = new ArrayList();        
+        List<String> id_patterns = new ArrayList();
         List<String> tag_matches = new ArrayList();
         List<String> tag_patterns = new ArrayList();
+        List<String> logbook_matches = new ArrayList();
+        List<String> logbook_patterns = new ArrayList();
         List<String> property_matches = new ArrayList();
         List<String> property_patterns = new ArrayList();
         Multimap<String, String> date_matches = ArrayListMultimap.create();
         Multimap<String, String> paginate_matches = ArrayListMultimap.create();
         Multimap<String, String> value_patterns = ArrayListMultimap.create();
         Boolean empty = false;
+        Boolean history = false;
 
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -103,6 +105,21 @@ public class LogManager {
                         }
                     } else {
                         log_patterns.add(m);
+                    }
+                }
+            } else if (key.equals("id")) {
+                 for (String m : matchesValues) {
+                    if (m.contains("?") || m.contains("*")) {
+                        if (m.contains("\\?") || m.contains("\\*")) {
+                            m = m.replace("\\", "");
+                            id_patterns.add(m);
+                        } else {
+                            m = m.replace("*", "%");
+                            m = m.replace("?", "_");
+                            id_patterns.add(m);
+                        }
+                    } else {
+                        id_patterns.add(m);
                     }
                 }
             } else if (key.equals("tag")) {
@@ -170,6 +187,8 @@ public class LogManager {
                 date_matches.putAll(key, match.getValue());
             } else if (key.equals("empty")) {
                 empty = true;
+            } else if (key.equals("history")){                
+                history = true;
             } else {
                 Collection<String> cleanedMatchesValues = new HashSet<String>();
                 for (String m : matchesValues) {
@@ -189,6 +208,7 @@ public class LogManager {
                 value_patterns.putAll(key, cleanedMatchesValues);
             }
         }
+        
         //cb.or() causes an error in eclipselink with p1 as first argument
         Predicate tagPredicate = cb.disjunction();
         if (!tag_matches.isEmpty()) {
@@ -226,6 +246,11 @@ public class LogManager {
             }
         }
 
+        Predicate idPredicate = cb.disjunction();
+        for (String s : id_patterns) {
+            idPredicate = cb.or(cb.equal(entry.get(Entry_.id), Long.valueOf(s)), idPredicate);           
+        }
+        
         Predicate searchPredicate = cb.disjunction();
         for (String s : log_patterns) {
             searchPredicate = cb.or(cb.like(from.get(Log_.description), s), searchPredicate);
@@ -268,9 +293,13 @@ public class LogManager {
         }
 
         cq.distinct(true);
-
-        Predicate statusPredicate = cb.equal(from.get(Log_.state), State.Active);
-        Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, propertyPredicate, propertyAttributePredicate, datePredicate, searchPredicate);
+        Predicate statusPredicate = cb.disjunction();
+        if(history){
+            statusPredicate = cb.or(cb.equal(from.get(Log_.state), State.Active), cb.equal(from.get(Log_.state), State.Inactive));            
+        } else {
+            statusPredicate = cb.equal(from.get(Log_.state), State.Active);
+        }
+        Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, propertyPredicate, propertyAttributePredicate, datePredicate, searchPredicate, idPredicate);
         cq.where(finalPredicate);
         cq.orderBy(cb.desc(entry.get(Entry_.createdDate)));
         TypedQuery<Log> typedQuery = em.createQuery(cq);
@@ -468,17 +497,8 @@ public class LogManager {
                 for (XmlProperty p : log.getXmlProperties()) {
                     Property prop = PropertyManager.findProperty(p.getName());
 
-                    if(prop==null) {
-                    	throw new CFException(Response.Status.BAD_REQUEST,
-                                "Log entry " + log.getId() + " property:" + p.getName() + " does not exists.");
-                    } else {
                     for (Map.Entry<String, String> att : p.getAttributes().entrySet()) {
                         Attribute newAtt = AttributeManager.findAttribute(prop, att.getKey());
-							if (newAtt.getId() == null) {
-								throw new CFException(Response.Status.BAD_REQUEST,
-										"Log entry " + log.getId() + " attribute:" + att.getKey() 
-										+ " does not exists for property " + p.getName() + ".");
-	                        } else {
                         LogAttribute logattr = new LogAttribute();
                         logattr.setAttribute(newAtt);
                         logattr.setLog(newLog);
@@ -488,8 +508,6 @@ public class LogManager {
                         logattr.setGroupingNum(i);
                         em.persist(logattr);
                         logattrs.add(logattr);
-	                        }
-	                    }
                     }
                     newLog.setAttributes(logattrs);
                     i++;
