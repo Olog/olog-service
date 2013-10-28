@@ -10,6 +10,7 @@ import java.util.*;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
+import javax.sound.midi.SysexMessage;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
@@ -332,14 +333,25 @@ public class LogManager {
             }
 
             List<Log> rs = typedQuery.getResultList();
+            Map<Long, Integer> versionMap = new HashMap<Long, Integer>();
 
             if (rs != null) {
                 Iterator<Log> iterator = rs.iterator();
                 while (iterator.hasNext()) {
                     Log log = iterator.next();
                     Entry e = log.getEntry();
-                    Collection<Log> logs = e.getLogs();
-                    log.setVersion(String.valueOf(logs.size()));
+                    int version;
+                    if(versionMap.containsKey(e.getId())){
+                        System.out.println(e.getId() + ":found in map: " + versionMap.get(e.getId()));
+                        version = versionMap.get(e.getId());
+                    }else{
+                        System.out.println(e.getId() + ":setting versions: "+e.getLogs().size());
+                        version = e.getLogs().size();
+                    }                    
+                    log.setVersion(String.valueOf(version));
+                    versionMap.put(e.getId(), --version);
+                    System.out.println(e.getId()+":After creating log: " + versionMap.get(e.getId()));
+                    
                     log.setXmlAttachments(AttachmentManager.findAll(log.getEntryId()).getAttachments());
                     Iterator<LogAttribute> iter = log.getAttributes().iterator();
                     Set<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
