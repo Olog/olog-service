@@ -15,7 +15,7 @@
     	<!-- This name of a directory name inside src/main/resources/db -->
 
 		<!-- Default Original Migration Path -->
-    	<param-value>migration</param-value>
+    	<param-value>mysql</param-value>
     	
     	<!-- Migration Path that works on MySQL 5.6 and later  
     	<param-value>migration_MySQL_5_6</param-value> 
