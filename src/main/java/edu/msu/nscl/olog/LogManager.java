@@ -342,15 +342,12 @@ public class LogManager {
                     Entry e = log.getEntry();
                     int version;
                     if(versionMap.containsKey(e.getId())){
-                        System.out.println(e.getId() + ":found in map: " + versionMap.get(e.getId()));
                         version = versionMap.get(e.getId());
                     }else{
-                        System.out.println(e.getId() + ":setting versions: "+e.getLogs().size());
                         version = e.getLogs().size();
                     }                    
                     log.setVersion(String.valueOf(version));
                     versionMap.put(e.getId(), --version);
-                    System.out.println(e.getId()+":After creating log: " + versionMap.get(e.getId()));
                     
                     log.setXmlAttachments(AttachmentManager.findAll(log.getEntryId()).getAttachments());
                     Iterator<LogAttribute> iter = log.getAttributes().iterator();
