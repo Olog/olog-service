@@ -42,7 +42,7 @@ public class OlogContextListener implements ServletContextListener {
 				return pgsql;
 			}
 			if (MySqlPlatform.DATABASENAME.equals(dbType)) {
-				return pgsql;
+				return mysql;
 			}
 			return null;
 		}
