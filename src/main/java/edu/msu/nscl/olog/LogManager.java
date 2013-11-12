@@ -505,21 +505,30 @@ public class LogManager {
                 Long i = 0L;
                 for (XmlProperty p : log.getXmlProperties()) {
                     Property prop = PropertyManager.findProperty(p.getName());
-
-                    for (Map.Entry<String, String> att : p.getAttributes().entrySet()) {
-                        Attribute newAtt = AttributeManager.findAttribute(prop, att.getKey());
-                        LogAttribute logattr = new LogAttribute();
-                        logattr.setAttribute(newAtt);
-                        logattr.setLog(newLog);
-                        logattr.setAttributeId(newAtt.getId());
-                        logattr.setLogId(newLog.getId());
-                        logattr.setValue(att.getValue());
-                        logattr.setGroupingNum(i);
-                        em.persist(logattr);
-                        logattrs.add(logattr);
-                    }
-                    newLog.setAttributes(logattrs);
-                    i++;
+                    if(prop != null){
+                        for (Map.Entry<String, String> att : p.getAttributes().entrySet()) {
+                            Attribute newAtt = AttributeManager.findAttribute(prop, att.getKey());
+                            if(newAtt != null){
+                                LogAttribute logattr = new LogAttribute();
+                                logattr.setAttribute(newAtt);
+                                logattr.setLog(newLog);
+                                logattr.setAttributeId(newAtt.getId());
+                                logattr.setLogId(newLog.getId());
+                                logattr.setValue(att.getValue());
+                                logattr.setGroupingNum(i);
+                                em.persist(logattr);
+                                logattrs.add(logattr);
+                            }else{
+                                throw new CFException(Response.Status.NOT_FOUND,
+                                "Log entry " + log.getId() + " property attribute:" + prop.getName() + newAtt.getName() + " does not exists.");
+                            }
+                        }
+                        newLog.setAttributes(logattrs);
+                        i++; 
+                    } else {
+                        throw new CFException(Response.Status.NOT_FOUND,
+                                "Log entry " + log.getId() + " prop:" + prop.getName() + " does not exists.");
+                    }                    
                 }
             }
             newLog.setXmlProperties(log.getXmlProperties());
