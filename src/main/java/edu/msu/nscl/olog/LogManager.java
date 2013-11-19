@@ -81,7 +81,7 @@ public class LogManager {
 
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Log> cq = cb.createQuery(Log.class);
+        CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
         Root<Log> from = cq.from(Log.class);
         Join<Log, Entry> entry = from.join(Log_.entry, JoinType.LEFT);
         SetJoin<Log, Tag> tags = from.join(Log_.tags, JoinType.LEFT);
@@ -303,7 +303,7 @@ public class LogManager {
         Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, propertyPredicate, propertyAttributePredicate, datePredicate, searchPredicate, idPredicate);
         cq.where(finalPredicate);
         cq.orderBy(cb.desc(entry.get(Entry_.createdDate)));
-        TypedQuery<Log> typedQuery = em.createQuery(cq);
+        TypedQuery<Entry> typedQuery = em.createQuery(cq);
 
         if (!paginate_matches.isEmpty()) {
             String page = null, limit = null;
@@ -332,14 +332,15 @@ public class LogManager {
                 return result;
             }
 
-            List<Log> rs = typedQuery.getResultList();
+            List<Entry> rs = typedQuery.getResultList();
             Map<Long, Integer> versionMap = new HashMap<Long, Integer>();
 
             if (rs != null) {
-                Iterator<Log> iterator = rs.iterator();
+                Iterator<Entry> iterator = rs.iterator();
                 while (iterator.hasNext()) {
-                    Log log = iterator.next();
-                    Entry e = log.getEntry();
+                    Entry e = iterator.next();
+                    List<Log> logs = e.getLogs();
+                    for (Log log: logs){
                     int version;
                     if(versionMap.containsKey(e.getId())){
                         version = versionMap.get(e.getId());
@@ -370,6 +371,7 @@ public class LogManager {
                     }
                     log.setXmlProperties(xmlProperties);
                     result.addLog(log);
+                    }
                 }
             }
 
