@@ -66,7 +66,7 @@ public class LogsResource {
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.getLogList().size() + " logs");
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() +  "|cause=" + e);
             return e.toResponse();
@@ -106,7 +106,7 @@ public class LogsResource {
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + Logs.toLogger(data));
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + Logs.toLogger(data) + "|cause=" + e);
             return e.toResponse();
@@ -136,7 +136,7 @@ public class LogsResource {
             }
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() +  "|cause=" + e);
             return e.toResponse();
@@ -175,7 +175,7 @@ public class LogsResource {
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + Log.toLogger(data));
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + Log.toLogger(data) + "|cause=" + e);
             return e.toResponse();
@@ -213,7 +213,7 @@ public class LogsResource {
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + Log.toLogger(data));
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + Log.toLogger(data) + "|cause=" + e);
             return e.toResponse();
@@ -241,7 +241,7 @@ public class LogsResource {
             Response r = Response.ok().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()
                     + "|cause=" + e);
             return e.toResponse();

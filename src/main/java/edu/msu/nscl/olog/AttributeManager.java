@@ -28,9 +28,9 @@ public class AttributeManager {
      * Returns the list of set attribute in the database.
      *
      * @return Set<Attribute>
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Set<Attribute> findAll(Property property) throws CFException {
+    public static Set<Attribute> findAll(Property property) throws OlogException {
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Attribute> cq = cb.createQuery(Attribute.class);
@@ -57,7 +57,7 @@ public class AttributeManager {
 
             return result;
         } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
             JPAUtil.finishTransacton(em);
@@ -68,9 +68,9 @@ public class AttributeManager {
      * Finds a tag in the database by name.
      *
      * @return Tag
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Attribute findAttribute(Property property, String attributeName) throws CFException {
+    public static Attribute findAttribute(Property property, String attributeName) throws OlogException {
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Attribute> cq = cb.createQuery(Attribute.class);
@@ -98,7 +98,7 @@ public class AttributeManager {
 
             return result;
         } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
             JPAUtil.finishTransacton(em);
@@ -110,9 +110,9 @@ public class AttributeManager {
      *
      * @param property property
      * @param name attribute name
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Property create(Property property, String attributeName) throws CFException {
+    public static Property create(Property property, String attributeName) throws OlogException {
 
         try {
             property = PropertyManager.findProperty(property.getName());
@@ -135,7 +135,7 @@ public class AttributeManager {
             }
         } catch (Exception e) {
 
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         }
     }
@@ -145,14 +145,14 @@ public class AttributeManager {
      *
      * @param name attribute name
      */
-    public static void remove(Property property, String attributeName) throws CFException {
+    public static void remove(Property property, String attributeName) throws OlogException {
 
         try {
             Attribute attribute = findAttribute(property, attributeName);
             attribute.setState(State.Inactive);
             JPAUtil.update(attribute);
         } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
 
         }

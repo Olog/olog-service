@@ -29,9 +29,9 @@ public class LogManager {
      * Returns the list of logs in the database.
      *
      * @return Logs
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Logs findAll() throws CFException {
+    public static Logs findAll() throws OlogException {
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Log> cq = cb.createQuery(Log.class);
@@ -55,14 +55,14 @@ public class LogManager {
 
             return result;
         } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
             JPAUtil.finishTransacton(em);
         }
     }
 
-    public static Logs findLog(MultivaluedMap<String, String> matches) throws CFException {
+    public static Logs findLog(MultivaluedMap<String, String> matches) throws OlogException {
 
 
         List<String> log_patterns = new ArrayList();        
@@ -82,13 +82,13 @@ public class LogManager {
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
-        Root<Log> from = cq.from(Log.class);
-        Join<Log, Entry> entry = from.join(Log_.entry, JoinType.LEFT);
-        SetJoin<Log, Tag> tags = from.join(Log_.tags, JoinType.LEFT);
-        SetJoin<Log, Logbook> logbooks = from.join(Log_.logbooks, JoinType.LEFT);
-        Join<Attribute, Property> property = from.join(Log_.attributes, JoinType.LEFT).join(LogAttribute_.attribute, JoinType.LEFT).join(Attribute_.property, JoinType.LEFT);
-        Join<LogAttribute, Attribute> attribute = from.join(Log_.attributes, JoinType.LEFT).join(LogAttribute_.attribute, JoinType.LEFT);
-        Join<Log, LogAttribute> logAttribute = from.join(Log_.attributes, JoinType.LEFT);
+        Root<Entry> from = cq.from(Entry.class);
+        Join<Entry,Log> logs = from.join(Entry_.logs, JoinType.LEFT);
+        SetJoin<Log, Tag> tags = logs.join(Log_.tags, JoinType.LEFT);
+        SetJoin<Log, Logbook> logbooks = logs.join(Log_.logbooks, JoinType.LEFT);
+        Join<Attribute, Property> property = logs.join(Log_.attributes, JoinType.LEFT).join(LogAttribute_.attribute, JoinType.LEFT).join(Attribute_.property, JoinType.LEFT);
+        Join<LogAttribute, Attribute> attribute = logs.join(Log_.attributes, JoinType.LEFT).join(LogAttribute_.attribute, JoinType.LEFT);
+        Join<Log, LogAttribute> logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
 
         for (Map.Entry<String, List<String>> match : matches.entrySet()) {
             String key = match.getKey().toLowerCase();
@@ -249,15 +249,15 @@ public class LogManager {
 
         Predicate idPredicate = cb.disjunction();
         for (String s : id_patterns) {
-            idPredicate = cb.or(cb.equal(entry.get(Entry_.id), Long.valueOf(s)), idPredicate);           
+            idPredicate = cb.or(cb.equal(from.get(Entry_.id), Long.valueOf(s)), idPredicate);           
         }
         
         Predicate searchPredicate = cb.disjunction();
         for (String s : log_patterns) {
-            searchPredicate = cb.or(cb.like(from.get(Log_.description), s), searchPredicate);
+            searchPredicate = cb.or(cb.like(logs.get(Log_.description), s), searchPredicate);
             List<Long> ids = AttachmentManager.findAll(s);
             if (!ids.isEmpty()) {
-                searchPredicate = cb.or(entry.get(Entry_.id).in(ids), searchPredicate);
+                searchPredicate = cb.or(from.get(Entry_.id).in(ids), searchPredicate);
             }
         }
 
@@ -275,34 +275,34 @@ public class LogManager {
             if (start != null && end == null) {
                 Date jStart = new java.util.Date(Long.valueOf(start) * 1000);
                 Date jEndNow = new java.util.Date(Calendar.getInstance().getTime().getTime());
-                datePredicate = cb.between(entry.get(Entry_.createdDate),
+                datePredicate = cb.between(from.get(Entry_.createdDate),
                         jStart,
                         jEndNow);
             } else if (start == null && end != null) {
                 Date jStart1970 = new java.util.Date(0);
                 Date jEnd = new java.util.Date(Long.valueOf(end) * 1000);
-                datePredicate = cb.between(entry.get(Entry_.createdDate),
+                datePredicate = cb.between(from.get(Entry_.createdDate),
                         jStart1970,
                         jEnd);
             } else {
                 Date jStart = new java.util.Date(Long.valueOf(start) * 1000);
                 Date jEnd = new java.util.Date(Long.valueOf(end) * 1000);
-                datePredicate = cb.between(entry.get(Entry_.createdDate),
+                datePredicate = cb.between(from.get(Entry_.createdDate),
                         jStart,
                         jEnd);
             }
         }
 
-        cq.distinct(true);
+        //cq.distinct(true);
         Predicate statusPredicate = cb.disjunction();
         if(history){
-            statusPredicate = cb.or(cb.equal(from.get(Log_.state), State.Active), cb.equal(from.get(Log_.state), State.Inactive));            
+            statusPredicate = cb.or(cb.equal(logs.get(Log_.state), State.Active), cb.equal(logs.get(Log_.state), State.Inactive));            
         } else {
-            statusPredicate = cb.equal(from.get(Log_.state), State.Active);
+            statusPredicate = cb.equal(logs.get(Log_.state), State.Active);
         }
         Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, propertyPredicate, propertyAttributePredicate, datePredicate, searchPredicate, idPredicate);
         cq.where(finalPredicate);
-        cq.orderBy(cb.desc(entry.get(Entry_.createdDate)));
+        cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
         TypedQuery<Entry> typedQuery = em.createQuery(cq);
 
         if (!paginate_matches.isEmpty()) {
@@ -339,8 +339,8 @@ public class LogManager {
                 Iterator<Entry> iterator = rs.iterator();
                 while (iterator.hasNext()) {
                     Entry e = iterator.next();
-                    List<Log> logs = e.getLogs();
-                    for (Log log: logs){
+                    List<Log> logsResult = e.getLogs();
+                    for (Log log: logsResult){
                     int version;
                     if(versionMap.containsKey(e.getId())){
                         version = versionMap.get(e.getId())+1;
@@ -376,8 +376,8 @@ public class LogManager {
             }
 
             return result;
-        } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+        } catch (OlogException e) {
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
             JPAUtil.finishTransacton(em);
@@ -388,9 +388,9 @@ public class LogManager {
      * Finds a log and edits in the database by id.
      *
      * @return Log
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Log findLog(Long id) throws CFException {
+    public static Log findLog(Long id) throws OlogException {
         try {
             Entry entry = (Entry) JPAUtil.findByID(Entry.class, id);
             Collection<Log> logs = entry.getLogs();
@@ -418,7 +418,7 @@ public class LogManager {
             result.setXmlProperties(xmlProperties);
             return result;
         } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         }
     }
@@ -428,9 +428,9 @@ public class LogManager {
      *
      * @param name name of tag
      * @param owner owner of tag
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Log create(Log log) throws CFException {
+    public static Log create(Log log) throws OlogException {
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         JPAUtil.startTransaction(em);
         Log newLog = new Log();
@@ -451,13 +451,13 @@ public class LogManager {
                     logbook.addLog(newLog);
                     logbooks.add(logbook);
                 } else {
-                    throw new CFException(Response.Status.NOT_FOUND,
+                    throw new OlogException(Response.Status.NOT_FOUND,
                             "Log entry " + log.getId() + " logbook:" + logbookName + " does not exists.");
                 }
             }
             newLog.setLogbooks(logbooks);
         } else {
-            throw new CFException(Response.Status.NOT_FOUND,
+            throw new OlogException(Response.Status.NOT_FOUND,
                     "Log entry " + log.getId() + " must be in at least one logbook.");
         }
         if (log.getTags() != null) {
@@ -471,7 +471,7 @@ public class LogManager {
                     tag.addLog(newLog);
                     tags.add(tag);
                 } else {
-                    throw new CFException(Response.Status.NOT_FOUND,
+                    throw new OlogException(Response.Status.NOT_FOUND,
                             "Log entry " + log.getId() + " tag:" + tagName + " does not exists.");
                 }
             }
@@ -521,14 +521,14 @@ public class LogManager {
                                 em.persist(logattr);
                                 logattrs.add(logattr);
                             }else{
-                                throw new CFException(Response.Status.NOT_FOUND,
+                                throw new OlogException(Response.Status.NOT_FOUND,
                                 "Log entry " + log.getId() + " property attribute:" + prop.getName() + newAtt.getName() + " does not exists.");
                             }
                         }
                         newLog.setAttributes(logattrs);
                         i++; 
                     } else {
-                        throw new CFException(Response.Status.NOT_FOUND,
+                        throw new OlogException(Response.Status.NOT_FOUND,
                                 "Log entry " + log.getId() + " prop:" + prop.getName() + " does not exists.");
                     }                    
                 }
@@ -538,7 +538,7 @@ public class LogManager {
             return newLog;
         } catch (Exception e) {
             JPAUtil.transactionFailed(em);
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         }
 
@@ -549,7 +549,7 @@ public class LogManager {
      *
      * @param name tag name
      */
-    public static void remove(Long id) throws CFException {
+    public static void remove(Long id) throws OlogException {
         try {
             Entry entry = (Entry) JPAUtil.findByID(Entry.class, id);
             if (entry != null) {
@@ -565,7 +565,7 @@ public class LogManager {
                 }
             }
         } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
 
         }

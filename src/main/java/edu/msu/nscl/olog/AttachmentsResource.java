@@ -56,7 +56,7 @@ public class AttachmentsResource {
             audit.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
 
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() +  "|cause=" + e);
             return e.toResponse();
@@ -85,7 +85,7 @@ public class AttachmentsResource {
             }
             audit.info( user+"|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|" + e.getResponseStatusCode() +  "|cause=" + e);
             return e.toResponse();
@@ -114,7 +114,7 @@ public class AttachmentsResource {
             }
             audit.info( user+"|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|" + e.getResponseStatusCode() +  "|cause=" + e);
             return e.toResponse();
@@ -159,7 +159,7 @@ public class AttachmentsResource {
             audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus());
             
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|"
                     + e.getResponseStatusCode() + "|cause=" + e);
             return e.toResponse();
@@ -208,7 +208,7 @@ public class AttachmentsResource {
             
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus() + " | " + output);
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|"
                     + e.getResponseStatusCode() + "|cause=" + e);
             return e.toResponse();
@@ -240,7 +240,7 @@ public class AttachmentsResource {
             Response r = Response.ok().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()
                     + "|cause=" + e);
             return e.toResponse();

@@ -83,13 +83,13 @@ public class OlogContextListener implements ServletContextListener {
             }
 			DataSource dataSource = DbConnection.getInstance().getDataSource();
 			if (dataSource == null) {
-				throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+				throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
 						"Datasource is null");
 			}
 			DatabaseType dbType = DatabaseType
 					.determinefromDataSource(dataSource);
 			if (dbType == null) {
-				throw new CFException(
+				throw new OlogException(
 						Response.Status.INTERNAL_SERVER_ERROR,
 						"Unable to determine database engine "
 								+ "or engine not supported (supported: Postgresql or MySQL).");
@@ -123,7 +123,7 @@ public class OlogContextListener implements ServletContextListener {
 
             repo = new JCRUtil();
             System.out.println("Olog JCR has been initialized: ");
-        } catch (CFException ex) {
+        } catch (OlogException ex) {
             Logger.getLogger(OlogContextListener.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

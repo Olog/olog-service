@@ -56,7 +56,7 @@ public class PropertiesResource {
             audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.getProperties().size() + " properties");
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() + "|cause=" + e);
             return e.toResponse();
@@ -83,7 +83,7 @@ public class PropertiesResource {
             Response r = Response.ok(result).build();
             audit.info(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|PUT|ERROR|"
                     + e.getResponseStatusCode() + "|cause=" + e);
             return e.toResponse();
@@ -107,7 +107,7 @@ public class PropertiesResource {
             Response r = Response.ok(result).build();
             audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() + "|cause=" + e);
             return e.toResponse();
@@ -134,7 +134,7 @@ public class PropertiesResource {
             Response r = Response.ok(result).build();
             audit.info(user + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus());
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|POST|ERROR|"
                     + e.getResponseStatusCode() + "|cause=" + e);
             return e.toResponse();
@@ -159,7 +159,7 @@ public class PropertiesResource {
             Response r = Response.ok().build();
             audit.info(user + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|DELETE|ERROR|"
                     + e.getResponseStatusCode() + "|cause=" + e);
             return e.toResponse();
@@ -188,7 +188,7 @@ public class PropertiesResource {
             Response r = Response.ok(result).build();
             audit.info(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|PUT|ERROR|"
                     + e.getResponseStatusCode() + "|cause=" + e);
             return e.toResponse();
@@ -217,7 +217,7 @@ public class PropertiesResource {
             Response r = Response.ok(result).build();
             audit.info(user + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|DELETE|ERROR|"
                     + e.getResponseStatusCode() + "|cause=" + e);
             return e.toResponse();

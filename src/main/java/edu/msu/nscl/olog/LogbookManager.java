@@ -28,9 +28,9 @@ public class LogbookManager {
      * Returns the list of logbooks in the database.
      *
      * @return Logbooks
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Logbooks findAll() throws CFException {
+    public static Logbooks findAll() throws OlogException {
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Logbook> cq = cb.createQuery(Logbook.class);
@@ -53,7 +53,7 @@ public class LogbookManager {
 
             return result;
         } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
            JPAUtil.finishTransacton(em);
@@ -64,9 +64,9 @@ public class LogbookManager {
      * Finds a logbook in the database by name.
      *
      * @return Logbook
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Logbook findLogbook(String name) throws CFException {
+    public static Logbook findLogbook(String name) throws OlogException {
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Logbook> cq = cb.createQuery(Logbook.class);
@@ -90,7 +90,7 @@ public class LogbookManager {
 
             return result;
         } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
             JPAUtil.finishTransacton(em);
@@ -102,9 +102,9 @@ public class LogbookManager {
      *
      * @param name name of logbook
      * @param owner owner of logbook
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Logbook create(String name, String owner) throws CFException {
+    public static Logbook create(String name, String owner) throws OlogException {
 
         try {
             Logbook xmlLogbook = new Logbook();
@@ -124,7 +124,7 @@ public class LogbookManager {
              
         } catch (Exception e) {
 
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         }
     }
@@ -134,14 +134,14 @@ public class LogbookManager {
      *
      * @param name logbook name
      */
-    public static void remove(String name) throws CFException {
+    public static void remove(String name) throws OlogException {
         
         try {
                 Logbook logbook = findLogbook(name);
                 logbook.setState(State.Inactive);
                 JPAUtil.update(logbook);
         } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
 
         }

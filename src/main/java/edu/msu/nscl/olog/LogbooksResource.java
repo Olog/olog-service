@@ -58,7 +58,7 @@ public class LogbooksResource {
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.getLogbooks().size() + " logbooks");
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() +  "|cause=" + e);
             return e.toResponse();
@@ -89,7 +89,7 @@ public class LogbooksResource {
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + Logbooks.toLogger(data));
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + Logbooks.toLogger(data) + "|cause=" + e);
             return e.toResponse();
@@ -120,7 +120,7 @@ public class LogbooksResource {
             }
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() +  "|cause=" + e);
             return e.toResponse();
@@ -157,7 +157,7 @@ public class LogbooksResource {
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + Logbook.toLogger(data));
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + Logbook.toLogger(data) + "|cause=" + e);
             return e.toResponse();
@@ -192,7 +192,7 @@ public class LogbooksResource {
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + Logbook.toLogger(data));
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + Logbook.toLogger(data) + "|cause=" + e);
             return e.toResponse();
@@ -220,7 +220,7 @@ public class LogbooksResource {
             Response r = Response.ok().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()
                     + "|cause=" + e);
             return e.toResponse();
@@ -255,7 +255,7 @@ public class LogbooksResource {
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + Logbook.toLogger(data));
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + Logbook.toLogger(data) + "|cause=" + e);
             return e.toResponse();
@@ -284,7 +284,7 @@ public class LogbooksResource {
             Response r = Response.ok().build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
-        } catch (CFException e) {
+        } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()
                     + "|cause=" + e);
             return e.toResponse();

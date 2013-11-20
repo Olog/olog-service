@@ -45,9 +45,9 @@ public class DbConnection {
      * Returns the DataSource Connection, requesting a new one (thread local) if needed.
      *
      * @return Connection to the JDBC DataSource
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public DataSource getDataSource() throws CFException {
+    public DataSource getDataSource() throws OlogException {
         return ds;
     }
 }

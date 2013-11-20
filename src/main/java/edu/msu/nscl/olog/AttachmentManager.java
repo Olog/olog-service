@@ -26,7 +26,7 @@ public class AttachmentManager {
     private AttachmentManager() {
     }
     
-    public static List<Long> findAll(String searchTerm) throws CFException {
+    public static List<Long> findAll(String searchTerm) throws OlogException {
         List<Long> ids = new ArrayList<Long>();
         try {
             Session session = JCRUtil.getSession();
@@ -42,18 +42,18 @@ public class AttachmentManager {
                 ids.add(Long.valueOf(name));
             }
         } catch (LoginException e) {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     "Search: " + searchTerm + " could not login to repository. " + e);
         }
         catch (RepositoryException e) {
-            throw new CFException(Response.Status.CONFLICT,
+            throw new OlogException(Response.Status.CONFLICT,
                     "Search: " + searchTerm + " could not put item in repository. " + e);
         }
 
         return ids;
     }
     
-    public static XmlAttachments findAll(Long logId) throws CFException {
+    public static XmlAttachments findAll(Long logId) throws OlogException {
         XmlAttachments xmlAttachments = new XmlAttachments();
         try {
             Session session = JCRUtil.getSession();
@@ -75,7 +75,7 @@ public class AttachmentManager {
             return xmlAttachments;
 
         } catch (LoginException ex) {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     "Log entry " + logId.toString() + " could not login to repository. " + ex);
         } catch (RepositoryException ex) {
             // TODO: Return Empty set only for javax.jcr.PathNotFoundException
@@ -86,7 +86,7 @@ public class AttachmentManager {
         }
     }
     
-    public static Attachment findAttachment(String filePath, String fileName) throws CFException {
+    public static Attachment findAttachment(String filePath, String fileName) throws OlogException {
         InputStream content = null;
         String mimeType = null;
         try {
@@ -104,10 +104,10 @@ public class AttachmentManager {
             bin.dispose();
 
         } catch (LoginException ex) {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     filePath + ", could not login to repository. " + ex);
         } catch (RepositoryException ex) {
-            throw new CFException(Response.Status.NOT_FOUND,
+            throw new OlogException(Response.Status.NOT_FOUND,
                     filePath + ", could not find item in repository. " + ex);
         }
         Attachment attachment = new Attachment();
@@ -117,7 +117,7 @@ public class AttachmentManager {
         return attachment;
     }
 
-    public static XmlAttachment create(Attachment attachment, Long logId) throws CFException {
+    public static XmlAttachment create(Attachment attachment, Long logId) throws OlogException {
         XmlAttachment result = new XmlAttachment();
         try {
             Session session = JCRUtil.getSession();
@@ -200,20 +200,20 @@ public class AttachmentManager {
             return result;
 
         } catch (IOException ex) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "Log entry " + logId.toString() + " could not create thumbnail. " + ex);
         } catch (LoginException ex) {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     "Log entry " + logId.toString() + " could not login to repository. " + ex);
         } catch (RepositoryException ex) {
-            throw new CFException(Response.Status.CONFLICT,
+            throw new OlogException(Response.Status.CONFLICT,
                     "Log entry " + logId.toString() + " could not put item in repository. " + ex);
         }
     }
 
 
 
-    public static void remove(String fileName, Long logId) throws CFException {
+    public static void remove(String fileName, Long logId) throws OlogException {
         try {
             Session session = JCRUtil.getSession();
             Node rn = session.getRootNode();
@@ -228,10 +228,10 @@ public class AttachmentManager {
             session.save();
 
         } catch (LoginException ex) {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     "Log entry " + logId.toString() + " could not login to repository. " + ex);
         } catch (RepositoryException ex) {
-            throw new CFException(Response.Status.NOT_FOUND,
+            throw new OlogException(Response.Status.NOT_FOUND,
                     "Log entry " + logId.toString() + " could not find item in repository. " + ex);
         }
     }

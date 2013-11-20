@@ -28,9 +28,9 @@ public class TagManager {
      * Returns the list of tags in the database.
      *
      * @return Tags
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Tags findAll() throws CFException {
+    public static Tags findAll() throws OlogException {
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Tag> cq = cb.createQuery(Tag.class);
@@ -53,7 +53,7 @@ public class TagManager {
 
             return result;
         } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
            JPAUtil.finishTransacton(em);
@@ -64,9 +64,9 @@ public class TagManager {
      * Finds a tag in the database by name.
      *
      * @return Tag
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Tag findTag(String name) throws CFException {
+    public static Tag findTag(String name) throws OlogException {
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Tag> cq = cb.createQuery(Tag.class);
@@ -90,7 +90,7 @@ public class TagManager {
             
             return result;
         } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
           JPAUtil.finishTransacton(em);
@@ -101,9 +101,9 @@ public class TagManager {
      *
      * @param name name of tag
      * @param owner owner of tag
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Tag create(String name) throws CFException {
+    public static Tag create(String name) throws OlogException {
 
         try {
             Tag xmlTag = new Tag();
@@ -120,7 +120,7 @@ public class TagManager {
             }    
         } catch (Exception e) {
 
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         }
     }
@@ -130,14 +130,14 @@ public class TagManager {
      *
      * @param name tag name
      */
-     public static void remove(String name) throws CFException {
+     public static void remove(String name) throws OlogException {
         
         try {
                 Tag tag = findTag(name);
                 tag.setState(State.Inactive);
                 JPAUtil.update(tag);
         } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
 
         }

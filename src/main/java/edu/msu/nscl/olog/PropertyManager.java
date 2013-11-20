@@ -25,9 +25,9 @@ public class PropertyManager {
      * Returns the list of tags in the database.
      *
      * @return Tags
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Set<Property> findAll() throws CFException {
+    public static Set<Property> findAll() throws OlogException {
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Property> cq = cb.createQuery(Property.class);
@@ -50,7 +50,7 @@ public class PropertyManager {
 
             return result;
         } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
             JPAUtil.finishTransacton(em);
@@ -61,9 +61,9 @@ public class PropertyManager {
      * Finds a tag in the database by name.
      *
      * @return Tag
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Property findProperty(String propertyName) throws CFException {
+    public static Property findProperty(String propertyName) throws OlogException {
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Property> cq = cb.createQuery(Property.class);
@@ -87,7 +87,7 @@ public class PropertyManager {
 
             return result;
         } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
             JPAUtil.finishTransacton(em);
@@ -99,9 +99,9 @@ public class PropertyManager {
      *
      * @param name name of property
      * @param owner owner of property
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Property create(String propertyName) throws CFException {
+    public static Property create(String propertyName) throws OlogException {
 
         try {
             Property newProperty = new Property();
@@ -118,7 +118,7 @@ public class PropertyManager {
             }
         } catch (Exception e) {
 
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         }
     }
@@ -128,9 +128,9 @@ public class PropertyManager {
      *
      * @param name name of property
      * @param attributes attributes of property
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public static Property create(Property property) throws CFException {
+    public static Property create(Property property) throws OlogException {
         if (property.getAttributes() != null) {
             Iterator<Attribute> iterator = property.getAttributes().iterator();
             while (iterator.hasNext()) {
@@ -156,7 +156,7 @@ public class PropertyManager {
             }
         } catch (Exception e) {
 
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         }
     }
@@ -166,7 +166,7 @@ public class PropertyManager {
      *
      * @param name property name
      */
-    public static void remove(String propertyName) throws CFException {
+    public static void remove(String propertyName) throws OlogException {
 
         try {
             Property property = findProperty(propertyName);
@@ -182,7 +182,7 @@ public class PropertyManager {
             }
             JPAUtil.update(property);
         } catch (Exception e) {
-            throw new CFException(Response.Status.INTERNAL_SERVER_ERROR,
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
 
         }

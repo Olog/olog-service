@@ -88,9 +88,9 @@ public class OlogImpl {
      *
      * @param logId id to look for
      * @return Log with found log and its logbooks
-     * @throws CFException on SQLException
+     * @throws OlogException on SQLException
      */
-    public Log findLogById(Long logId) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Log findLogById(Long logId) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
         return LogManager.findLog(logId);
     }
 
@@ -100,9 +100,9 @@ public class OlogImpl {
      * @param matches multivalued map of logbook, tag, log names and patterns to
      * match their values against.
      * @return Logs container with all found logs and their logbooks
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public Logs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws CFException, RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Logs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws OlogException, RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
         //return FindLogsQuery.findLogsByMultiMatch(matches);
         return LogManager.findLog(matches);
     }
@@ -111,14 +111,14 @@ public class OlogImpl {
      * Deletes a log identified by <tt>logId</tt>.
      *
      * @param logId log to delete
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public void removeLog(Long logId) throws CFException {
+    public void removeLog(Long logId) throws OlogException {
         Log log = LogManager.findLog(logId);
         if (log != null) {
             LogManager.remove(logId);
         } else {
-            throw new CFException(Response.Status.NOT_FOUND,
+            throw new OlogException(Response.Status.NOT_FOUND,
                     "Log entry " + logId.toString() + " does not exists.");
         }
     }
@@ -126,9 +126,9 @@ public class OlogImpl {
     /**
      * List all Logbooks in the database.
      *
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public Logbooks listLogbooks() throws CFException {
+    public Logbooks listLogbooks() throws OlogException {
         return LogbookManager.findAll();
     }
 
@@ -137,9 +137,9 @@ public class OlogImpl {
      *
      * @param name name to look for
      * @return Logbook with found logbook and its logs
-     * @throws CFException on SQLException
+     * @throws OlogException on SQLException
      */
-    public Logbook findLogbookByName(String name) throws CFException {
+    public Logbook findLogbookByName(String name) throws OlogException {
         return LogbookManager.findLogbook(name);
     }
 
@@ -149,9 +149,9 @@ public class OlogImpl {
      *
      * @param logbook logbook to add
      * @param data Logbook data with all logs
-     * @throws CFException on ownership mismatch, or wrapping an SQLException
+     * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
-    public Logbook updateLogbook(Logbook data) throws CFException {
+    public Logbook updateLogbook(Logbook data) throws OlogException {
         return LogbookManager.create(data.getOwner(), data.getName());
     }
 
@@ -162,15 +162,15 @@ public class OlogImpl {
      *
      * @param logbook logbook to add
      * @param data Logbook container with all logs to add logbook to
-     * @throws CFException on ownership mismatch, or wrapping an SQLException
+     * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
-    public Logbook createOrReplaceLogbook(String logbookName, Logbook data) throws CFException {
+    public Logbook createOrReplaceLogbook(String logbookName, Logbook data) throws OlogException {
         Logbook logbook = LogbookManager.create(logbookName, data.getOwner());
         List<Log> logsData = new ArrayList<Log>();
         for (Log log : data.getLogs()) {
             logsData.add(LogManager.findLog(log.getId()));
             if (log == null) {
-                throw new CFException(Response.Status.BAD_REQUEST,
+                throw new OlogException(Response.Status.BAD_REQUEST,
                         "Log entry " + log.getId() + " does not exists.");
             }
         }
@@ -186,9 +186,9 @@ public class OlogImpl {
      * Create or replace logbooks specified in <tt>data</tt>.
      *
      * @param data Logbooks data
-     * @throws CFException on ownership mismatch, or wrapping an SQLException
+     * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
-    public Logbooks createOrReplaceLogbooks(Logbooks data) throws CFException {
+    public Logbooks createOrReplaceLogbooks(Logbooks data) throws OlogException {
         Logbooks xmlLogbooks = new Logbooks();
         for (Logbook logbook : data.getLogbooks()) {
             //removeLogbook(logbook.getName());
@@ -206,9 +206,9 @@ public class OlogImpl {
      * @param logbook logbook to add
      * @param logId log to add the logbook to
      * @param data Logbook
-     * @throws CFException on ownership mismatch, or wrapping an SQLException
+     * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
-    public Logbook addSingleLogbook(String logbookName, Long logId) throws CFException {
+    public Logbook addSingleLogbook(String logbookName, Long logId) throws OlogException {
         Log log = LogManager.findLog(logId);
         Set<Logbook> logbooks = log.getLogbooks();
         Logbook logbook = LogbookManager.findLogbook(logbookName);
@@ -222,9 +222,9 @@ public class OlogImpl {
      * Deletes a logbook identified by <tt>name</tt> from all logs.
      *
      * @param logbook tag to delete
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public void removeLogbook(String logbook) throws CFException {
+    public void removeLogbook(String logbook) throws OlogException {
         LogbookManager.remove(logbook);
     }
 
@@ -233,9 +233,9 @@ public class OlogImpl {
      * the logbook does not exists.
      *
      * @param logbook tag to delete
-     * @throws CFException wrapping an SQLException or on failure
+     * @throws OlogException wrapping an SQLException or on failure
      */
-    public void removeExistingLogbook(String logbook) throws CFException {
+    public void removeExistingLogbook(String logbook) throws OlogException {
         LogbookManager.remove(logbook);
     }
 
@@ -244,16 +244,16 @@ public class OlogImpl {
      *
      * @param logbook tag to delete
      * @param logId log to delete it from
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public void removeSingleLogbook(String logbookName, Long logId) throws CFException {
+    public void removeSingleLogbook(String logbookName, Long logId) throws OlogException {
         Log log = LogManager.findLog(logId);
         Set<Logbook> logbooks = log.getLogbooks();
         Logbook logbook = LogbookManager.findLogbook(logbookName);
         if (logbooks.contains(logbook) && logbooks.size() > 1) {
             logbooks.remove(logbook);
         } else {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     "Log entry " + logId.toString() + " does not have logbook:" + logbook.getName() + ".");
         }
         log.setLogbooks(logbooks);
@@ -263,9 +263,9 @@ public class OlogImpl {
     /**
      * List all tags in the database.
      *
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public Tags listTags() throws CFException {
+    public Tags listTags() throws OlogException {
         return TagManager.findAll();
     }
 
@@ -274,9 +274,9 @@ public class OlogImpl {
      *
      * @param name name to look for
      * @return Tag with found tag and its logs/state
-     * @throws CFException on SQLException
+     * @throws OlogException on SQLException
      */
-    public Tag findTagByName(String name) throws CFException {
+    public Tag findTagByName(String name) throws OlogException {
         return TagManager.findTag(name);
     }
 
@@ -286,16 +286,16 @@ public class OlogImpl {
      *
      * @param tag tag to add
      * @param data Tag with list of all logs to add tag to
-     * @throws CFException on ownership mismatch, or wrapping an SQLException
+     * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
-    public Tag updateTag(String tagName, Tag data) throws CFException {
+    public Tag updateTag(String tagName, Tag data) throws OlogException {
         Tag tag = TagManager.create(tagName);
         if (data.getLogs().size() > 0) {
             List<Log> logsData = new ArrayList<Log>();
             for (Log log : data.getLogs()) {
                 logsData.add(LogManager.findLog(log.getId()));
                 if (log == null) {
-                    throw new CFException(Response.Status.BAD_REQUEST,
+                    throw new OlogException(Response.Status.BAD_REQUEST,
                             "Log entry " + log.getId() + " does not exists.");
                 }
             }
@@ -316,9 +316,9 @@ public class OlogImpl {
      *
      * @param tag tag to add
      * @param data Tag container with all logs to add tag to
-     * @throws CFException on ownership mismatch, or wrapping an SQLException
+     * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
-    public Tag createOrReplaceTag(String tagName, Tag data) throws CFException {
+    public Tag createOrReplaceTag(String tagName, Tag data) throws OlogException {
         Tag tag = TagManager.create(tagName);
         if (data.getLogs().size() > 0) {
             MultivaluedMap<String, String> map = new MultivaluedMapImpl();
@@ -328,7 +328,7 @@ public class OlogImpl {
             for (Log log : data.getLogs()) {
                 logsData.add(LogManager.findLog(log.getId()));
                 if (log == null) {
-                    throw new CFException(Response.Status.BAD_REQUEST,
+                    throw new OlogException(Response.Status.BAD_REQUEST,
                             "Log entry " + log.getId() + " does not exists.");
                 }
             }
@@ -348,9 +348,9 @@ public class OlogImpl {
      * Create tags specified in <tt>data</tt>.
      *
      * @param data Tags data
-     * @throws CFException on ownership mismatch, or wrapping an SQLException
+     * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
-    public Tags createOrReplaceTags(Tags data) throws CFException {
+    public Tags createOrReplaceTags(Tags data) throws OlogException {
         Tags xmlTags = new Tags();
         for (Tag tag : data.getTags()) {
             //removeTag(tag.getName());
@@ -364,9 +364,9 @@ public class OlogImpl {
      * the logbook does not exists.
      *
      * @param logbook tag to delete
-     * @throws CFException wrapping an SQLException or on failure
+     * @throws OlogException wrapping an SQLException or on failure
      */
-    public void removeExistingTag(String tag) throws CFException {
+    public void removeExistingTag(String tag) throws OlogException {
         TagManager.remove(tag);
     }
 
@@ -375,9 +375,9 @@ public class OlogImpl {
      *
      * @param tag tag to add
      * @param logId
-     * @throws CFException on ownership mismatch, or wrapping an SQLException
+     * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
-    public Tag addSingleTag(String tagName, Long logId) throws CFException {
+    public Tag addSingleTag(String tagName, Long logId) throws OlogException {
         Log log = LogManager.findLog(logId);
         Set<Tag> tags = log.getTags();
         Tag tag = TagManager.findTag(tagName);
@@ -391,9 +391,9 @@ public class OlogImpl {
      * Deletes a tag identified by <tt>name</tt> from all logs.
      *
      * @param tag tag to delete
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public void removeTag(String tag) throws CFException {
+    public void removeTag(String tag) throws OlogException {
         TagManager.remove(tag);
     }
 
@@ -402,16 +402,16 @@ public class OlogImpl {
      *
      * @param tag tag to delete
      * @param logId log to delete it from
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public void removeSingleTag(String tagName, Long logId) throws CFException {
+    public void removeSingleTag(String tagName, Long logId) throws OlogException {
         Log log = LogManager.findLog(logId);
         Set<Tag> tags = log.getTags();
         Tag tag = TagManager.findTag(tagName);
         if (tags.contains(tag)) {
             tags.remove(tag);
         } else {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     "Log entry " + logId.toString() + " does not have logbook:" + tag.getName() + ".");
         }
         log.setTags(tags);
@@ -422,9 +422,9 @@ public class OlogImpl {
      * Return a list of all properties
      *
      * @param
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    public XmlProperties listProperties() throws CFException {
+    public XmlProperties listProperties() throws OlogException {
         Set<Property> prop = PropertyManager.findAll();
         XmlProperties xmlProp = new XmlProperties();
         for (Property p : prop) {
@@ -437,9 +437,9 @@ public class OlogImpl {
      * Return a list of attributes for a given property
      *
      * @param
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    XmlProperty listAttributes(String property) throws CFException {
+    XmlProperty listAttributes(String property) throws OlogException {
         return PropertyManager.findProperty(property).toXmlProperty();
     }
 
@@ -448,9 +448,9 @@ public class OlogImpl {
      *
      * @param Property data incoming payload
      * @param boolean destructive is this action to be destructive (true) or not
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    XmlProperty addProperty(XmlProperty data, boolean destructive) throws CFException {
+    XmlProperty addProperty(XmlProperty data, boolean destructive) throws OlogException {
         if (destructive) {
             Property property = PropertyManager.create(data.toProperty());
             for (Map.Entry<String, String> att : data.getAttributes().entrySet()) {
@@ -474,9 +474,9 @@ public class OlogImpl {
      * @param String property name of the property
      * @param Long logId log that the property attribute will be associated with
      * @param Property data incoming payload
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    Log addAttribute(Long logId, XmlProperty data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    Log addAttribute(Long logId, XmlProperty data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
 
         Log log = LogManager.findLog(logId);
         Collection<XmlProperty> currentProperties = log.getXmlProperties();
@@ -489,9 +489,9 @@ public class OlogImpl {
      * Remove a property.
      *
      * @param String property name of the property to be removed
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    void removeProperty(String propertyName) throws CFException {
+    void removeProperty(String propertyName) throws OlogException {
         PropertyManager.remove(propertyName);
     }
 
@@ -500,12 +500,12 @@ public class OlogImpl {
      *
      * @param Long logId log that the property attribute will be removed
      * @param Property data incoming payload
-     * @throws CFException wrapping an SQLException
+     * @throws OlogException wrapping an SQLException
      */
-    Log removeAttribute(Long logId, XmlProperty data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    Log removeAttribute(Long logId, XmlProperty data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
         Log log = LogManager.findLog(logId);
         if (log == null) {
-            throw new CFException(Response.Status.NOT_FOUND,
+            throw new OlogException(Response.Status.NOT_FOUND,
                     "Log entry " + logId.toString() + " does not exists.");
         }
         Collection<XmlProperty> currentProperties = log.getXmlProperties();
@@ -524,7 +524,7 @@ public class OlogImpl {
             }
         }
         if (exists != 1) {
-            throw new CFException(Response.Status.NOT_FOUND,
+            throw new OlogException(Response.Status.NOT_FOUND,
                     "Log entry " + logId.toString() + " does not have property " + data.getName() + ".");
         }
         log.setXmlProperties(newProperties);
@@ -538,10 +538,10 @@ public class OlogImpl {
      *
      * @param logId log to update
      * @param data Log data
-     * @throws CFException on ownership or name mismatch, or wrapping an
+     * @throws OlogException on ownership or name mismatch, or wrapping an
      * SQLException
      */
-    public Log createOrReplaceLog(Long logId, Log data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Log createOrReplaceLog(Long logId, Log data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
         UserManager um = UserManager.getInstance();
         data.setSource(um.getHostAddress());
         data.setOwner(um.getUserName());
@@ -552,9 +552,9 @@ public class OlogImpl {
      * Create logs specified in <tt>data</tt>.
      *
      * @param logs Logs data
-     * @throws CFException on ownership mismatch, or wrapping an SQLException
+     * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
-    public Logs createOrReplaceLogs(Logs logs) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Logs createOrReplaceLogs(Logs logs) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
         ListIterator<Log> iterator = logs.listIterator();
         while (iterator.hasNext()) {
             Log log = iterator.next();
@@ -567,10 +567,10 @@ public class OlogImpl {
      * Create a new log using the logbook set in <tt>data</tt>.
      *
      * @param data Log data
-     * @throws CFException on ownership or name mismatch, or wrapping an
+     * @throws OlogException on ownership or name mismatch, or wrapping an
      * SQLException
      */
-    private Log createOneLog(Log data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    private Log createOneLog(Log data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
         UserManager um = UserManager.getInstance();
         data.setSource(um.getHostAddress());
         data.setOwner(um.getUserName());
@@ -582,13 +582,13 @@ public class OlogImpl {
      *
      * @param logId log to merge the logbooks and tags into
      * @param data Log data containing logbooks and tags
-     * @throws CFException on name or owner mismatch, or wrapping an
+     * @throws OlogException on name or owner mismatch, or wrapping an
      * SQLException
      */
-    public Log updateLog(Long logId, Log data) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Log updateLog(Long logId, Log data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
         Log dest = findLogById(logId);
         if (dest == null) {
-            throw new CFException(Response.Status.NOT_FOUND,
+            throw new OlogException(Response.Status.NOT_FOUND,
                     "Log entry " + logId + " could not be updated: Does not exists");
         }
         dest.setId(data.getId());
@@ -602,10 +602,10 @@ public class OlogImpl {
      *
      * @param logId log id to check
      * @param data Log data to check against
-     * @throws CFException on name mismatch
+     * @throws OlogException on name mismatch
      */
     //TODO: fix this
-    public void checkIdMatchesPayload(Long logId, Log data) throws CFException {
+    public void checkIdMatchesPayload(Long logId, Log data) throws OlogException {
         //    if (!logId.equals(data.getId())) {
         //        throw new CFException(Response.Status.BAD_REQUEST,
         //                "Specified log id '" + logId
@@ -617,25 +617,25 @@ public class OlogImpl {
      * Check the log in <tt>data</tt> for valid owner data.
      *
      * @param data Log data to check
-     * @throws CFException on error
+     * @throws OlogException on error
      */
-    public void checkValid(Log data) throws CFException {
+    public void checkValid(Log data) throws OlogException {
 
         if (data.getOwner() == null || data.getOwner().equals("")) {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     "Log entry " + data.getId() + " does not have an owner.");
         } else if (data.getLogbooks().isEmpty()) {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     "Log entry " + data.getId() + " does not have a logbook.");
         } else if (!data.getXmlProperties().isEmpty()) {
             for (XmlProperty xmlProperty : data.getXmlProperties()) {
                 if (xmlProperty.getAttributes().isEmpty()) {
-                    throw new CFException(Response.Status.BAD_REQUEST,
+                    throw new OlogException(Response.Status.BAD_REQUEST,
                             "Log entry " + data.getId() + " property does not have an attribute.");
                 } else {
                     for (Map.Entry<String, String> att : xmlProperty.getAttributes().entrySet()) {
                         if (att.getValue().isEmpty() || att.getKey().isEmpty()) {
-                            throw new CFException(Response.Status.BAD_REQUEST,
+                            throw new OlogException(Response.Status.BAD_REQUEST,
                                     "Log entry " + data.getId() + " property:" + xmlProperty.getName() + " attribute does not have a key or value.");
                         }
                     }
@@ -648,9 +648,9 @@ public class OlogImpl {
      * Check all logs in <tt>data</tt> for valid owner data.
      *
      * @param data Logs data to check
-     * @throws CFException on error
+     * @throws OlogException on error
      */
-    public void checkValid(Logs data) throws CFException {
+    public void checkValid(Logs data) throws OlogException {
         if (data == null || data.getLogList() == null) {
             return;
         }
@@ -664,14 +664,14 @@ public class OlogImpl {
      *
      * @param name tag name to check
      * @param data Tag data to check against
-     * @throws CFException on name mismatch
+     * @throws OlogException on name mismatch
      */
-    public void checkNameMatchesPayload(String name, Tag data) throws CFException {
+    public void checkNameMatchesPayload(String name, Tag data) throws OlogException {
         if (data == null) {
             return;
         }
         if (!name.equals(data.getName())) {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     "Tag specified in the URL '" + name
                     + "' and tag specified in the payload '" + data.getName() + "' do not match");
         }
@@ -681,11 +681,11 @@ public class OlogImpl {
      * Check the tag in <tt>data</tt> for valid name data.
      *
      * @param data Tag data to check
-     * @throws CFException on name mismatch
+     * @throws OlogException on name mismatch
      */
-    public void checkValidNameAndOwner(Tag data) throws CFException {
+    public void checkValidNameAndOwner(Tag data) throws OlogException {
         if (data.getName() == null || data.getName().equals("")) {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     "The specified tag does not have a name");
         }
     }
@@ -696,11 +696,11 @@ public class OlogImpl {
      *
      * @param propertyName name coming from the URL
      * @param data Property data
-     * @throws CFException on name mismatch
+     * @throws OlogException on name mismatch
      */
-    public void checkPropertyName(String propertyName, Property data) throws CFException {
+    public void checkPropertyName(String propertyName, Property data) throws OlogException {
         if (data.getName() == null || !data.getName().equals(propertyName)) {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     "The property name in the URL '" + propertyName
                     + "' and the property name in the payload '" + data.getName()
                     + "' do not match");
@@ -713,11 +713,11 @@ public class OlogImpl {
      *
      * @param propertyName name coming from the URL
      * @param data Property data
-     * @throws CFException on name mismatch
+     * @throws OlogException on name mismatch
      */
-    public void checkPropertyName(String propertyName, XmlProperty data) throws CFException {
+    public void checkPropertyName(String propertyName, XmlProperty data) throws OlogException {
         if (data.getName() == null || !data.getName().equals(propertyName)) {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     "The property name in the URL '" + propertyName
                     + "' and the property name in the payload '" + data.getName()
                     + "' do not match");
@@ -728,9 +728,9 @@ public class OlogImpl {
      * Check all tags in <tt>data</tt> for valid name data.
      *
      * @param data Tags data to check
-     * @throws CFException on error
+     * @throws OlogException on error
      */
-    public void checkValidNameAndOwner(Tags data) throws CFException {
+    public void checkValidNameAndOwner(Tags data) throws OlogException {
         if (data == null || data.getTags() == null) {
             return;
         }
@@ -744,11 +744,11 @@ public class OlogImpl {
      *
      * @param name logbook name to check
      * @param data Logbook data to check against
-     * @throws CFException on name mismatch
+     * @throws OlogException on name mismatch
      */
-    public void checkNameMatchesPayload(String name, Logbook data) throws CFException {
+    public void checkNameMatchesPayload(String name, Logbook data) throws OlogException {
         if (!name.equals(data.getName())) {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     "The logbook in the URL '" + name
                     + "' and the logbook in the payload '" + data.getName() + "' do not match");
         }
@@ -758,15 +758,15 @@ public class OlogImpl {
      * Check the logbook in <tt>data</tt> for valid name/owner data.
      *
      * @param data Logbook data to check
-     * @throws CFException on error
+     * @throws OlogException on error
      */
-    public void checkValidNameAndOwner(Logbook data) throws CFException {
+    public void checkValidNameAndOwner(Logbook data) throws OlogException {
         if (data.getName() == null || data.getName().equals("")) {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     "Logbook name is empty");
         }
         if (data.getOwner() == null || data.getOwner().equals("")) {
-            throw new CFException(Response.Status.BAD_REQUEST,
+            throw new OlogException(Response.Status.BAD_REQUEST,
                     "Logbook '" + data.getName() + "' does not have an owner");
         }
     }
@@ -775,9 +775,9 @@ public class OlogImpl {
      * Check all logbooks in <tt>data</tt> for valid name/owner data.
      *
      * @param data Logbooks data to check
-     * @throws CFException on error
+     * @throws OlogException on error
      */
-    public void checkValidNameAndOwner(Logbooks data) throws CFException {
+    public void checkValidNameAndOwner(Logbooks data) throws OlogException {
         if (data == null || data.getLogbooks() == null) {
             return;
         }
@@ -792,9 +792,9 @@ public class OlogImpl {
      *
      * @param user user name
      * @param logId name of log to check ownership for
-     * @throws CFException on name mismatch
+     * @throws OlogException on name mismatch
      */
-    public void checkUserBelongsToGroupOfLog(String user, Long logId) throws CFException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public void checkUserBelongsToGroupOfLog(String user, Long logId) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
         if (logId == 0) {
             return;
         }
@@ -807,9 +807,9 @@ public class OlogImpl {
      *
      * @param user user name
      * @param logbook name of logbook to check ownership for
-     * @throws CFException on name mismatch
+     * @throws OlogException on name mismatch
      */
-    public void checkUserBelongsToGroupOfLogbook(String user, String logbook) throws CFException {
+    public void checkUserBelongsToGroupOfLogbook(String user, String logbook) throws OlogException {
         if (logbook == null || logbook.equals("")) {
             return;
         }
@@ -822,9 +822,9 @@ public class OlogImpl {
      *
      * @param user user name
      * @param data Log data to check ownership for
-     * @throws CFException on name mismatch
+     * @throws OlogException on name mismatch
      */
-    public void checkUserBelongsToGroup(String user, Log data) throws CFException {
+    public void checkUserBelongsToGroup(String user, Log data) throws OlogException {
         if (data == null) {
             return;
         }
@@ -839,9 +839,9 @@ public class OlogImpl {
      *
      * @param user user name
      * @param data Logs data to check ownership for
-     * @throws CFException on name mismatch
+     * @throws OlogException on name mismatch
      */
-    public void checkUserBelongsToGroup(String user, Logs data) throws CFException {
+    public void checkUserBelongsToGroup(String user, Logs data) throws OlogException {
         if (data == null || data.getLogList() == null) {
             return;
         }
@@ -856,15 +856,15 @@ public class OlogImpl {
      *
      * @param user user name
      * @param data Logbook data to check ownership for
-     * @throws CFException on name mismatch
+     * @throws OlogException on name mismatch
      */
-    public void checkUserBelongsToGroup(String user, Logbook data) throws CFException {
+    public void checkUserBelongsToGroup(String user, Logbook data) throws OlogException {
         if (data == null) {
             return;
         }
         UserManager um = UserManager.getInstance();
         if (!um.userIsInGroup(data.getOwner())) {
-            throw new CFException(Response.Status.FORBIDDEN,
+            throw new OlogException(Response.Status.FORBIDDEN,
                     "User '" + um.getUserName()
                     + "' does not belong to owner group '" + data.getOwner()
                     + "' of logbook '" + data.getName() + "'");
@@ -877,9 +877,9 @@ public class OlogImpl {
      *
      * @param user user name
      * @param data Logs data to check ownership for
-     * @throws CFException on name mismatch
+     * @throws OlogException on name mismatch
      */
-    public void checkUserBelongsToGroup(String user, Logbooks data) throws CFException {
+    public void checkUserBelongsToGroup(String user, Logbooks data) throws OlogException {
         if (data == null || data.getLogbooks() == null) {
             return;
         }
@@ -888,23 +888,23 @@ public class OlogImpl {
         }
     }
 
-    XmlAttachments findAttachmentsById(Long logId) throws CFException {
+    XmlAttachments findAttachmentsById(Long logId) throws OlogException {
         return AttachmentManager.findAll(logId);
     }
 
-    Attachment getAttachment(String filePath, String fileName) throws CFException {
+    Attachment getAttachment(String filePath, String fileName) throws OlogException {
         return AttachmentManager.findAttachment(filePath, fileName);
     }
 
-    XmlAttachment createAttachment(Attachment attachment, Long logId) throws CFException {
+    XmlAttachment createAttachment(Attachment attachment, Long logId) throws OlogException {
         return AttachmentManager.create(attachment, logId);
     }
 
-    void removeAttachment(String fileName, Long logId) throws CFException {
+    void removeAttachment(String fileName, Long logId) throws OlogException {
         AttachmentManager.remove(fileName, logId);
     }
 
-    Logs findLogsTest() throws CFException {
+    Logs findLogsTest() throws OlogException {
         return LogManager.findAll();
     }
 }
