@@ -25,7 +25,7 @@ public class Entry implements Serializable, Comparable<Entry> {
     @Column(name = "created", nullable = false, insertable = true, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
-    @OneToMany(mappedBy = "entry")
+    @OneToMany(mappedBy = "entry", fetch=FetchType.EAGER)
     private List<Log> logs = new ArrayList<Log>();
 
     @PrePersist

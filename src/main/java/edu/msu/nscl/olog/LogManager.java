@@ -8,6 +8,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.*;
 import javax.persistence.EntityManager;
+import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import javax.sound.midi.SysexMessage;
@@ -81,11 +82,11 @@ public class LogManager {
 
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
+        CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
         Root<Entry> from = cq.from(Entry.class);
-        Join<Entry,Log> logs = from.join(Entry_.logs, JoinType.LEFT);
+        Join<Entry,Log> logs = from.join(Entry_.logs, JoinType.INNER);
         SetJoin<Log, Tag> tags = logs.join(Log_.tags, JoinType.LEFT);
-        SetJoin<Log, Logbook> logbooks = logs.join(Log_.logbooks, JoinType.LEFT);
+        SetJoin<Log, Logbook> logbooks = logs.join(Log_.logbooks, JoinType.INNER);
         Join<Attribute, Property> property = logs.join(Log_.attributes, JoinType.LEFT).join(LogAttribute_.attribute, JoinType.LEFT).join(Attribute_.property, JoinType.LEFT);
         Join<LogAttribute, Attribute> attribute = logs.join(Log_.attributes, JoinType.LEFT).join(LogAttribute_.attribute, JoinType.LEFT);
         Join<Log, LogAttribute> logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
@@ -293,7 +294,7 @@ public class LogManager {
             }
         }
 
-        //cq.distinct(true);
+        cq.distinct(true);
         Predicate statusPredicate = cb.disjunction();
         if(history){
             statusPredicate = cb.or(cb.equal(logs.get(Log_.state), State.Active), cb.equal(logs.get(Log_.state), State.Inactive));            
@@ -301,9 +302,11 @@ public class LogManager {
             statusPredicate = cb.equal(logs.get(Log_.state), State.Active);
         }
         Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, propertyPredicate, propertyAttributePredicate, datePredicate, searchPredicate, idPredicate);
+        cq.multiselect(from,logs);
         cq.where(finalPredicate);
+        cq.groupBy(from);
         cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
-        TypedQuery<Entry> typedQuery = em.createQuery(cq);
+        TypedQuery<Tuple> typedQuery = em.createQuery(cq);
 
         if (!paginate_matches.isEmpty()) {
             String page = null, limit = null;
@@ -327,51 +330,43 @@ public class LogManager {
         try {
             Logs result = new Logs();
 
-            result.setCount(JPAUtil.count(em, cq));
+            //result.setCount(JPAUtil.count(em, cq));
+            result.setCount(0L);
+            
             if (empty) {
                 return result;
             }
 
-            List<Entry> rs = typedQuery.getResultList();
+            List<Tuple> rs = typedQuery.getResultList();
             Map<Long, Integer> versionMap = new HashMap<Long, Integer>();
 
             if (rs != null) {
-                Iterator<Entry> iterator = rs.iterator();
+                Iterator<Tuple> iterator = rs.iterator();
                 while (iterator.hasNext()) {
-                    Entry e = iterator.next();
-                    List<Log> logsResult = e.getLogs();
-                    for (Log log: logsResult){
-                    int version;
-                    if(versionMap.containsKey(e.getId())){
-                        version = versionMap.get(e.getId())+1;
-                    }else{
-                        version = 1;
-                    }                    
-                    log.setVersion(String.valueOf(version));
-                    versionMap.put(e.getId(), version);
-                    
-                    log.setXmlAttachments(AttachmentManager.findAll(log.getEntryId()).getAttachments());
-                    Iterator<LogAttribute> iter = log.getAttributes().iterator();
-                    Set<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
-                    while (iter.hasNext()) {
-                        XmlProperty xmlProperty = new XmlProperty();
-                        Map<String, String> map = new HashMap<String, String>();
-                        LogAttribute logattr = iter.next();
-                        Attribute attr = logattr.getAttribute();
-                        xmlProperty.setName(attr.getProperty().getName());
-                        xmlProperty.setId(attr.getProperty().getId());
-                        for (XmlProperty prevXmlProperty : xmlProperties) {
-                            if (prevXmlProperty.getId().equals(xmlProperty.getId())) {
-                                map = prevXmlProperty.getAttributes();
+                    Tuple tuple = iterator.next();
+                    Entry e = tuple.get(0, Entry.class);
+                    List<Log> all= ((Entry)JPAUtil.findByID(Entry.class, e.getId())).getLogs();
+
+                    if (history) {
+                        for (Log log : all) {
+                            int version;
+                            if (versionMap.containsKey(e.getId())) {
+                                version = versionMap.get(e.getId()) + 1;
+                            } else {
+                                version = 1;
                             }
+                            versionMap.put(e.getId(), version);
+                            log.setVersion(String.valueOf(version));
+                            
+                            log = populateLog(log);
+                            result.addLog(log);
                         }
-                        map.put(attr.getName(), logattr.getValue());
-                        xmlProperty.setAttributes(map);
-                        xmlProperties.add(xmlProperty);
-                    }
-                    log.setXmlProperties(xmlProperties);
-                    result.addLog(log);
-                    }
+                    } else {
+                        Log log = tuple.get(1, Log.class);
+                        log.setVersion(String.valueOf(all.size()));
+                        log = populateLog(log);
+                        result.addLog(log);  
+                    } 
                 }
             }
 
@@ -382,6 +377,31 @@ public class LogManager {
         } finally {
             JPAUtil.finishTransacton(em);
         }
+    }
+
+    private static Log populateLog(Log log) throws OlogException {
+
+        log.setXmlAttachments(AttachmentManager.findAll(log.getEntryId()).getAttachments());
+        Iterator<LogAttribute> iter = log.getAttributes().iterator();
+        Set<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
+        while (iter.hasNext()) {
+            XmlProperty xmlProperty = new XmlProperty();
+            Map<String, String> map = new HashMap<String, String>();
+            LogAttribute logattr = iter.next();
+            Attribute attr = logattr.getAttribute();
+            xmlProperty.setName(attr.getProperty().getName());
+            xmlProperty.setId(attr.getProperty().getId());
+            for (XmlProperty prevXmlProperty : xmlProperties) {
+                if (prevXmlProperty.getId().equals(xmlProperty.getId())) {
+                    map = prevXmlProperty.getAttributes();
+                }
+            }
+            map.put(attr.getName(), logattr.getValue());
+            xmlProperty.setAttributes(map);
+            xmlProperties.add(xmlProperty);
+        }
+        log.setXmlProperties(xmlProperties);
+        return log;
     }
 
     /**
@@ -536,7 +556,7 @@ public class LogManager {
             newLog.setXmlProperties(log.getXmlProperties());
             JPAUtil.finishTransacton(em);
             return newLog;
-        } catch (Exception e) {
+        } catch (OlogException e) {
             JPAUtil.transactionFailed(em);
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);

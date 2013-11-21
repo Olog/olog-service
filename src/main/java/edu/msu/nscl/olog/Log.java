@@ -75,7 +75,7 @@ public class Log implements Serializable, Comparable<Log> {
     })
     private Set<Tag> tags = new HashSet<Tag>();
     
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "entry_id", unique = true)
     private Entry entry;
     
