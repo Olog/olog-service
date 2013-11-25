@@ -65,8 +65,7 @@ public class LogManager {
 
     public static Logs findLog(MultivaluedMap<String, String> matches) throws OlogException {
 
-
-        List<String> log_patterns = new ArrayList();        
+        List<String> log_patterns = new ArrayList();
         List<String> id_patterns = new ArrayList();
         List<String> tag_matches = new ArrayList();
         List<String> tag_patterns = new ArrayList();
@@ -84,7 +83,7 @@ public class LogManager {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
         Root<Entry> from = cq.from(Entry.class);
-        Join<Entry,Log> logs = from.join(Entry_.logs, JoinType.INNER);
+        Join<Entry, Log> logs = from.join(Entry_.logs, JoinType.INNER);
         SetJoin<Log, Tag> tags = logs.join(Log_.tags, JoinType.LEFT);
         SetJoin<Log, Logbook> logbooks = logs.join(Log_.logbooks, JoinType.INNER);
         Join<Attribute, Property> property = logs.join(Log_.attributes, JoinType.LEFT).join(LogAttribute_.attribute, JoinType.LEFT).join(Attribute_.property, JoinType.LEFT);
@@ -110,7 +109,7 @@ public class LogManager {
                     }
                 }
             } else if (key.equals("id")) {
-                 for (String m : matchesValues) {
+                for (String m : matchesValues) {
                     if (m.contains("?") || m.contains("*")) {
                         if (m.contains("\\?") || m.contains("\\*")) {
                             m = m.replace("\\", "");
@@ -189,7 +188,7 @@ public class LogManager {
                 date_matches.putAll(key, match.getValue());
             } else if (key.equals("empty")) {
                 empty = true;
-            } else if (key.equals("history")){                
+            } else if (key.equals("history")) {
                 history = true;
             } else {
                 Collection<String> cleanedMatchesValues = new HashSet<String>();
@@ -210,7 +209,7 @@ public class LogManager {
                 value_patterns.putAll(key, cleanedMatchesValues);
             }
         }
-        
+
         //cb.or() causes an error in eclipselink with p1 as first argument
         Predicate tagPredicate = cb.disjunction();
         if (!tag_matches.isEmpty()) {
@@ -243,16 +242,16 @@ public class LogManager {
             if (group.size() == 2) {
                 propertyAttributePredicate = cb.and(propertyAttributePredicate,
                         cb.like(logAttribute.get(LogAttribute_.value),
-                        match.getValue()), property.get(Property_.name).in(group.get(0),
-                        attribute.get(Attribute_.name).in(group.get(1))));
+                                match.getValue()), property.get(Property_.name).in(group.get(0),
+                                attribute.get(Attribute_.name).in(group.get(1))));
             }
         }
 
         Predicate idPredicate = cb.disjunction();
         for (String s : id_patterns) {
-            idPredicate = cb.or(cb.equal(from.get(Entry_.id), Long.valueOf(s)), idPredicate);           
+            idPredicate = cb.or(cb.equal(from.get(Entry_.id), Long.valueOf(s)), idPredicate);
         }
-        
+
         Predicate searchPredicate = cb.disjunction();
         for (String s : log_patterns) {
             searchPredicate = cb.or(cb.like(logs.get(Log_.description), s), searchPredicate);
@@ -296,13 +295,13 @@ public class LogManager {
 
         cq.distinct(true);
         Predicate statusPredicate = cb.disjunction();
-        if(history){
-            statusPredicate = cb.or(cb.equal(logs.get(Log_.state), State.Active), cb.equal(logs.get(Log_.state), State.Inactive));            
+        if (history) {
+            statusPredicate = cb.or(cb.equal(logs.get(Log_.state), State.Active), cb.equal(logs.get(Log_.state), State.Inactive));
         } else {
             statusPredicate = cb.equal(logs.get(Log_.state), State.Active);
         }
         Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, propertyPredicate, propertyAttributePredicate, datePredicate, searchPredicate, idPredicate);
-        cq.multiselect(from,logs);
+        cq.multiselect(from, logs);
         cq.where(finalPredicate);
         cq.groupBy(from);
         cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
@@ -332,7 +331,7 @@ public class LogManager {
 
             //result.setCount(JPAUtil.count(em, cq));
             result.setCount(0L);
-            
+
             if (empty) {
                 return result;
             }
@@ -345,7 +344,7 @@ public class LogManager {
                 while (iterator.hasNext()) {
                     Tuple tuple = iterator.next();
                     Entry e = tuple.get(0, Entry.class);
-                    List<Log> all= ((Entry)JPAUtil.findByID(Entry.class, e.getId())).getLogs();
+                    List<Log> all = ((Entry) JPAUtil.findByID(Entry.class, e.getId())).getLogs();
 
                     if (history) {
                         for (Log log : all) {
@@ -357,7 +356,7 @@ public class LogManager {
                             }
                             versionMap.put(e.getId(), version);
                             log.setVersion(String.valueOf(version));
-                            
+
                             log = populateLog(log);
                             result.addLog(log);
                         }
@@ -365,8 +364,8 @@ public class LogManager {
                         Log log = tuple.get(1, Log.class);
                         log.setVersion(String.valueOf(all.size()));
                         log = populateLog(log);
-                        result.addLog(log);  
-                    } 
+                        result.addLog(log);
+                    }
                 }
             }
 
@@ -405,42 +404,64 @@ public class LogManager {
     }
 
     /**
+     * Finds a log and edits in the database by id and parameters.
+     *
+     * @return Log
+     * @throws OlogException wrapping an SQLException
+     */
+    public static Log findLog(Long id, MultivaluedMap<String, String> matches) throws OlogException {
+        try {
+            Multimap<String, String> version_matches = ArrayListMultimap.create();
+            Entry entry = (Entry) JPAUtil.findByID(Entry.class, id);
+            Log result = new Log();
+            String version = null;
+            if (matches != null) {
+                for (Map.Entry<String, List<String>> match : matches.entrySet()) {
+                    String key = match.getKey().toLowerCase();
+                    if (key.equals("version")) {
+                        version_matches.putAll(key, match.getValue());
+                    }
+                }
+                for (Map.Entry<String, Collection<String>> match : version_matches.asMap().entrySet()) {
+                    if (!version_matches.isEmpty()) {
+                        if (match.getKey().toLowerCase().equals("version")) {
+                            version = match.getValue().iterator().next();
+                        }
+                    }
+                }
+
+            }
+            if (version != null) {
+                List<Log> logs = entry.getLogs();
+                result = logs.get(Integer.valueOf(version)-1);
+                result.setVersion(version);
+            } else {
+                Collection<Log> logs = entry.getLogs();
+                result = Collections.max(logs);
+                result.setVersion(String.valueOf(logs.size()));
+            }
+            result = populateLog(result);
+            return result;
+        } catch(ArrayIndexOutOfBoundsException e){
+            throw new OlogException(Response.Status.NOT_FOUND,
+                    "Exception: " + e);
+        } catch (OlogException e) {
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "JPA exception: " + e);
+        } catch (NumberFormatException e) {
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "JPA exception: " + e);
+        }
+    }
+
+    /**
      * Finds a log and edits in the database by id.
      *
      * @return Log
      * @throws OlogException wrapping an SQLException
      */
     public static Log findLog(Long id) throws OlogException {
-        try {
-            Entry entry = (Entry) JPAUtil.findByID(Entry.class, id);
-            Collection<Log> logs = entry.getLogs();
-            Log result = Collections.max(logs);
-            result.setVersion(String.valueOf(logs.size()));
-            result.setXmlAttachments(AttachmentManager.findAll(result.getEntryId()).getAttachments());
-            Iterator<LogAttribute> iter = result.getAttributes().iterator();
-            Set<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
-            while (iter.hasNext()) {
-                XmlProperty xmlProperty = new XmlProperty();
-                Map<String, String> map = new HashMap<String, String>();
-                LogAttribute logattr = iter.next();
-                Attribute attr = logattr.getAttribute();
-                xmlProperty.setName(attr.getProperty().getName());
-                xmlProperty.setId(attr.getProperty().getId());
-                for (XmlProperty prevXmlProperty : xmlProperties) {
-                    if (prevXmlProperty.getId().equals(xmlProperty.getId())) {
-                        map = prevXmlProperty.getAttributes();
-                    }
-                }
-                map.put(attr.getName(), logattr.getValue());
-                xmlProperty.setAttributes(map);
-                xmlProperties.add(xmlProperty);
-            }
-            result.setXmlProperties(xmlProperties);
-            return result;
-        } catch (Exception e) {
-            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "JPA exception: " + e);
-        }
+        return findLog(id, null);
     }
 
     /**
@@ -527,10 +548,10 @@ public class LogManager {
                 Long i = 0L;
                 for (XmlProperty p : log.getXmlProperties()) {
                     Property prop = PropertyManager.findProperty(p.getName());
-                    if(prop != null){
+                    if (prop != null) {
                         for (Map.Entry<String, String> att : p.getAttributes().entrySet()) {
                             Attribute newAtt = AttributeManager.findAttribute(prop, att.getKey());
-                            if(newAtt != null){
+                            if (newAtt != null) {
                                 LogAttribute logattr = new LogAttribute();
                                 logattr.setAttribute(newAtt);
                                 logattr.setLog(newLog);
@@ -540,17 +561,17 @@ public class LogManager {
                                 logattr.setGroupingNum(i);
                                 em.persist(logattr);
                                 logattrs.add(logattr);
-                            }else{
+                            } else {
                                 throw new OlogException(Response.Status.NOT_FOUND,
-                                "Log entry " + log.getId() + " property attribute:" + prop.getName() + newAtt.getName() + " does not exists.");
+                                        "Log entry " + log.getId() + " property attribute:" + prop.getName() + newAtt.getName() + " does not exists.");
                             }
                         }
                         newLog.setAttributes(logattrs);
-                        i++; 
+                        i++;
                     } else {
                         throw new OlogException(Response.Status.NOT_FOUND,
                                 "Log entry " + log.getId() + " prop:" + prop.getName() + " does not exists.");
-                    }                    
+                    }
                 }
             }
             newLog.setXmlProperties(log.getXmlProperties());
