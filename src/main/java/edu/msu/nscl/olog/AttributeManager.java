@@ -19,8 +19,6 @@ import javax.ws.rs.core.Response;
  */
 public class AttributeManager {
 
-    private static EntityManager em = null;
-
     private AttributeManager() {
     }
 
@@ -31,21 +29,22 @@ public class AttributeManager {
      * @throws OlogException wrapping an SQLException
      */
     public static Set<Attribute> findAll(Property property) throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Attribute> cq = cb.createQuery(Attribute.class);
-        Root<Property> from = cq.from(Property.class);
-        SetJoin<Property, Attribute> attributes = from.join(Property_.attributes, JoinType.LEFT);
-        CriteriaQuery<Attribute> select = cq.select(attributes);
-        Predicate namePredicate = cb.equal(from.get(Property_.name), property.getName());
-        Predicate pstatusPredicate = cb.equal(from.get(Property_.state), State.Active);
-        Predicate astatusPredicate = cb.equal(attributes.get(Attribute_.state), State.Active);
-        Predicate andPredicate = cb.and(namePredicate, pstatusPredicate, astatusPredicate);
-        select.where(andPredicate);
-        select.orderBy(cb.asc(attributes.get(Attribute_.name)));
-        TypedQuery<Attribute> typedQuery = em.createQuery(select);
-        JPAUtil.startTransaction(em);
-        try {
+    
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {        
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Attribute> cq = cb.createQuery(Attribute.class);
+            Root<Property> from = cq.from(Property.class);
+            SetJoin<Property, Attribute> attributes = from.join(Property_.attributes, JoinType.LEFT);
+            CriteriaQuery<Attribute> select = cq.select(attributes);
+            Predicate namePredicate = cb.equal(from.get(Property_.name), property.getName());
+            Predicate pstatusPredicate = cb.equal(from.get(Property_.state), State.Active);
+            Predicate astatusPredicate = cb.equal(attributes.get(Attribute_.state), State.Active);
+            Predicate andPredicate = cb.and(namePredicate, pstatusPredicate, astatusPredicate);
+            select.where(andPredicate);
+            select.orderBy(cb.asc(attributes.get(Attribute_.name)));
+            TypedQuery<Attribute> typedQuery = em.createQuery(select);
+            em.getTransaction().begin();
             Set<Attribute> result = new HashSet<Attribute>();
             List<Attribute> rs = typedQuery.getResultList();
             if (rs != null) {
@@ -54,13 +53,19 @@ public class AttributeManager {
                     result.add(iterator.next());
                 }
             }
-
+            em.getTransaction().commit();
             return result;
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-            JPAUtil.finishTransacton(em);
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
 
@@ -71,22 +76,22 @@ public class AttributeManager {
      * @throws OlogException wrapping an SQLException
      */
     public static Attribute findAttribute(Property property, String attributeName) throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Attribute> cq = cb.createQuery(Attribute.class);
-        Root<Property> from = cq.from(Property.class);
-        SetJoin<Property, Attribute> attributes = from.join(Property_.attributes, JoinType.LEFT);
-        CriteriaQuery<Attribute> select = cq.select(attributes);
-        Predicate pnamePredicate = cb.equal(from.get(Property_.name), property.getName());
-        //Predicate pstatusPredicate = cb.equal(from.get(Property_.state), State.Active);
-        //Predicate astatusPredicate = cb.equal(attributes.get(Attribute_.state), State.Active);
-        Predicate anamePredicate = cb.equal(attributes.get(Attribute_.name), attributeName);
-        Predicate andPredicate = cb.and(pnamePredicate, anamePredicate);
-        select.where(andPredicate);
-        select.orderBy(cb.asc(attributes.get(Attribute_.name)));
-        TypedQuery<Attribute> typedQuery = em.createQuery(select);
-        JPAUtil.startTransaction(em);
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Attribute> cq = cb.createQuery(Attribute.class);
+            Root<Property> from = cq.from(Property.class);
+            SetJoin<Property, Attribute> attributes = from.join(Property_.attributes, JoinType.LEFT);
+            CriteriaQuery<Attribute> select = cq.select(attributes);
+            Predicate pnamePredicate = cb.equal(from.get(Property_.name), property.getName());
+            //Predicate pstatusPredicate = cb.equal(from.get(Property_.state), State.Active);
+            //Predicate astatusPredicate = cb.equal(attributes.get(Attribute_.state), State.Active);
+            Predicate anamePredicate = cb.equal(attributes.get(Attribute_.name), attributeName);
+            Predicate andPredicate = cb.and(pnamePredicate, anamePredicate);
+            select.where(andPredicate);
+            select.orderBy(cb.asc(attributes.get(Attribute_.name)));
+            TypedQuery<Attribute> typedQuery = em.createQuery(select);
+            em.getTransaction().begin();
             Attribute result = new Attribute();
             List<Attribute> rs = typedQuery.getResultList();
             if (rs != null) {
@@ -95,13 +100,19 @@ public class AttributeManager {
                     result = iterator.next();
                 }
             }
-
+            em.getTransaction().commit();
             return result;
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-            JPAUtil.finishTransacton(em);
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
 
@@ -114,29 +125,39 @@ public class AttributeManager {
      */
     public static Property create(Property property, String attributeName) throws OlogException {
 
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
+            em.getTransaction().begin();            
             property = PropertyManager.findProperty(property.getName());
             Attribute attribute = findAttribute(property, attributeName);
             if (attribute.getId() != null) {
                 attribute.setState(State.Active);
                 property.addAttribute(attribute);
-                property = (Property) JPAUtil.update(property);
+                property = em.merge(property);
+                em.getTransaction().commit();
                 return property;
             } else {
                 Attribute newAttribute = new Attribute();
                 newAttribute.setName(attributeName);
                 newAttribute.setState(State.Active);
                 newAttribute.setProperty(property);
-                JPAUtil.save(newAttribute);
-                newAttribute = findAttribute(property, newAttribute.getName());
+                em.persist(newAttribute);
                 property.addAttribute(newAttribute);
-                property = (Property) JPAUtil.update(property);
+                property = em.merge(property);
+                em.getTransaction().commit();
                 return property;
             }
         } catch (Exception e) {
-
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
+        } finally {
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
 
@@ -146,15 +167,24 @@ public class AttributeManager {
      * @param name attribute name
      */
     public static void remove(Property property, String attributeName) throws OlogException {
-
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
+            em.getTransaction().begin();            
             Attribute attribute = findAttribute(property, attributeName);
             attribute.setState(State.Inactive);
-            JPAUtil.update(attribute);
+            em.merge(attribute);
+            em.getTransaction().commit();
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
-
+        } finally {
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
 }

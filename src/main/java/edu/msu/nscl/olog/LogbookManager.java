@@ -19,7 +19,6 @@ import javax.ws.rs.core.Response;
  * @author berryman
  */
 public class LogbookManager {
-    private static EntityManager em = null;
     
     private LogbookManager() {
     }
@@ -31,17 +30,17 @@ public class LogbookManager {
      * @throws OlogException wrapping an SQLException
      */
     public static Logbooks findAll() throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Logbook> cq = cb.createQuery(Logbook.class);
-        Root<Logbook> from = cq.from(Logbook.class);
-        CriteriaQuery<Logbook> select = cq.select(from);
-        Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
-        select.where(statusPredicate);
-        select.orderBy(cb.asc(from.get("name")));
-        TypedQuery<Logbook> typedQuery = em.createQuery(select);
-        JPAUtil.startTransaction(em);
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
+            em.getTransaction().begin();
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Logbook> cq = cb.createQuery(Logbook.class);
+            Root<Logbook> from = cq.from(Logbook.class);
+            CriteriaQuery<Logbook> select = cq.select(from);
+            Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
+            select.where(statusPredicate);
+            select.orderBy(cb.asc(from.get("name")));
+            TypedQuery<Logbook> typedQuery = em.createQuery(select);            
             Logbooks result = new Logbooks();
             List<Logbook> rs = typedQuery.getResultList();
             if (rs != null) {
@@ -50,13 +49,19 @@ public class LogbookManager {
                     result.addLogbook(iterator.next());
                 }
             }
-
+            em.getTransaction().commit();
             return result;
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-           JPAUtil.finishTransacton(em);
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
 
@@ -67,18 +72,18 @@ public class LogbookManager {
      * @throws OlogException wrapping an SQLException
      */
     public static Logbook findLogbook(String name) throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Logbook> cq = cb.createQuery(Logbook.class);
-        Root<Logbook> from = cq.from(Logbook.class);
-        CriteriaQuery<Logbook> select = cq.select(from);
-        Predicate namePredicate = cb.equal(from.get("name"), name);
-        //Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
-        select.where(namePredicate);
-        select.orderBy(cb.asc(from.get("name")));
-        TypedQuery<Logbook> typedQuery = em.createQuery(select);
-        JPAUtil.startTransaction(em);
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
+            em.getTransaction().begin();
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Logbook> cq = cb.createQuery(Logbook.class);
+            Root<Logbook> from = cq.from(Logbook.class);
+            CriteriaQuery<Logbook> select = cq.select(from);
+            Predicate namePredicate = cb.equal(from.get("name"), name);
+            //Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
+            select.where(namePredicate);
+            select.orderBy(cb.asc(from.get("name")));
+            TypedQuery<Logbook> typedQuery = em.createQuery(select);
             Logbook result = null;
             List<Logbook> rs = typedQuery.getResultList();
             if (rs != null) {
@@ -87,13 +92,19 @@ public class LogbookManager {
                     result = iterator.next();
                 }
             }
-
+            em.getTransaction().commit();
             return result;
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-            JPAUtil.finishTransacton(em);
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
     
@@ -105,27 +116,36 @@ public class LogbookManager {
      * @throws OlogException wrapping an SQLException
      */
     public static Logbook create(String name, String owner) throws OlogException {
-
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
+            em.getTransaction().begin();
             Logbook xmlLogbook = new Logbook();
             Logbook logbook = findLogbook(name);
             if (logbook != null) {
                 logbook.setState(State.Active);
                 logbook.setOwner(owner);
-                logbook = (Logbook)JPAUtil.update(logbook);
+                logbook = em.merge(logbook);
+                em.getTransaction().commit();
                 return logbook;
             } else {
                 xmlLogbook.setName(name);
                 xmlLogbook.setOwner(owner);
                 xmlLogbook.setState(State.Active);
-                JPAUtil.save(xmlLogbook);
+                em.persist(xmlLogbook);
+                em.getTransaction().commit();
                 return xmlLogbook;
-            }
-             
+            }             
         } catch (Exception e) {
-
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
+        } finally {
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
     
@@ -135,15 +155,24 @@ public class LogbookManager {
      * @param name logbook name
      */
     public static void remove(String name) throws OlogException {
-        
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
-                Logbook logbook = findLogbook(name);
-                logbook.setState(State.Inactive);
-                JPAUtil.update(logbook);
+            em.getTransaction().begin();
+            Logbook logbook = findLogbook(name);
+            logbook.setState(State.Inactive);
+            em.merge(logbook);
+            em.getTransaction().commit();
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
-
+        } finally {
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
 }

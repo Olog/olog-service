@@ -16,8 +16,6 @@ import javax.ws.rs.core.Response;
  */
 public class PropertyManager {
 
-    private static EntityManager em = null;
-
     private PropertyManager() {
     }
 
@@ -28,17 +26,18 @@ public class PropertyManager {
      * @throws OlogException wrapping an SQLException
      */
     public static Set<Property> findAll() throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Property> cq = cb.createQuery(Property.class);
-        Root<Property> from = cq.from(Property.class);
-        CriteriaQuery<Property> select = cq.select(from);
-        Predicate statusPredicate = cb.equal(from.get(Property_.state), State.Active);
-        select.where(statusPredicate);
-        select.orderBy(cb.asc(from.get(Property_.name)));
-        TypedQuery<Property> typedQuery = em.createQuery(select);
-        JPAUtil.startTransaction(em);
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
+            em.getTransaction().begin();
+            
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Property> cq = cb.createQuery(Property.class);
+            Root<Property> from = cq.from(Property.class);
+            CriteriaQuery<Property> select = cq.select(from);
+            Predicate statusPredicate = cb.equal(from.get(Property_.state), State.Active);
+            select.where(statusPredicate);
+            select.orderBy(cb.asc(from.get(Property_.name)));
+            TypedQuery<Property> typedQuery = em.createQuery(select);
             Set<Property> result = new HashSet<Property>();
             List<Property> rs = typedQuery.getResultList();
             if (rs != null) {
@@ -47,13 +46,19 @@ public class PropertyManager {
                     result.add(iterator.next());
                 }
             }
-
+            em.getTransaction().commit();
             return result;
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-            JPAUtil.finishTransacton(em);
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
 
@@ -64,18 +69,19 @@ public class PropertyManager {
      * @throws OlogException wrapping an SQLException
      */
     public static Property findProperty(String propertyName) throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Property> cq = cb.createQuery(Property.class);
-        Root<Property> from = cq.from(Property.class);
-        CriteriaQuery<Property> select = cq.select(from);
-        Predicate namePredicate = cb.equal(from.get(Property_.name), propertyName);
-        //Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
-        select.where(namePredicate);
-        select.orderBy(cb.asc(from.get(Property_.name)));
-        TypedQuery<Property> typedQuery = em.createQuery(select);
-        JPAUtil.startTransaction(em);
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+
         try {
+            em.getTransaction().begin();
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Property> cq = cb.createQuery(Property.class);
+            Root<Property> from = cq.from(Property.class);
+            CriteriaQuery<Property> select = cq.select(from);
+            Predicate namePredicate = cb.equal(from.get(Property_.name), propertyName);
+            //Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
+            select.where(namePredicate);
+            select.orderBy(cb.asc(from.get(Property_.name)));
+            TypedQuery<Property> typedQuery = em.createQuery(select);
             Property result = null;
             List<Property> rs = typedQuery.getResultList();
             if (rs != null) {
@@ -84,13 +90,19 @@ public class PropertyManager {
                     result = iterator.next();
                 }
             }
-
+            em.getTransaction().commit();
             return result;
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-            JPAUtil.finishTransacton(em);
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
 
@@ -102,24 +114,35 @@ public class PropertyManager {
      * @throws OlogException wrapping an SQLException
      */
     public static Property create(String propertyName) throws OlogException {
-
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
+            em.getTransaction().begin();
+
             Property newProperty = new Property();
             Property property = findProperty(propertyName);
             if (property != null) {
                 property.setState(State.Active);
-                property = (Property) JPAUtil.update(property);
+                property = em.merge(property);
+                em.getTransaction().commit();
                 return property;
             } else {
                 newProperty.setName(propertyName);
                 newProperty.setState(State.Active);
-                JPAUtil.save(newProperty);
+                em.persist(newProperty);
+                em.getTransaction().commit();
                 return newProperty;
             }
         } catch (Exception e) {
-
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
+        } finally {
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
 
@@ -130,34 +153,48 @@ public class PropertyManager {
      * @param attributes attributes of property
      * @throws OlogException wrapping an SQLException
      */
-    public static Property create(Property property) throws OlogException {
-        if (property.getAttributes() != null) {
-            Iterator<Attribute> iterator = property.getAttributes().iterator();
-            while (iterator.hasNext()) {
-                Attribute att = AttributeManager.findAttribute(property, iterator.next().getName());
-                if (att.getId() != null) {
-                    property.addAttribute(att);
-                }
-            }
-
-        }
+    public static Property create(Property property) throws OlogException {        
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        
         try {
+            em.getTransaction().begin();
+            
+            if (property.getAttributes() != null) {
+                Iterator<Attribute> iterator = property.getAttributes().iterator();
+                while (iterator.hasNext()) {
+                    Attribute att = AttributeManager.findAttribute(property, iterator.next().getName());
+                    if (att.getId() != null) {
+                        property.addAttribute(att);
+                    }
+                }
+
+            }
             Property Inactiveproperty = findProperty(property.getName());
             if (Inactiveproperty != null) {
                 Inactiveproperty.setState(State.Active);
-                Inactiveproperty = (Property) JPAUtil.update(Inactiveproperty);
+                Inactiveproperty = em.merge(Inactiveproperty);
+                em.getTransaction().commit();
                 return Inactiveproperty;
             } else {
                 Property newProperty = new Property();
                 newProperty.setName(property.getName());
                 newProperty.setState(State.Active);
-                JPAUtil.save(newProperty);
+                em.persist(newProperty);
+                em.getTransaction().commit();
                 return newProperty;
             }
         } catch (Exception e) {
 
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
+        } finally {
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
 
@@ -167,8 +204,10 @@ public class PropertyManager {
      * @param name property name
      */
     public static void remove(String propertyName) throws OlogException {
-
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        
         try {
+            em.getTransaction().begin();
             Property property = findProperty(propertyName);
             property.setState(State.Inactive);
             if (property.getAttributes() != null) {
@@ -177,14 +216,23 @@ public class PropertyManager {
                 while (iterator.hasNext()) {
                     Attribute attribute = iterator.next();
                     attribute.setState(State.Inactive);
-                    JPAUtil.update(attribute);
+                    em.merge(attribute);
                 }
             }
-            JPAUtil.update(property);
+            em.merge(property);
+            em.getTransaction().commit();
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
 
+        } finally {
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
 }
