@@ -5,12 +5,12 @@
         <artifactId>olog</artifactId>
         <groupId>edu.msu.nscl.olog</groupId>
         <relativePath>../../</relativePath>
-        <version>2.2.5-SNAPSHOT</version>
+        <version>2.2.5</version>
     </parent>
     <packaging>war</packaging>
     <artifactId>olog-service</artifactId>
     <groupId>edu.nscl.msu.olog</groupId>
-    <version>2.2.5-SNAPSHOT</version>
+    <version>2.2.5</version>
     <name>Olog Directory Service</name>
     <description>Olog is a directory server, implemented as a REST style web service.</description>
     <url>http://olog.github.com/</url>
@@ -41,7 +41,7 @@
         <connection>scm:git:ssh://git@github.com/${github.projectOwner}/${github.projectName}.git</connection>
         <developerConnection>scm:git:github</developerConnection>
         <url>ssh://git@github.com/${github.projectOwner}/${github.projectName}.git</url>
-      <tag>HEAD</tag>
+      <tag>olog-2.2.5</tag>
   </scm>
     <issueManagement>
         <system>jira</system>
