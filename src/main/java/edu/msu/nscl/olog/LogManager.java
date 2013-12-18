@@ -310,7 +310,7 @@ public class LogManager {
             Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, propertyPredicate, propertyAttributePredicate, datePredicate, searchPredicate, idPredicate);
             cq.multiselect(from, logs);
             cq.where(finalPredicate);
-            cq.groupBy(from);
+            //cq.groupBy(from);
             cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
             TypedQuery<Tuple> typedQuery = em.createQuery(cq);
 
