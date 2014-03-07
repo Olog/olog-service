@@ -100,4 +100,21 @@ public class Logbooks {
             return s.toString();
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Logbooks)) return false;
+
+        Logbooks logbooks1 = (Logbooks) o;
+
+        if (logbooks != null ? !logbooks.equals(logbooks1.logbooks) : logbooks1.logbooks != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return logbooks != null ? logbooks.hashCode() : 0;
+    }
 }

@@ -121,4 +121,24 @@ public class Logs extends ArrayList<Log> {
             return s.toString();
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Logs)) return false;
+        if (!super.equals(o)) return false;
+
+        Logs logs = (Logs) o;
+
+        if (count != null ? !count.equals(logs.count) : logs.count != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (count != null ? count.hashCode() : 0);
+        return result;
+    }
 }

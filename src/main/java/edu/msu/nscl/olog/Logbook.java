@@ -57,6 +57,19 @@ public class Logbook implements Serializable {
     }
 
     /**
+     * Creates a new instance of Logbook.
+     *
+     * @param name
+     * @param owner
+     */
+    public Logbook(Long id,String name, String owner, State state) {
+        this.id = id;
+        this.owner = owner;
+        this.name = name;
+        this.state = state;
+    }
+
+    /**
      * Getter for logbook owner.
      *
      * @return owner logbook owner

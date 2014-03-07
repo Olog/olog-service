@@ -4,31 +4,37 @@
  */
 package edu.msu.nscl.olog;
 
-import java.util.*;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.ws.rs.core.Response;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  *
  * @author berryman
  */
-public class PropertyManager {
+public class PropertyManagerTest {
 
     private static EntityManager em = null;
 
-    private PropertyManager() {
+    private PropertyManagerTest() {
     }
 
     /**
      * Returns the list of tags in the database.
      *
      * @return Tags
-     * @throws OlogException wrapping an SQLException
+     * @throws edu.msu.nscl.olog.OlogException wrapping an SQLException
      */
     public static Set<Property> findAll() throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        em = JPAUtilTest.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Property> cq = cb.createQuery(Property.class);
         Root<Property> from = cq.from(Property.class);
@@ -37,7 +43,7 @@ public class PropertyManager {
         select.where(statusPredicate);
         select.orderBy(cb.asc(from.get(Property_.name)));
         TypedQuery<Property> typedQuery = em.createQuery(select);
-        JPAUtil.startTransaction(em);
+        JPAUtilTest.startTransaction(em);
         try {
             Set<Property> result = new HashSet<Property>();
             List<Property> rs = typedQuery.getResultList();
@@ -53,7 +59,7 @@ public class PropertyManager {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-            JPAUtil.finishTransacton(em);
+            JPAUtilTest.finishTransacton(em);
         }
     }
 
@@ -61,10 +67,10 @@ public class PropertyManager {
      * Finds a tag in the database by name.
      *
      * @return Tag
-     * @throws OlogException wrapping an SQLException
+     * @throws edu.msu.nscl.olog.OlogException wrapping an SQLException
      */
     public static Property findProperty(String propertyName) throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        em = JPAUtilTest.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Property> cq = cb.createQuery(Property.class);
         Root<Property> from = cq.from(Property.class);
@@ -74,7 +80,7 @@ public class PropertyManager {
         select.where(namePredicate);
         select.orderBy(cb.asc(from.get(Property_.name)));
         TypedQuery<Property> typedQuery = em.createQuery(select);
-        JPAUtil.startTransaction(em);
+        JPAUtilTest.startTransaction(em);
         try {
             Property result = null;
             List<Property> rs = typedQuery.getResultList();
@@ -90,7 +96,7 @@ public class PropertyManager {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-            JPAUtil.finishTransacton(em);
+            JPAUtilTest.finishTransacton(em);
         }
     }
 
@@ -99,7 +105,7 @@ public class PropertyManager {
      *
      * @param name name of property
      * @param owner owner of property
-     * @throws OlogException wrapping an SQLException
+     * @throws edu.msu.nscl.olog.OlogException wrapping an SQLException
      */
     public static Property create(String propertyName) throws OlogException {
 
@@ -108,12 +114,12 @@ public class PropertyManager {
             Property property = findProperty(propertyName);
             if (property != null) {
                 property.setState(State.Active);
-                property = (Property) JPAUtil.update(property);
+                property = (Property) JPAUtilTest.update(property);
                 return property;
             } else {
                 newProperty.setName(propertyName);
                 newProperty.setState(State.Active);
-                JPAUtil.save(newProperty);
+                JPAUtilTest.save(newProperty);
                 return newProperty;
             }
         } catch (Exception e) {
@@ -128,7 +134,7 @@ public class PropertyManager {
      *
      * @param name name of property
      * @param attributes attributes of property
-     * @throws OlogException wrapping an SQLException
+     * @throws edu.msu.nscl.olog.OlogException wrapping an SQLException
      */
     public static Property create(Property property) throws OlogException {
         if (property.getAttributes() != null) {
@@ -145,13 +151,13 @@ public class PropertyManager {
             Property Inactiveproperty = findProperty(property.getName());
             if (Inactiveproperty != null) {
                 Inactiveproperty.setState(State.Active);
-                Inactiveproperty = (Property) JPAUtil.update(Inactiveproperty);
+                Inactiveproperty = (Property) JPAUtilTest.update(Inactiveproperty);
                 return Inactiveproperty;
             } else {
                 Property newProperty = new Property();
                 newProperty.setName(property.getName());
                 newProperty.setState(State.Active);
-                JPAUtil.save(newProperty);
+                JPAUtilTest.save(newProperty);
                 return newProperty;
             }
         } catch (Exception e) {
@@ -177,10 +183,10 @@ public class PropertyManager {
                 while (iterator.hasNext()) {
                     Attribute attribute = iterator.next();
                     attribute.setState(State.Inactive);
-                    JPAUtil.update(attribute);
+                    JPAUtilTest.update(attribute);
                 }
             }
-            JPAUtil.update(property);
+            JPAUtilTest.update(property);
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);

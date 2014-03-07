@@ -12,12 +12,15 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.persistence.EntityManager;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.apache.ddlutils.PlatformUtils;
 import org.apache.ddlutils.platform.mysql.MySqlPlatform;
 import org.apache.ddlutils.platform.postgresql.PostgreSqlPlatform;
@@ -122,9 +125,33 @@ public class OlogContextListener implements ServletContextListener {
             System.out.println("Database is up to date: ");
 
             repo = new JCRUtil();
+            try {
+                preCache();
+            } catch (Exception e) {
+                Logger.getLogger(OlogContextListener.class.getName()).log(Level.SEVERE, null, e);
+
+            }
             System.out.println("Olog JCR has been initialized: ");
         } catch (OlogException ex) {
             Logger.getLogger(OlogContextListener.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void preCache() throws Exception {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        OlogImpl cm = OlogImpl.getInstance();
+        Logbooks logbooks  = cm.listLogbooks();
+        for (Logbook logbook : logbooks.getLogbooks()) {
+            MultivaluedMap<String,String> map = new MultivaluedMapImpl();
+            map.add("logbook", logbook.getName());
+            map.add("limit", "1");
+            cm.findLogsByMultiMatch(map);
+        }
+        cm.listLogbooks();
+        cm.listTags();
+        XmlProperties properties = cm.listProperties();
+        for(XmlProperty property : properties.getProperties()) {
+            cm.listAttributes(property.getName());
         }
     }
 }

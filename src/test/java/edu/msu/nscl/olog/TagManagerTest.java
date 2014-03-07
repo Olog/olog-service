@@ -4,8 +4,6 @@
  */
 package edu.msu.nscl.olog;
 
-import java.util.Iterator;
-import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -13,25 +11,27 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.ws.rs.core.Response;
+import java.util.Iterator;
+import java.util.List;
 
 
 /**
  *
  * @author berryman
  */
-public class TagManager {
+public class TagManagerTest {
     private static EntityManager em = null;
     
-    private TagManager() {
+    private TagManagerTest() {
     }
     /**
      * Returns the list of tags in the database.
      *
      * @return Tags
-     * @throws OlogException wrapping an SQLException
+     * @throws edu.msu.nscl.olog.OlogException wrapping an SQLException
      */
     public static Tags findAll() throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        em = JPAUtilTest.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Tag> cq = cb.createQuery(Tag.class);
         Root<Tag> from = cq.from(Tag.class);
@@ -40,7 +40,7 @@ public class TagManager {
         select.where(statusPredicate);
         select.orderBy(cb.asc(from.get("name")));
         TypedQuery<Tag> typedQuery = em.createQuery(select);
-        JPAUtil.startTransaction(em);
+        JPAUtilTest.startTransaction(em);
         try {
             Tags result = new Tags();
             List<Tag> rs = typedQuery.getResultList();
@@ -56,7 +56,7 @@ public class TagManager {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-           JPAUtil.finishTransacton(em);
+           JPAUtilTest.finishTransacton(em);
         }
     }
 
@@ -64,10 +64,10 @@ public class TagManager {
      * Finds a tag in the database by name.
      *
      * @return Tag
-     * @throws OlogException wrapping an SQLException
+     * @throws edu.msu.nscl.olog.OlogException wrapping an SQLException
      */
     public static Tag findTag(String name) throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        em = JPAUtilTest.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Tag> cq = cb.createQuery(Tag.class);
         Root<Tag> from = cq.from(Tag.class);
@@ -77,7 +77,7 @@ public class TagManager {
         select.where(namePredicate);
         select.orderBy(cb.asc(from.get("name")));
         TypedQuery<Tag> typedQuery = em.createQuery(select);
-        JPAUtil.startTransaction(em);
+        JPAUtilTest.startTransaction(em);
         try {
             Tag result = null;
             List<Tag> rs = typedQuery.getResultList();
@@ -87,13 +87,13 @@ public class TagManager {
                     result = iterator.next();
                 }
             }
-            
+
             return result;
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-          JPAUtil.finishTransacton(em);
+          JPAUtilTest.finishTransacton(em);
         }
     }
             /**
@@ -101,7 +101,7 @@ public class TagManager {
      *
      * @param name name of tag
      * @param owner owner of tag
-     * @throws OlogException wrapping an SQLException
+     * @throws edu.msu.nscl.olog.OlogException wrapping an SQLException
      */
     public static Tag create(String name) throws OlogException {
 
@@ -110,12 +110,12 @@ public class TagManager {
             Tag tag = findTag(name);
             if (tag != null) {
                 tag.setState(State.Active);
-                tag = (Tag)JPAUtil.update(tag);
+                tag = (Tag)JPAUtilTest.update(tag);
                 return tag;
             } else {
                 xmlTag.setName(name);
                 xmlTag.setState(State.Active);
-                JPAUtil.save(xmlTag);
+                JPAUtilTest.save(xmlTag);
                 return xmlTag;
             }    
         } catch (Exception e) {
@@ -135,7 +135,7 @@ public class TagManager {
         try {
                 Tag tag = findTag(name);
                 tag.setState(State.Inactive);
-                JPAUtil.update(tag);
+                JPAUtilTest.update(tag);
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);

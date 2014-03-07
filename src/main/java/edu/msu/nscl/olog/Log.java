@@ -5,6 +5,8 @@
  */
 package edu.msu.nscl.olog;
 
+import org.eclipse.persistence.annotations.CacheType;
+
 import java.io.Serializable;
 import java.util.*;
 import javax.persistence.*;
@@ -39,7 +41,7 @@ public class Log implements Serializable, Comparable<Log> {
     
     @Enumerated(EnumType.STRING)
     private Level level;
-    
+
     @Enumerated(EnumType.STRING)
     private State state;
     
@@ -482,5 +484,37 @@ public class Log implements Serializable, Comparable<Log> {
                 + Logbooks.toLogger(xl)
                 + Tags.toLogger(xt)
                 + "]\n";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Log)) return false;
+
+        Log log = (Log) o;
+
+        if (description != null ? !description.equals(log.description) : log.description != null) return false;
+        if (!id.equals(log.id)) return false;
+        if (level != log.level) return false;
+        if (modifiedDate != null ? !modifiedDate.equals(log.modifiedDate) : log.modifiedDate != null) return false;
+        if (owner != null ? !owner.equals(log.owner) : log.owner != null) return false;
+        if (source != null ? !source.equals(log.source) : log.source != null) return false;
+        if (state != log.state) return false;
+        if (version != null ? !version.equals(log.version) : log.version != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + (version != null ? version.hashCode() : 0);
+        result = 31 * result + (owner != null ? owner.hashCode() : 0);
+        result = 31 * result + (source != null ? source.hashCode() : 0);
+        result = 31 * result + (level != null ? level.hashCode() : 0);
+        result = 31 * result + (state != null ? state.hashCode() : 0);
+        result = 31 * result + (modifiedDate != null ? modifiedDate.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        return result;
     }
 }

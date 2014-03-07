@@ -4,34 +4,34 @@
  */
 package edu.msu.nscl.olog;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import javax.ws.rs.core.Response;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  *
  * @author berryman
  */
-public class AttributeManager {
+public class AttributeManagerTest {
 
     private static EntityManager em = null;
 
-    private AttributeManager() {
+    private AttributeManagerTest() {
     }
 
     /**
      * Returns the list of set attribute in the database.
      *
      * @return Set<Attribute>
-     * @throws OlogException wrapping an SQLException
+     * @throws edu.msu.nscl.olog.OlogException wrapping an SQLException
      */
     public static Set<Attribute> findAll(Property property) throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        em = JPAUtilTest.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Attribute> cq = cb.createQuery(Attribute.class);
         Root<Property> from = cq.from(Property.class);
@@ -44,7 +44,7 @@ public class AttributeManager {
         select.where(andPredicate);
         select.orderBy(cb.asc(attributes.get(Attribute_.name)));
         TypedQuery<Attribute> typedQuery = em.createQuery(select);
-        JPAUtil.startTransaction(em);
+        JPAUtilTest.startTransaction(em);
         try {
             Set<Attribute> result = new HashSet<Attribute>();
             List<Attribute> rs = typedQuery.getResultList();
@@ -60,7 +60,7 @@ public class AttributeManager {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-            JPAUtil.finishTransacton(em);
+            JPAUtilTest.finishTransacton(em);
         }
     }
 
@@ -68,10 +68,10 @@ public class AttributeManager {
      * Finds a tag in the database by name.
      *
      * @return Tag
-     * @throws OlogException wrapping an SQLException
+     * @throws edu.msu.nscl.olog.OlogException wrapping an SQLException
      */
     public static Attribute findAttribute(Property property, String attributeName) throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        em = JPAUtilTest.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Attribute> cq = cb.createQuery(Attribute.class);
         Root<Property> from = cq.from(Property.class);
@@ -85,7 +85,7 @@ public class AttributeManager {
         select.where(andPredicate);
         select.orderBy(cb.asc(attributes.get(Attribute_.name)));
         TypedQuery<Attribute> typedQuery = em.createQuery(select);
-        JPAUtil.startTransaction(em);
+        JPAUtilTest.startTransaction(em);
         try {
             Attribute result = new Attribute();
             List<Attribute> rs = typedQuery.getResultList();
@@ -101,7 +101,7 @@ public class AttributeManager {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-            JPAUtil.finishTransacton(em);
+            JPAUtilTest.finishTransacton(em);
         }
     }
 
@@ -109,8 +109,7 @@ public class AttributeManager {
      * Creates a property in the database.
      *
      * @param property property
-     * @param name attribute name
-     * @throws OlogException wrapping an SQLException
+     * @throws edu.msu.nscl.olog.OlogException wrapping an SQLException
      */
     public static Property create(Property property, String attributeName) throws OlogException {
 
@@ -120,17 +119,17 @@ public class AttributeManager {
             if (attribute.getId() != null) {
                 attribute.setState(State.Active);
                 property.addAttribute(attribute);
-                property = (Property) JPAUtil.update(property);
+                property = (Property) JPAUtilTest.update(property);
                 return property;
             } else {
                 Attribute newAttribute = new Attribute();
                 newAttribute.setName(attributeName);
                 newAttribute.setState(State.Active);
                 newAttribute.setProperty(property);
-                JPAUtil.save(newAttribute);
+                JPAUtilTest.save(newAttribute);
                 newAttribute = findAttribute(property, newAttribute.getName());
                 property.addAttribute(newAttribute);
-                property = (Property) JPAUtil.update(property);
+                property = (Property) JPAUtilTest.update(property);
                 return property;
             }
         } catch (Exception e) {
@@ -143,14 +142,13 @@ public class AttributeManager {
     /**
      * Remove a attribute (mark as Inactive).
      *
-     * @param name attribute name
      */
     public static void remove(Property property, String attributeName) throws OlogException {
 
         try {
             Attribute attribute = findAttribute(property, attributeName);
             attribute.setState(State.Inactive);
-            JPAUtil.update(attribute);
+            JPAUtilTest.update(attribute);
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);

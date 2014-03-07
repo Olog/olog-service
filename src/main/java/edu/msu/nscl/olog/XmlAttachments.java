@@ -75,4 +75,21 @@ public class XmlAttachments {
             return s.toString();
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof XmlAttachments)) return false;
+
+        XmlAttachments that = (XmlAttachments) o;
+
+        if (attachments != null ? !attachments.equals(that.attachments) : that.attachments != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return attachments != null ? attachments.hashCode() : 0;
+    }
 }
