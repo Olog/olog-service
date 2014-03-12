@@ -35,7 +35,7 @@ public class AttributeManager {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Attribute> cq = cb.createQuery(Attribute.class);
         Root<Property> from = cq.from(Property.class);
-        SetJoin<Property, Attribute> attributes = from.join(Property_.attributes, JoinType.LEFT);
+        SetJoin<Property, Attribute> attributes = from.join(Property_.attributes, JoinType.INNER);
         CriteriaQuery<Attribute> select = cq.select(attributes);
         Predicate namePredicate = cb.equal(from.get(Property_.name), property.getName());
         Predicate pstatusPredicate = cb.equal(from.get(Property_.state), State.Active);
@@ -75,7 +75,7 @@ public class AttributeManager {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Attribute> cq = cb.createQuery(Attribute.class);
         Root<Property> from = cq.from(Property.class);
-        SetJoin<Property, Attribute> attributes = from.join(Property_.attributes, JoinType.LEFT);
+        SetJoin<Property, Attribute> attributes = from.join(Property_.attributes, JoinType.INNER);
         CriteriaQuery<Attribute> select = cq.select(attributes);
         Predicate pnamePredicate = cb.equal(from.get(Property_.name), property.getName());
         //Predicate pstatusPredicate = cb.equal(from.get(Property_.state), State.Active);
@@ -109,7 +109,6 @@ public class AttributeManager {
      * Creates a property in the database.
      *
      * @param property property
-     * @param name attribute name
      * @throws OlogException wrapping an SQLException
      */
     public static Property create(Property property, String attributeName) throws OlogException {
@@ -143,7 +142,7 @@ public class AttributeManager {
     /**
      * Remove a attribute (mark as Inactive).
      *
-     * @param name attribute name
+     * @param  property, attributeName
      */
     public static void remove(Property property, String attributeName) throws OlogException {
 

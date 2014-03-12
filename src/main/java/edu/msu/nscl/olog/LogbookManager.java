@@ -17,7 +17,7 @@ import javax.ws.rs.core.Response;
  */
 public class LogbookManager {
     private static EntityManager em = null;
-    
+
     private LogbookManager() {
     }
 
@@ -52,7 +52,7 @@ public class LogbookManager {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-           JPAUtil.finishTransacton(em);
+            JPAUtil.finishTransacton(em);
         }
     }
 
@@ -62,6 +62,7 @@ public class LogbookManager {
      * @return Logbook
      * @throws OlogException wrapping an SQLException
      */
+    @Deprecated
     public static Logbook findLogbookOld(String name) throws OlogException {
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -122,15 +123,7 @@ public class LogbookManager {
         JPAUtil.startTransaction(em);
         try {
             Logbook result = null;
-            List<Logbook> rs = typedQuery.getResultList();
-            if (rs != null) {
-                Iterator<Logbook> iterator = rs.iterator();
-                while (iterator.hasNext()) {
-                    result = iterator.next();
-                }
-            }
-
-            return result;
+            return typedQuery.getSingleResult();
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
@@ -138,7 +131,7 @@ public class LogbookManager {
             JPAUtil.finishTransacton(em);
         }
     }
-    
+
     /**
      * Creates a logbook in the database.
      *
@@ -163,25 +156,25 @@ public class LogbookManager {
                 JPAUtil.save(xmlLogbook);
                 return xmlLogbook;
             }
-             
+
         } catch (Exception e) {
 
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         }
     }
-    
+
     /**
      * Remove a logbook (mark as Inactive).
      *
      * @param name logbook name
      */
     public static void remove(String name) throws OlogException {
-        
+
         try {
-                Logbook logbook = findLogbook(name);
-                logbook.setState(State.Inactive);
-                JPAUtil.update(logbook);
+            Logbook logbook = findLogbook(name);
+            logbook.setState(State.Inactive);
+            JPAUtil.update(logbook);
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
