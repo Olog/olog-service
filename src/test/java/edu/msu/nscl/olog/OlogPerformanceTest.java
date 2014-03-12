@@ -68,7 +68,7 @@ public class OlogPerformanceTest {
         long startTime = System.nanoTime();
         Logs logs = LogManagerTest.findLog(map);
         long endTime = System.nanoTime();
-        logId = logs.getCount() > 0 ? logs.get(0).getId(): 1l;
+        logId = logs.getLogList().size() > 0 ? logs.get(0).getEntryId(): 1l;
          double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to find a log by attribute is: " + totalTime + "(s)");
         out.newLine();

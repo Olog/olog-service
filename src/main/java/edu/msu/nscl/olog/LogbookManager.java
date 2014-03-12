@@ -95,7 +95,12 @@ public class LogbookManager {
 
 
     /**
-     * Finds a logbook in the database by name.
+     *  XXX: The biggest bottom neck here is that if the logbook contains more than 1000 logs, the merge times goes up
+     *  exponentially, to prevent this, lets get a logbook without logs, removing the botton neck.
+     *  this works without needing to remove the Logbook cache, since we never marshall the Log objects for the Logbook
+     *  if this change, this approach will not work and the cache should be remove at the end of the log creation by
+     *  em.getEntityManagerFactory().getCache().evict(Logbook.class);\
+     *  Finds a logbook in the database by name.
      *
      * @return Logbook
      * @throws OlogException wrapping an SQLException

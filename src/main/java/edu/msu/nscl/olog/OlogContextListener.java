@@ -138,13 +138,12 @@ public class OlogContextListener implements ServletContextListener {
     }
 
     public void preCache() throws Exception {
-        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         OlogImpl cm = OlogImpl.getInstance();
         Logbooks logbooks  = cm.listLogbooks();
         for (Logbook logbook : logbooks.getLogbooks()) {
             MultivaluedMap<String,String> map = new MultivaluedMapImpl();
             map.add("logbook", logbook.getName());
-            map.add("limit", "1");
+            map.add("limit", "10");
             cm.findLogsByMultiMatch(map);
         }
         cm.listLogbooks();

@@ -19,6 +19,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.Set;
 
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -38,6 +39,8 @@ public class OlogPerformanceTestAgainstCode {
         out = new BufferedWriter(new FileWriter(outputFile));
         mockStatic(AttachmentManager.class);
         PowerMockito.when(AttachmentManager.findAll(Mockito.anyLong())).thenReturn(new XmlAttachments());
+        PowerMockito.when(AttachmentManager.findAll(Mockito.anyString())).thenReturn(new LinkedList<Long>());
+
     }
 
     @AfterClass
@@ -83,7 +86,7 @@ public class OlogPerformanceTestAgainstCode {
         Logs logs = LogManager.findLog(map);
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
-        logId = logs.getLogList().size() > 0 ? logs.get(0).getId(): 1l;
+        logId = logs.getLogList().size() > 0 ? logs.get(0).getEntryId(): 1l;
         out.write(dbTypeText + " Time consume to find a log by attribute is: " + totalTime + "(s)");
         out.newLine();
     }
@@ -220,7 +223,7 @@ public class OlogPerformanceTestAgainstCode {
 
     public void createLogbook(String dbTypeText) throws IOException, OlogException {
         long startTime = System.nanoTime();
-        Logbook logbook = LogbookManager.create("johnLog", "User");
+        Logbook logbook = LogbookManager.create("Log", "User");
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to create a logbook  is: " + totalTime + "(s)");

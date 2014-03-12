@@ -1,9 +1,7 @@
 package edu.msu.nscl.olog;
 
-import com.intellij.mock.Mock;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.apache.commons.lang.time.DateUtils;
-import org.apache.jackrabbit.core.RepositoryImpl;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -17,6 +15,7 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
 
 import static org.junit.Assert.assertEquals;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -32,15 +31,16 @@ public class CompareVersionsTest {
 
 
     @BeforeClass
-    public static void setup() {
+    public static void setup() throws OlogException {
         System.setProperty("persistenceUnit", "olog_test");
+        mockStatic(AttachmentManager.class);
+        PowerMockito.when(AttachmentManager.findAll(Mockito.anyLong())).thenReturn(new XmlAttachments());
+        PowerMockito.when(AttachmentManager.findAll(Mockito.anyString())).thenReturn(new LinkedList<Long>());
     }
 
 
     @Test
     public void findLogByAttribute() throws OlogException {
-        mockStatic(AttachmentManager.class);
-        PowerMockito.when(AttachmentManager.findAll(Mockito.anyLong())).thenReturn(new XmlAttachments());
         MultivaluedMap<String, String> map = new MultivaluedMapImpl();
         map.add("sweep.crystal_name", "ECF_229");
         map.add("limit", "20");
@@ -55,7 +55,7 @@ public class CompareVersionsTest {
 
     @Test
     public void createLogTest() throws OlogException {
-        Log log = LogManager.findLog(2313l);
+        Log log = LogManager.findLog(2006252l);
         log.setId(null);
         log.setEntry(null);
         log.setEntryId(null);
@@ -85,5 +85,7 @@ public class CompareVersionsTest {
 
     private void compareLogs(final Log firstLog, final Log secondLog) {
         assertEquals(firstLog, secondLog);
+        assertEquals(firstLog.getAttributes(), secondLog.getAttributes());
+        assertEquals(firstLog.getXmlProperties(), secondLog.getXmlProperties());
     }
 }

@@ -5,6 +5,9 @@
  */
 package edu.msu.nscl.olog;
 
+import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -40,7 +43,9 @@ public class Logs extends ArrayList<Log> {
     }
 
     public Logs(List<Log> logs) {
-        this.addAll(logs);
+        if (!CollectionUtils.isEmpty(logs)) {
+            this.addAll(logs);
+        }
     }
     
     @XmlAttribute(name = "count")

@@ -32,11 +32,13 @@ public class LogManager {
      * @return Logs
      * @throws OlogException wrapping an SQLException
      */
+    @Deprecated
     public static Logs findAll() throws OlogException {
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Log> cq = cb.createQuery(Log.class);
         Root<Log> from = cq.from(Log.class);
+
         CriteriaQuery<Log> select = cq.select(from);
         Predicate statusPredicate = cb.equal(from.get(Log_.state), State.Active);
         select.where(statusPredicate);
@@ -65,7 +67,7 @@ public class LogManager {
 
     public static Logs findLog(MultivaluedMap<String, String> matches) throws OlogException {
 
-
+        // XXX: should mandate a limit for it, since for big db it can run out of memory
         List<String> log_patterns = new ArrayList();
         List<String> id_patterns = new ArrayList();
         List<String> tag_matches = new ArrayList();
@@ -82,7 +84,7 @@ public class LogManager {
 
         em = JPAUtil.getEntityManagerFactory().createEntityManager();
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
+        CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
         Root<Entry> from = cq.from(Entry.class);
         Join<Entry,Log> logs = from.join(Entry_.logs, JoinType.INNER);
         SetJoin<Log, Tag> tags = logs.join(Log_.tags, JoinType.LEFT);
@@ -301,11 +303,11 @@ public class LogManager {
             statusPredicate = cb.equal(logs.get(Log_.state), State.Active);
         }
         Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, propertyPredicate, propertyAttributePredicate, datePredicate, searchPredicate, idPredicate);
-        cq.multiselect(from, logs);
+        cq.select(from);
         cq.where(finalPredicate);
-        //cq.groupBy(from);
+        cq.groupBy(from);
         cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
-        TypedQuery<Tuple> typedQuery = em.createQuery(cq);
+        TypedQuery<Entry> typedQuery = em.createQuery(cq);
         if (!paginate_matches.isEmpty()) {
             String page = null, limit = null;
             for (Map.Entry<String, Collection<String>> match : paginate_matches.asMap().entrySet()) {
@@ -336,15 +338,14 @@ public class LogManager {
             if (empty) {
                 return result;
             }
-            List<Tuple> rs = typedQuery.getResultList();
+            List<Entry> rs = typedQuery.getResultList();
             Map<Long, Integer> versionMap = new HashMap<Long, Integer>();
             if (rs != null) {
-                Iterator<Tuple> iterator = rs.iterator();
+                Iterator<Entry> iterator = rs.iterator();
                 while (iterator.hasNext()) {
-                    Tuple tuple = iterator.next();
-                    Entry e = tuple.get(0, Entry.class);
-                    List<Log> all= ((Entry)JPAUtil.findByID(Entry.class, e.getId())).getLogs();
+                    Entry e = iterator.next();
                     if (history) {
+                        List<Log> all= ((Entry)JPAUtil.findByID(Entry.class, e.getId())).getLogs();
                         for (Log log : all) {
                             int version;
                             if (versionMap.containsKey(e.getId())) {
@@ -359,9 +360,7 @@ public class LogManager {
                             result.addLog(log);
                         }
                     } else {
-                        Log log = tuple.get(1, Log.class);
-                        log.setVersion(String.valueOf(all.size()));
-                        log = populateLog(log);
+                        Log log = findLog(e.getId());
                         result.addLog(log);
                     }
                 }
@@ -376,9 +375,6 @@ public class LogManager {
     }
 
     private static Log populateLog(Log log) throws OlogException {
-        for (Logbook logbook : log.getLogbooks()) {
-            logbook.setLogs(null);
-        }
         log.setXmlAttachments(AttachmentManager.findAll(log.getEntryId()).getAttachments());
         Iterator<LogAttribute> iter = log.getAttributes().iterator();
         Set<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
@@ -462,11 +458,6 @@ public class LogManager {
             Set<Logbook> logbooks = new HashSet<Logbook>();
             while (iterator.hasNext()) {
                 String logbookName = iterator.next().getName();
-                //XXX: The biggest bottom neck here is that if the logbook contains more than 1000 logs, the merge times goes up
-                // exponentially, to prevent this, lets get a logbook without logs, removing the botton neck.
-                // this works without needing to remove the Logbook cache, since we never marshall the Log objects for the Logbook
-                // if this change, this approach will not work and the cache should be remove at the end of the log creation by
-                // em.getEntityManagerFactory().getCache().evict(Logbook.class);\
                 Logbook logbook = LogbookManager.findLogbook(logbookName);
                 if (logbook != null) {
                     logbook = em.merge(logbook);
