@@ -8,10 +8,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import javax.jcr.*;
 
+import javax.persistence.Persistence;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -25,7 +27,8 @@ import java.util.Set;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(AttachmentManager.class)
+@PrepareForTest({AttachmentManager.class, JPAUtil.class})
+@SuppressStaticInitializationFor("edu.msu.nscl.olog.JPAUtil")
 public class OlogPerformanceTestAgainstCode {
 
     private static BufferedWriter out;
@@ -33,7 +36,6 @@ public class OlogPerformanceTestAgainstCode {
 
     @BeforeClass
     public static void prepare() throws IOException, OlogException {
-        System.setProperty("persistenceUnit", "olog_test");
         String filePath = OlogPerformanceTestAgainstCode.class.getResource("OlogPerformanceTestAgainstCode.class").getPath();
         File outputFile = new File(filePath.substring(0,filePath.indexOf("target")) + "src/test/java/edu/msu/nscl/olog/OlogPerformanceTestAgainstCodeResult.txt");
         out = new BufferedWriter(new FileWriter(outputFile));
@@ -50,6 +52,7 @@ public class OlogPerformanceTestAgainstCode {
 
 
     private void runTests(final String dbTypeText) throws IOException, OlogException, RepositoryException {
+
         findLogByAttribute(dbTypeText);
         findLogByDescription(dbTypeText);
         insertLog(dbTypeText);
@@ -74,7 +77,9 @@ public class OlogPerformanceTestAgainstCode {
 
     @Test
     public void runTest() throws RepositoryException, OlogException, IOException {
-        Runtime.getRuntime().exec("mysql -u olog -p olog < /home/eschuhmacher/ologBig.sql");
+        //Runtime.getRuntime().exec("mysql -u olog -p olog < /home/eschuhmacher/ologBig.sql");
+        PowerMockito.spy(JPAUtil.class);
+        PowerMockito.when(JPAUtil.getEntityManagerFactory()).thenReturn(JPAUtilTest.getEntityManagerFactory());
         runTests("Psql db- ");
     }
 

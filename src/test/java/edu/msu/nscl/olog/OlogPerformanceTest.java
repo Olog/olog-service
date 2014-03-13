@@ -56,7 +56,7 @@ public class OlogPerformanceTest {
         removeTag(dbTypeText);
     }
 
-    
+
     @Test
     public void runTest() throws RepositoryException, OlogException, IOException {
         runTests("psql db - ");

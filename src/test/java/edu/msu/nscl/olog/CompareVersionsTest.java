@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -26,20 +27,26 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
  */
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(AttachmentManager.class)
+@PrepareForTest({AttachmentManager.class, JPAUtil.class})
+@SuppressStaticInitializationFor("edu.msu.nscl.olog.JPAUtil")
 public class CompareVersionsTest {
 
 
     @BeforeClass
     public static void setup() throws OlogException {
-        System.setProperty("persistenceUnit", "olog_test");
         mockStatic(AttachmentManager.class);
         PowerMockito.when(AttachmentManager.findAll(Mockito.anyLong())).thenReturn(new XmlAttachments());
         PowerMockito.when(AttachmentManager.findAll(Mockito.anyString())).thenReturn(new LinkedList<Long>());
     }
 
-
     @Test
+    public void compareTest() throws OlogException {
+        mockPersistance();
+        findLogByAttribute();
+        createLogTest();
+        findLogByDate();
+    }
+
     public void findLogByAttribute() throws OlogException {
         MultivaluedMap<String, String> map = new MultivaluedMapImpl();
         map.add("sweep.crystal_name", "ECF_229");
@@ -53,7 +60,7 @@ public class CompareVersionsTest {
         }
     }
 
-    @Test
+
     public void createLogTest() throws OlogException {
         Log log = LogManager.findLog(2006252l);
         log.setId(null);
@@ -69,10 +76,8 @@ public class CompareVersionsTest {
         assertEquals(newLog.getSource(), oldLog.getSource());
     }
 
-    @Test
+
     public void findLogByDate() throws OlogException {
-        mockStatic(AttachmentManager.class);
-        PowerMockito.when(AttachmentManager.findAll(Mockito.anyLong())).thenReturn(new XmlAttachments());
         MultivaluedMap<String, String> map = new MultivaluedMapImpl();
         map.add("start", String.valueOf(DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH).getTime() / 1000));
         Logs newLogs = LogManager.findLog(map);
@@ -87,5 +92,10 @@ public class CompareVersionsTest {
         assertEquals(firstLog, secondLog);
         assertEquals(firstLog.getAttributes(), secondLog.getAttributes());
         assertEquals(firstLog.getXmlProperties(), secondLog.getXmlProperties());
+    }
+
+    private void mockPersistance() {
+        PowerMockito.spy(JPAUtil.class);
+        PowerMockito.when(JPAUtil.getEntityManagerFactory()).thenReturn(JPAUtilTest.getEntityManagerFactory());
     }
 }

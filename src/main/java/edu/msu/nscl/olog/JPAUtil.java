@@ -27,11 +27,7 @@ public class JPAUtil {
 
     static {
         try {
-            if(System.getProperty("persistenceUnit") != null) {
-                factory = Persistence.createEntityManagerFactory(System.getProperty("persistenceUnit"));
-            } else {
-                factory = Persistence.createEntityManagerFactory("olog_prod");
-            }
+            factory = Persistence.createEntityManagerFactory("olog_prod");
         } catch (Throwable ex) {
             logger.error("Initial SessionFactory creation failed", ex);
             throw new ExceptionInInitializerError(ex);
