@@ -88,7 +88,7 @@ public class LogManager {
         Root<Entry> from = cq.from(Entry.class);
         Join<Entry,Log> logs = from.join(Entry_.logs, JoinType.INNER);
         SetJoin<Log, Tag> tags = logs.join(Log_.tags, JoinType.LEFT);
-        SetJoin<Log, Logbook> logbooks = logs.join(Log_.logbooks, JoinType.INNER);
+        SetJoin<Log, Logbook> logbooks = logs.join(Log_.logbooks, JoinType.LEFT);
         Join<Log, LogAttribute> logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
         Join<LogAttribute, Attribute> attribute = logAttribute.join(LogAttribute_.attribute, JoinType.LEFT);
         Join<Attribute, Property> property = attribute.join(Attribute_.property, JoinType.LEFT);

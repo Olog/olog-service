@@ -35,7 +35,7 @@ public class AttributeManager {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Attribute> cq = cb.createQuery(Attribute.class);
         Root<Property> from = cq.from(Property.class);
-        SetJoin<Property, Attribute> attributes = from.join(Property_.attributes, JoinType.INNER);
+        SetJoin<Property, Attribute> attributes = from.join(Property_.attributes, JoinType.LEFT);
         CriteriaQuery<Attribute> select = cq.select(attributes);
         Predicate namePredicate = cb.equal(from.get(Property_.name), property.getName());
         Predicate pstatusPredicate = cb.equal(from.get(Property_.state), State.Active);
@@ -75,7 +75,7 @@ public class AttributeManager {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Attribute> cq = cb.createQuery(Attribute.class);
         Root<Property> from = cq.from(Property.class);
-        SetJoin<Property, Attribute> attributes = from.join(Property_.attributes, JoinType.INNER);
+        SetJoin<Property, Attribute> attributes = from.join(Property_.attributes, JoinType.LEFT);
         CriteriaQuery<Attribute> select = cq.select(attributes);
         Predicate pnamePredicate = cb.equal(from.get(Property_.name), property.getName());
         //Predicate pstatusPredicate = cb.equal(from.get(Property_.state), State.Active);
