@@ -42,10 +42,7 @@ public class LogbookManager {
             Logbooks result = new Logbooks();
             List<Logbook> rs = typedQuery.getResultList();
             if (rs != null) {
-                Iterator<Logbook> iterator = rs.iterator();
-                while (iterator.hasNext()) {
-                    result.addLogbook(iterator.next());
-                }
+                result.setLogbooks(rs);
             }
             return result;
         } catch (Exception e) {
