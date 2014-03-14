@@ -22,7 +22,7 @@ import javax.ws.rs.core.Response;
 public class LogManager {
 
     private static EntityManager em = null;
-
+    private static final int maxResults = 1000;
     private LogManager() {
     }
 
@@ -324,6 +324,9 @@ public class LogManager {
                 typedQuery.setMaxResults(Integer.valueOf(limit));
             } else if (limit != null) {
                 typedQuery.setMaxResults(Integer.valueOf(limit));
+            } else {
+                //set a hardcoded limit so the server will not run out of memory
+                typedQuery.setMaxResults(maxResults);
             }
         }
 
@@ -450,7 +453,8 @@ public class LogManager {
         newLog.setState(State.Active);
         newLog.setLevel(log.getLevel());
         newLog.setOwner(log.getOwner());
-        newLog.setDescription(log.getDescription());
+        //remove new line and tab character since psql do not convert them
+        newLog.setDescription(log.getDescription().replaceAll("\n", " ").replaceAll("\t", " "));
         newLog.setSource(log.getSource());
         em.persist(newLog);
         if (!log.getLogbooks().isEmpty()) {
