@@ -1,1 +1,0 @@
-ALTER TABLE `logs` DROP COLUMN `md5recent`;
