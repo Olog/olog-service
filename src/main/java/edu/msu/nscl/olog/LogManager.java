@@ -453,9 +453,9 @@ public class LogManager {
         newLog.setState(State.Active);
         newLog.setLevel(log.getLevel());
         newLog.setOwner(log.getOwner());
-        //remove new line and tab character since psql do not convert them
-        newLog.setDescription(log.getDescription().replaceAll("\n", " ").replaceAll("\t", " "));
-        newLog.setSource(log.getSource());
+        //remove new line and tab character since psql do not convert them from Postgres
+       // newLog.setDescription(log.getDescription().replaceAll("\n", " ").replaceAll("\t", " "));
+       // newLog.setSource(log.getSource());
         em.persist(newLog);
         if (!log.getLogbooks().isEmpty()) {
             Iterator<Logbook> iterator = log.getLogbooks().iterator();
