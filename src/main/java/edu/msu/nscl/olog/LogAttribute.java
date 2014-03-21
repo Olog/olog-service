@@ -97,4 +97,30 @@ public class LogAttribute implements Serializable {
     public void setValue(String value) {
         this.value = value;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof LogAttribute)) return false;
+
+        LogAttribute that = (LogAttribute) o;
+
+        if (!attributeId.equals(that.attributeId)) return false;
+        if (groupingNum != null ? !groupingNum.equals(that.groupingNum) : that.groupingNum != null) return false;
+        if (!id.equals(that.id)) return false;
+        if (logId != null ? !logId.equals(that.logId) : that.logId != null) return false;
+        if (value != null ? !value.equals(that.value) : that.value != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + (logId != null ? logId.hashCode() : 0);
+        result = 31 * result + attributeId.hashCode();
+        result = 31 * result + (value != null ? value.hashCode() : 0);
+        result = 31 * result + (groupingNum != null ? groupingNum.hashCode() : 0);
+        return result;
+    }
 }

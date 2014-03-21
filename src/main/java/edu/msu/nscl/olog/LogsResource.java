@@ -102,6 +102,8 @@ public class LogsResource {
             }
             
             Logs result = cm.createOrReplaceLogs(data);
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
+                    + "|data=" + Logs.toLogger(data));
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + Logs.toLogger(data));
@@ -127,7 +129,7 @@ public class LogsResource {
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         Log result = null;
         try {
-            result = cm.findLogById(logId,uriInfo.getQueryParameters());
+            result = cm.findLogById(logId);
             Response r;
             if (result == null) {
                 r = Response.status(Response.Status.NOT_FOUND).build();

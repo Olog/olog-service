@@ -102,4 +102,24 @@ public class Entry implements Serializable, Comparable<Entry> {
         int x = createdDate.compareTo(num.createdDate);
         return x;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Entry)) return false;
+
+        Entry entry = (Entry) o;
+
+        if (createdDate != null ? !createdDate.equals(entry.createdDate) : entry.createdDate != null) return false;
+        if (!id.equals(entry.id)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + (createdDate != null ? createdDate.hashCode() : 0);
+        return result;
+    }
 }

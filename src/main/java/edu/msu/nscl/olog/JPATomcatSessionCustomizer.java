@@ -38,7 +38,6 @@ public class JPATomcatSessionCustomizer implements SessionCustomizer {
 				} catch (NameNotFoundException ex) {
 				}
 			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

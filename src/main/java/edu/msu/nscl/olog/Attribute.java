@@ -91,4 +91,26 @@ public class Attribute implements Serializable {
     public void setProperty(Property property) {
         this.property = property;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Attribute)) return false;
+
+        Attribute attribute = (Attribute) o;
+
+        if (!id.equals(attribute.id)) return false;
+        if (name != null ? !name.equals(attribute.name) : attribute.name != null) return false;
+        if (state != attribute.state) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (state != null ? state.hashCode() : 0);
+        return result;
+    }
 }

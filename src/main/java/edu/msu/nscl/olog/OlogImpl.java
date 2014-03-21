@@ -907,8 +907,4 @@ public class OlogImpl {
     Logs findLogsTest() throws OlogException {
         return LogManager.findAll();
     }
-
-    Log findLogById(Long logId, MultivaluedMap<String, String> queryParameters) throws OlogException {
-        return LogManager.findLog(logId,queryParameters);
-    }
 }
