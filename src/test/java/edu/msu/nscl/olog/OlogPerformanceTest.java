@@ -22,6 +22,7 @@ public class OlogPerformanceTest {
 
     @BeforeClass
     public static void prepareTest() throws IOException {
+        System.setProperty("persistenceUnit", "olog_test");
         String filePath = OlogPerformanceTest.class.getResource("OlogPerformanceTest.class").getPath();
         File outputFile = new File(filePath.substring(0,filePath.indexOf("target")) + "src/test/java/edu/msu/nscl/olog/OlogPerformanceTestResult.txt");
         out = new BufferedWriter(new FileWriter(outputFile));
@@ -57,6 +58,7 @@ public class OlogPerformanceTest {
     }
 
 
+    @Ignore
     @Test
     public void runTest() throws RepositoryException, OlogException, IOException {
         runTests("psql db - ");

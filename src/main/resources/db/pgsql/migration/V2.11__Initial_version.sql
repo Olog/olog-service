@@ -22,6 +22,7 @@ CREATE TABLE entries (
   PRIMARY KEY (id)
 );
 
+CREATE INDEX created_fk ON entries (created);
 
 --
 -- Definition of table logbooks
@@ -38,19 +39,7 @@ CREATE TABLE logbooks (
   PRIMARY KEY (id)
 );
 
-INSERT INTO logbooks (id,name,is_tag,owner,state) VALUES 
- (1,'Operations',0,NULL,'Active'),
- (2,'Electronics Maintenance',0,NULL,'Active'),
- (3,'Mechanical Technicians',0,NULL,'Active'),
- (4,'LOTO',0,NULL,'Active'),
- (5,'Inverpower Power Supplies',1,NULL,'Active'),
- (6,'RF Area',1,NULL,'Active'),
- (7,'Kicker',1,NULL,'Active'),
- (8,'Bumps',1,NULL,'Active'),
- (9,'Septums',1,NULL,'Active'),
- (10,'Large Power Supplies',1,NULL,'Active'),
- (11,'Timing Systems',1,NULL,'Active');
-
+CREATE UNIQUE INDEX name_fx ON logbooks (name);
 
 --
 -- Definition of table logs
@@ -71,6 +60,7 @@ CREATE TABLE logs (
   PRIMARY KEY (id)
 );
 CREATE INDEX entry_id_fk ON logs (entry_id);
+CREATE INDEX modified_fk ON logs (modified);
 ALTER TABLE logs ADD CONSTRAINT entry_id_fk FOREIGN KEY (entry_id) REFERENCES entries (id);
 
 
@@ -85,6 +75,8 @@ CREATE TABLE logs_logbooks (
   logbook_id bigint NOT NULL,
   PRIMARY KEY (id)
 );
+CREATE INDEX log_id_tk ON logs_logbooks (log_id);
+CREATE INDEX logbook_id_tk ON logs_logbooks (logbook_id);
 ALTER TABLE logs_logbooks ADD CONSTRAINT log_id_fk FOREIGN KEY (log_id) REFERENCES logs (id);
 ALTER TABLE logs_logbooks ADD CONSTRAINT logbook_id_fk FOREIGN KEY (logbook_id) REFERENCES logbooks (id);
 
@@ -100,6 +92,7 @@ CREATE TABLE  properties (
   state VARCHAR(20) NOT NULL DEFAULT 'Active',
   PRIMARY KEY (id)
 );
+CREATE INDEX name_prop_tk ON properties (name);
 
 
 --
@@ -114,6 +107,9 @@ CREATE TABLE  attributes (
   state VARCHAR(20) NOT NULL DEFAULT 'Active',
   PRIMARY KEY (id)
 );
+CREATE INDEX property_id_tk ON attributes (id);
+CREATE INDEX attribute_name_tk ON attributes (name);
+
 ALTER TABLE attributes ADD CONSTRAINT attributes_property_id_fk FOREIGN KEY (property_id) REFERENCES properties (id);
 
 --
@@ -129,6 +125,10 @@ CREATE TABLE  logs_attributes (
   grouping_num int NOT NULL,
   PRIMARY KEY (id)
 );
+
+CREATE INDEX logs_attributes_log_id_tk ON logs_attributes (log_id);
+CREATE INDEX logs_attributes_attribute_id_tk ON logs_attributes (attribute_id);
+
 ALTER TABLE logs_attributes ADD CONSTRAINT logs_attributes_attribute_id_fk FOREIGN KEY (attribute_id) REFERENCES attributes (id);
 ALTER TABLE logs_attributes ADD CONSTRAINT logs_attributes_log_id_fk FOREIGN KEY (log_id) REFERENCES logs (id);
 
