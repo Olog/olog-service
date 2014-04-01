@@ -20,8 +20,7 @@ import javax.ws.rs.core.Response;
  * @author berryman
  */
 public class TagManager {
-    private static EntityManager em = null;
-    
+
     private TagManager() {
     }
     /**
@@ -31,17 +30,18 @@ public class TagManager {
      * @throws OlogException wrapping an SQLException
      */
     public static Tags findAll() throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Tag> cq = cb.createQuery(Tag.class);
-        Root<Tag> from = cq.from(Tag.class);
-        CriteriaQuery<Tag> select = cq.select(from);
-        Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
-        select.where(statusPredicate);
-        select.orderBy(cb.asc(from.get("name")));
-        TypedQuery<Tag> typedQuery = em.createQuery(select);
-        JPAUtil.startTransaction(em);
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+
         try {
+            em.getTransaction().begin();
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Tag> cq = cb.createQuery(Tag.class);
+            Root<Tag> from = cq.from(Tag.class);
+            CriteriaQuery<Tag> select = cq.select(from);
+            Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
+            select.where(statusPredicate);
+            select.orderBy(cb.asc(from.get("name")));
+            TypedQuery<Tag> typedQuery = em.createQuery(select);
             Tags result = new Tags();
             List<Tag> rs = typedQuery.getResultList();
             if (rs != null) {
@@ -50,13 +50,19 @@ public class TagManager {
                     result.addTag(iterator.next());
                 }
             }
-
+            em.getTransaction().commit();
             return result;
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-           JPAUtil.finishTransacton(em);
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
 
@@ -67,18 +73,19 @@ public class TagManager {
      * @throws OlogException wrapping an SQLException
      */
     public static Tag findTag(String name) throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Tag> cq = cb.createQuery(Tag.class);
-        Root<Tag> from = cq.from(Tag.class);
-        CriteriaQuery<Tag> select = cq.select(from);
-        Predicate namePredicate = cb.equal(from.get("name"), name);
-        //Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
-        select.where(namePredicate);
-        select.orderBy(cb.asc(from.get("name")));
-        TypedQuery<Tag> typedQuery = em.createQuery(select);
-        JPAUtil.startTransaction(em);
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+
         try {
+            em.getTransaction().begin();
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Tag> cq = cb.createQuery(Tag.class);
+            Root<Tag> from = cq.from(Tag.class);
+            CriteriaQuery<Tag> select = cq.select(from);
+            Predicate namePredicate = cb.equal(from.get("name"), name);
+            //Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
+            select.where(namePredicate);
+            select.orderBy(cb.asc(from.get("name")));
+            TypedQuery<Tag> typedQuery = em.createQuery(select);
             Tag result = null;
             List<Tag> rs = typedQuery.getResultList();
             if (rs != null) {
@@ -87,16 +94,22 @@ public class TagManager {
                     result = iterator.next();
                 }
             }
-            
+            em.getTransaction().commit();
             return result;
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-          JPAUtil.finishTransacton(em);
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
-            /**
+    /**
      * Creates a tag in the database.
      *
      * @param name name of tag
@@ -104,42 +117,65 @@ public class TagManager {
      * @throws OlogException wrapping an SQLException
      */
     public static Tag create(String name) throws OlogException {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
 
         try {
+            em.getTransaction().begin();
             Tag xmlTag = new Tag();
             Tag tag = findTag(name);
             if (tag != null) {
                 tag.setState(State.Active);
-                tag = (Tag)JPAUtil.update(tag);
+                tag = em.merge(tag);
+                em.getTransaction().commit();
                 return tag;
             } else {
                 xmlTag.setName(name);
                 xmlTag.setState(State.Active);
-                JPAUtil.save(xmlTag);
+                em.persist(xmlTag);
+                em.getTransaction().commit();
                 return xmlTag;
-            }    
+            }
         } catch (Exception e) {
 
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
+        } finally {
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
-    
+
     /**
      * Remove a tag (mark as Inactive).
      *
      * @param name tag name
      */
-     public static void remove(String name) throws OlogException {
-        
+    public static void remove(String name) throws OlogException {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+
         try {
-                Tag tag = findTag(name);
-                tag.setState(State.Inactive);
-                JPAUtil.update(tag);
+            em.getTransaction().begin();
+            Tag tag = findTag(name);
+            tag.setState(State.Inactive);
+            em.merge(tag);
+            em.getTransaction().commit();
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
 
+        } finally {
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
 }

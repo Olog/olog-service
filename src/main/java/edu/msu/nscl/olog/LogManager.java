@@ -21,7 +21,6 @@ import javax.ws.rs.core.Response;
  */
 public class LogManager {
 
-    private static EntityManager em = null;
     private static final int maxResults = 1000;
     private LogManager() {
     }
@@ -34,18 +33,18 @@ public class LogManager {
      */
     @Deprecated
     public static Logs findAll() throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+
+        try {
+            em.getTransaction().begin();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Log> cq = cb.createQuery(Log.class);
         Root<Log> from = cq.from(Log.class);
-
         CriteriaQuery<Log> select = cq.select(from);
         Predicate statusPredicate = cb.equal(from.get(Log_.state), State.Active);
         select.where(statusPredicate);
         select.orderBy(cb.desc(from.get(Log_.modifiedDate)));
         TypedQuery<Log> typedQuery = em.createQuery(select);
-        JPAUtil.startTransaction(em);
-        try {
             Logs result = new Logs();
             List<Log> rs = typedQuery.getResultList();
 
@@ -55,13 +54,19 @@ public class LogManager {
                     result.addLog(iterator.next());
                 }
             }
-
+            em.getTransaction().commit();
             return result;
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-            JPAUtil.finishTransacton(em);
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+        }
+            } catch (Exception e) {
+    }
+            em.close();
         }
     }
 
@@ -81,8 +86,10 @@ public class LogManager {
         Multimap<String, String> value_patterns = ArrayListMultimap.create();
         Boolean empty = false;
         Boolean history = false;
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
 
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            em.getTransaction().begin();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
         Root<Entry> from = cq.from(Entry.class);
@@ -212,6 +219,7 @@ public class LogManager {
                 value_patterns.putAll(key, cleanedMatchesValues);
             }
         }
+
         //cb.or() causes an error in eclipselink with p1 as first argument
         Predicate tagPredicate = cb.disjunction();
         if (!tag_matches.isEmpty()) {
@@ -324,21 +332,19 @@ public class LogManager {
                 typedQuery.setMaxResults(Integer.valueOf(limit));
             } else if (limit != null) {
                 typedQuery.setMaxResults(Integer.valueOf(limit));
-            } else {
+            } /* else {
                 //set a hardcoded limit so the server will not run out of memory
                 typedQuery.setMaxResults(maxResults);
-            }
+            }*/
         }
 
-        JPAUtil.startTransaction(em);
-
-        try {
             Logs result = new Logs();
 
             //result.setCount(JPAUtil.count(em, cq));
             result.setCount(0L);
 
             if (empty) {
+                em.getTransaction().commit();
                 return result;
             }
             List<Entry> rs = typedQuery.getResultList();
@@ -368,12 +374,19 @@ public class LogManager {
                     }
                 }
             }
+            em.getTransaction().commit();
             return result;
         } catch (OlogException e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
-            JPAUtil.finishTransacton(em);
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+        }
+            } catch (Exception e) {
+    }
+            em.close();
         }
     }
 
@@ -408,8 +421,11 @@ public class LogManager {
      * @throws OlogException wrapping an SQLException
      */
     public static Log findLog(Long id) throws OlogException {
+
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
-            Entry entry = (Entry) JPAUtil.findByID(Entry.class, id);
+            em.getTransaction().begin();
+            Entry entry = em.find(Entry.class, id);
             Collection<Log> logs = entry.getLogs();
             Log result = Collections.max(logs);
             result.setVersion(String.valueOf(logs.size()));
@@ -433,10 +449,25 @@ public class LogManager {
                 xmlProperties.add(xmlProperty);
             }
             result.setXmlProperties(xmlProperties);
+            em.getTransaction().commit();
             return result;
-        } catch (Exception e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new OlogException(Response.Status.NOT_FOUND,
+                    "Exception: " + e);
+        } catch (OlogException e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
+        } catch (NumberFormatException e) {
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "JPA exception: " + e);
+        } finally {
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+        }
+            } catch (Exception e) {
+    }
+            em.close();
         }
     }
 
@@ -447,8 +478,9 @@ public class LogManager {
      * @throws OlogException wrapping an SQLException
      */
     public static Log create(Log log) throws OlogException {
-        em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        JPAUtil.startTransaction(em);
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            em.getTransaction().begin();
         Log newLog = new Log();
         newLog.setState(State.Active);
         newLog.setLevel(log.getLevel());
@@ -496,7 +528,6 @@ public class LogManager {
             }
             newLog.setTags(tags);
         }
-        try {
             if (log.getEntryId() != null) {
                 Entry entry = (Entry) JPAUtil.findByID(Entry.class, log.getEntryId());
                 if (entry.getLogs() != null) {
@@ -552,14 +583,21 @@ public class LogManager {
                     }
                 }
             }
-            newLog.setXmlProperties(log.getXmlProperties());
-            JPAUtil.finishTransacton(em);
+            em.getTransaction().commit();
             return newLog;
         } catch (OlogException e) {
-            JPAUtil.transactionFailed(em);
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
+        } finally {
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
         }
+            } catch (Exception e) {
+    }
+            em.close();
+        }
+
     }
 
     /**
@@ -568,8 +606,10 @@ public class LogManager {
      * @param id tag id
      */
     public static void remove(Long id) throws OlogException {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
-            Entry entry = (Entry) JPAUtil.findByID(Entry.class, id);
+            em.getTransaction().begin();
+            Entry entry = em.find(Entry.class, id);
             if (entry != null) {
                 if (entry.getLogs() != null) {
                     List<Log> logs = entry.getLogs();
@@ -586,6 +626,14 @@ public class LogManager {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
 
+        } finally {
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
         }
     }
 }
