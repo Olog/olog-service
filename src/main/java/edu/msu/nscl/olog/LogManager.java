@@ -37,21 +37,21 @@ public class LogManager {
 
         try {
             em.getTransaction().begin();
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Log> cq = cb.createQuery(Log.class);
-        Root<Log> from = cq.from(Log.class);
-        CriteriaQuery<Log> select = cq.select(from);
-        Predicate statusPredicate = cb.equal(from.get(Log_.state), State.Active);
-        select.where(statusPredicate);
-        select.orderBy(cb.desc(from.get(Log_.modifiedDate)));
-        TypedQuery<Log> typedQuery = em.createQuery(select);
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Log> cq = cb.createQuery(Log.class);
+            Root<Log> from = cq.from(Log.class);
+            CriteriaQuery<Log> select = cq.select(from);
+            Predicate statusPredicate = cb.equal(from.get(Log_.state), State.Active);
+            select.where(statusPredicate);
+            select.orderBy(cb.desc(from.get(Log_.modifiedDate)));
+            TypedQuery<Log> typedQuery = em.createQuery(select);
             Logs result = new Logs();
             List<Log> rs = typedQuery.getResultList();
 
             if (rs != null) {
                 Iterator<Log> iterator = rs.iterator();
                 while (iterator.hasNext()) {
-                    result.addLog(iterator.next());
+                    result.addLog(removeLogsFromLogBooks(iterator.next()));
                 }
             }
             em.getTransaction().commit();
@@ -354,7 +354,7 @@ public class LogManager {
                 while (iterator.hasNext()) {
                     Entry e = iterator.next();
                     if (history) {
-                        List<Log> all= ((Entry)JPAUtil.findByID(Entry.class, e.getId())).getLogs();
+                        List<Log> all= ((Entry) em.find(Entry.class, e.getId())).getLogs();
                         for (Log log : all) {
                             int version;
                             if (versionMap.containsKey(e.getId())) {
@@ -411,7 +411,7 @@ public class LogManager {
             xmlProperties.add(xmlProperty);
         }
         log.setXmlProperties(xmlProperties);
-        return log;
+        return removeLogsFromLogBooks(log);
     }
 
     /**
@@ -427,7 +427,7 @@ public class LogManager {
             em.getTransaction().begin();
             Entry entry = em.find(Entry.class, id);
             Collection<Log> logs = entry.getLogs();
-            Log result = Collections.max(logs);
+            Log result = removeLogsFromLogBooks(Collections.max(logs));
             result.setVersion(String.valueOf(logs.size()));
             result.setXmlAttachments(AttachmentManager.findAll(result.getEntryId()).getAttachments());
             Iterator<LogAttribute> iter = result.getAttributes().iterator();
@@ -529,7 +529,7 @@ public class LogManager {
             newLog.setTags(tags);
         }
             if (log.getEntryId() != null) {
-                Entry entry = (Entry) JPAUtil.findByID(Entry.class, log.getEntryId());
+                Entry entry = (Entry) em.find(Entry.class, log.getEntryId());
                 if (entry.getLogs() != null) {
                     List<Log> logs = entry.getLogs();
                     ListIterator<Log> iterator = logs.listIterator();
@@ -635,5 +635,17 @@ public class LogManager {
             }
             em.close();
         }
+    }
+
+    /**
+     * Remove the logs from logbooks to speed up persistance and reduce memory usage since we do not use that relation.
+     *
+     * @param log Log
+     */
+    private static Log removeLogsFromLogBooks(Log log) {
+        for(Logbook logbook : log.getLogbooks()) {
+            logbook.setLogs(new Logs());
+        }
+        return log;
     }
 }
