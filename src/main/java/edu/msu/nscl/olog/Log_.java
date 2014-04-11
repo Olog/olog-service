@@ -20,6 +20,7 @@ public class Log_ {
     public static volatile SingularAttribute<Log, Long> id;
     public static volatile SingularAttribute<Log, State> state;
     public static volatile SingularAttribute<Log, String> owner;
+    public static volatile SingularAttribute<Log, String> source;
     public static volatile SingularAttribute<Log, String> description;
     public static volatile SingularAttribute<Log, Date> modifiedDate;
     public static volatile SingularAttribute<Log, Entry> entry;
