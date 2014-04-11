@@ -416,8 +416,9 @@ public class LogManager {
             em.getTransaction().commit();
             return result;
         } catch (OlogException e) {
-            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "JPA exception: " + e);
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR, "JPA exception: " + e);
+        } catch (Exception e) {
+            throw new OlogException(Response.Status.BAD_REQUEST, "Bad Parameters Exception: " + e);
         } finally {
             try {
                 if (em.getTransaction() != null && !em.getTransaction().isActive()) {
