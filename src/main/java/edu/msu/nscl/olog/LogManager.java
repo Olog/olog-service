@@ -81,6 +81,8 @@ public class LogManager {
         List<String> logbook_patterns = new ArrayList();
         List<String> property_matches = new ArrayList();
         List<String> property_patterns = new ArrayList();
+        List<String> owner_patterns = new ArrayList();
+        List<String> source_patterns = new ArrayList();
         Multimap<String, String> date_matches = ArrayListMultimap.create();
         Multimap<String, String> paginate_matches = ArrayListMultimap.create();
         Multimap<String, String> value_patterns = ArrayListMultimap.create();
@@ -90,253 +92,290 @@ public class LogManager {
 
         try {
             em.getTransaction().begin();
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
-        Root<Entry> from = cq.from(Entry.class);
-        Join<Entry,Log> logs = from.join(Entry_.logs, JoinType.INNER);
-        SetJoin<Log, Tag> tags = logs.join(Log_.tags, JoinType.LEFT);
-        SetJoin<Log, Logbook> logbooks = logs.join(Log_.logbooks, JoinType.LEFT);
-        Join<Log, LogAttribute> logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
-        Join<LogAttribute, Attribute> attribute = logAttribute.join(LogAttribute_.attribute, JoinType.LEFT);
-        Join<Attribute, Property> property = attribute.join(Attribute_.property, JoinType.LEFT);
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
+            Root<Entry> from = cq.from(Entry.class);
+            Join<Entry,Log> logs = from.join(Entry_.logs, JoinType.INNER);
+            SetJoin<Log, Tag> tags = logs.join(Log_.tags, JoinType.LEFT);
+            SetJoin<Log, Logbook> logbooks = logs.join(Log_.logbooks, JoinType.LEFT);
+            Join<Log, LogAttribute> logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
+            Join<LogAttribute, Attribute> attribute = logAttribute.join(LogAttribute_.attribute, JoinType.LEFT);
+            Join<Attribute, Property> property = attribute.join(Attribute_.property, JoinType.LEFT);
 
-        for (Map.Entry<String, List<String>> match : matches.entrySet()) {
-            String key = match.getKey().toLowerCase();
-            Collection<String> matchesValues = match.getValue();
-            if (key.equals("search")) {
-                for (String m : matchesValues) {
-                    if (m.contains("?") || m.contains("*")) {
-                        if (m.contains("\\?") || m.contains("\\*")) {
-                            m = m.replace("\\", "");
-                            log_patterns.add(m);
+            for (Map.Entry<String, List<String>> match : matches.entrySet()) {
+                String key = match.getKey().toLowerCase();
+                Collection<String> matchesValues = match.getValue();
+                if (key.equals("search")) {
+                    for (String m : matchesValues) {
+                        if (m.contains("?") || m.contains("*")) {
+                            if (m.contains("\\?") || m.contains("\\*")) {
+                                m = m.replace("\\", "");
+                                log_patterns.add(m);
+                            } else {
+                                m = m.replace("*", "%");
+                                m = m.replace("?", "_");
+                                log_patterns.add(m);
+                            }
                         } else {
-                            m = m.replace("*", "%");
-                            m = m.replace("?", "_");
                             log_patterns.add(m);
                         }
-                    } else {
-                        log_patterns.add(m);
                     }
-                }
-            } else if (key.equals("id")) {
-                for (String m : matchesValues) {
-                    if (m.contains("?") || m.contains("*")) {
-                        if (m.contains("\\?") || m.contains("\\*")) {
-                            m = m.replace("\\", "");
-                            id_patterns.add(m);
+                } else if (key.equals("id")) {
+                    for (String m : matchesValues) {
+                        if (m.contains("?") || m.contains("*")) {
+                            if (m.contains("\\?") || m.contains("\\*")) {
+                                m = m.replace("\\", "");
+                                id_patterns.add(m);
+                            } else {
+                                m = m.replace("*", "%");
+                                m = m.replace("?", "_");
+                                id_patterns.add(m);
+                            }
                         } else {
-                            m = m.replace("*", "%");
-                            m = m.replace("?", "_");
                             id_patterns.add(m);
                         }
-                    } else {
-                        id_patterns.add(m);
                     }
-                }
-            } else if (key.equals("tag")) {
-                for (String m : matchesValues) {
-                    if (m.contains("?") || m.contains("*")) {
-                        if (m.contains("\\?") || m.contains("\\*")) {
-                            m = m.replace("\\", "");
+                } else if (key.equals("tag")) {
+                    for (String m : matchesValues) {
+                        if (m.contains("?") || m.contains("*")) {
+                            if (m.contains("\\?") || m.contains("\\*")) {
+                                m = m.replace("\\", "");
+                                tag_matches.add(m);
+                            } else {
+                                m = m.replace("*", "%");
+                                m = m.replace("?", "_");
+                                tag_patterns.add(m);
+                            }
+                        } else {
                             tag_matches.add(m);
-                        } else {
-                            m = m.replace("*", "%");
-                            m = m.replace("?", "_");
-                            tag_patterns.add(m);
                         }
-                    } else {
-                        tag_matches.add(m);
                     }
-                }
-                if (tag_matches.size() == 1) {
-                    String match1 = tag_matches.get(0);
-                    tag_matches.clear();
-                    tag_matches.addAll(Arrays.asList(match1.split(",")));
-                }
-            } else if (key.equals("logbook")) {
-                for (String m : matchesValues) {
-                    if (m.contains("?") || m.contains("*")) {
-                        if (m.contains("\\?") || m.contains("\\*")) {
-                            m = m.replace("\\", "");
+                    if (tag_matches.size() == 1) {
+                        String match1 = tag_matches.get(0);
+                        tag_matches.clear();
+                        tag_matches.addAll(Arrays.asList(match1.split(",")));
+                    }
+                } else if (key.equals("logbook")) {
+                    for (String m : matchesValues) {
+                        if (m.contains("?") || m.contains("*")) {
+                            if (m.contains("\\?") || m.contains("\\*")) {
+                                m = m.replace("\\", "");
+                                logbook_matches.add(m);
+                            } else {
+                                m = m.replace("*", "%");
+                                m = m.replace("?", "_");
+                                logbook_patterns.add(m);
+                            }
+                        } else {
                             logbook_matches.add(m);
-                        } else {
-                            m = m.replace("*", "%");
-                            m = m.replace("?", "_");
-                            logbook_patterns.add(m);
                         }
-                    } else {
-                        logbook_matches.add(m);
                     }
-                }
-                if (logbook_matches.size() == 1) {
-                    String match1 = logbook_matches.get(0);
-                    logbook_matches.clear();
-                    logbook_matches.addAll(Arrays.asList(match1.split(",")));
-                }
-            } else if (key.equals("property")) {
-                for (String m : matchesValues) {
-                    if (m.contains("?") || m.contains("*")) {
-                        if (m.contains("\\?") || m.contains("\\*")) {
-                            m = m.replace("\\", "");
+                    if (logbook_matches.size() == 1) {
+                        String match1 = logbook_matches.get(0);
+                        logbook_matches.clear();
+                        logbook_matches.addAll(Arrays.asList(match1.split(",")));
+                    }
+                } else if (key.equals("property")) {
+                    for (String m : matchesValues) {
+                        if (m.contains("?") || m.contains("*")) {
+                            if (m.contains("\\?") || m.contains("\\*")) {
+                                m = m.replace("\\", "");
+                                property_matches.add(m);
+                            } else {
+                                m = m.replace("*", "%");
+                                m = m.replace("?", "_");
+                                property_patterns.add(m);
+                            }
+                        } else {
                             property_matches.add(m);
-                        } else {
-                            m = m.replace("*", "%");
-                            m = m.replace("?", "_");
-                            property_patterns.add(m);
                         }
-                    } else {
-                        property_matches.add(m);
+                    }
+                } else if (key.equals("owner")) {
+                    for (String m : matchesValues) {
+                        if (m.contains("?") || m.contains("*")) {
+                            if (m.contains("\\?") || m.contains("\\*")) {
+                                m = m.replace("\\", "");
+                                owner_patterns.add(m);
+                            } else {
+                                m = m.replace("*", "%");
+                                m = m.replace("?", "_");
+                                owner_patterns.add(m);
+                            }
+                        } else {
+                            owner_patterns.add(m);
+                        }
+                    }
+                } else if (key.equals("source")) {
+                    for (String m : matchesValues) {
+                        if (m.contains("?") || m.contains("*")) {
+                            if (m.contains("\\?") || m.contains("\\*")) {
+                                m = m.replace("\\", "");
+                                source_patterns.add(m);
+                            } else {
+                                m = m.replace("*", "%");
+                                m = m.replace("?", "_");
+                                source_patterns.add(m);
+                            }
+                        } else {
+                            source_patterns.add(m);
+                        }
+                    }
+                } else if (key.equals("page")) {
+                    paginate_matches.putAll(key, match.getValue());
+                } else if (key.equals("limit")) {
+                    paginate_matches.putAll(key, match.getValue());
+                } else if (key.equals("start")) {
+                    date_matches.putAll(key, match.getValue());
+                } else if (key.equals("end")) {
+                    date_matches.putAll(key, match.getValue());
+                } else if (key.equals("empty")) {
+                    empty = true;
+                } else if (key.equals("history")){
+                    history = true;
+                } else {
+                    Collection<String> cleanedMatchesValues = new HashSet<String>();
+                    for (String m : matchesValues) {
+                        if (m.contains("?") || m.contains("*")) {
+                            if (m.contains("\\?") || m.contains("\\*")) {
+                                m = m.replace("\\", "");
+                                cleanedMatchesValues.add(m);
+                            } else {
+                                m = m.replace("*", "%");
+                                m = m.replace("?", "_");
+                                cleanedMatchesValues.add(m);
+                            }
+                        } else {
+                            cleanedMatchesValues.add(m);
+                        }
+                    }
+                    value_patterns.putAll(key, cleanedMatchesValues);
+                }
+            }
+            //cb.or() causes an error in eclipselink with p1 as first argument
+            Predicate tagPredicate = cb.disjunction();
+            if (!tag_matches.isEmpty()) {
+                tagPredicate = cb.or(tags.get(Tag_.name).in(tag_matches), tagPredicate);
+            }
+            for (String s : tag_patterns) {
+                tagPredicate = cb.or(cb.like(tags.get(Tag_.name), s), tagPredicate);
+            }
+
+            Predicate logbookPredicate = cb.disjunction();
+            if (!logbook_matches.isEmpty()) {
+                logbookPredicate = cb.and(logbookPredicate, logbooks.get(Logbook_.name).in(logbook_matches));
+            }
+            for (String s : logbook_patterns) {
+                logbookPredicate = cb.and(logbookPredicate, cb.like(logbooks.get(Logbook_.name), s));
+            }
+
+            Predicate propertyPredicate = cb.disjunction();
+            if (!property_matches.isEmpty()) {
+                propertyPredicate = cb.and(propertyPredicate, property.get(Property_.name).in(property_matches));
+            }
+            for (String s : property_patterns) {
+                propertyPredicate = cb.and(propertyPredicate, cb.like(property.get(Property_.name), s));
+            }
+
+            Predicate propertyAttributePredicate = cb.disjunction();
+            for (Map.Entry<String, String> match : value_patterns.entries()) {
+                // Key is coming in as property.attribute
+                List<String> group = Arrays.asList(match.getKey().split("\\."));
+                if (group.size() == 2) {
+                    propertyAttributePredicate = cb.and(propertyAttributePredicate,
+                            cb.like(logAttribute.get(LogAttribute_.value),
+                                    match.getValue()), property.get(Property_.name).in(group.get(0),
+                            attribute.get(Attribute_.name).in(group.get(1))));
+                }
+            }
+
+            Predicate idPredicate = cb.disjunction();
+            for (String s : id_patterns) {
+                idPredicate = cb.or(cb.equal(from.get(Entry_.id), Long.valueOf(s)), idPredicate);
+            }
+            Predicate ownerPredicate = cb.disjunction();
+            for (String s : owner_patterns) {
+                ownerPredicate = cb.or(cb.equal(logs.get(Log_.owner), s), ownerPredicate);
+            }
+            Predicate sourcePredicate = cb.disjunction();
+            for (String s : source_patterns) {
+                sourcePredicate = cb.or(cb.equal(logs.get(Log_.source), s), sourcePredicate);
+            }
+            Predicate searchPredicate = cb.disjunction();
+            for (String s : log_patterns) {
+                searchPredicate = cb.or(cb.like(logs.get(Log_.description), s), searchPredicate);
+                List<Long> ids = AttachmentManager.findAll(s);
+                if (!ids.isEmpty()) {
+                    searchPredicate = cb.or(from.get(Entry_.id).in(ids), searchPredicate);
+                }
+            }
+
+            Predicate datePredicate = cb.disjunction();
+            if (!date_matches.isEmpty()) {
+                String start = null, end = null;
+                for (Map.Entry<String, Collection<String>> match : date_matches.asMap().entrySet()) {
+                    if (match.getKey().toLowerCase().equals("start")) {
+                        start = match.getValue().iterator().next();
+                    }
+                    if (match.getKey().toLowerCase().equals("end")) {
+                        end = match.getValue().iterator().next();
                     }
                 }
-            } else if (key.equals("page")) {
-                paginate_matches.putAll(key, match.getValue());
-            } else if (key.equals("limit")) {
-                paginate_matches.putAll(key, match.getValue());
-            } else if (key.equals("start")) {
-                date_matches.putAll(key, match.getValue());
-            } else if (key.equals("end")) {
-                date_matches.putAll(key, match.getValue());
-            } else if (key.equals("empty")) {
-                empty = true;
-            } else if (key.equals("history")){
-                history = true;
+                if (start != null && end == null) {
+                    Date jStart = new java.util.Date(Long.valueOf(start) * 1000);
+                    Date jEndNow = new java.util.Date(Calendar.getInstance().getTime().getTime());
+                    datePredicate = cb.between(from.get(Entry_.createdDate),
+                            jStart,
+                            jEndNow);
+                } else if (start == null && end != null) {
+                    Date jStart1970 = new java.util.Date(0);
+                    Date jEnd = new java.util.Date(Long.valueOf(end) * 1000);
+                    datePredicate = cb.between(from.get(Entry_.createdDate),
+                            jStart1970,
+                            jEnd);
+                } else {
+                    Date jStart = new java.util.Date(Long.valueOf(start) * 1000);
+                    Date jEnd = new java.util.Date(Long.valueOf(end) * 1000);
+                    datePredicate = cb.between(from.get(Entry_.createdDate),
+                            jStart,
+                            jEnd);
+                }
+            }
+
+            cq.distinct(true);
+            Predicate statusPredicate = cb.disjunction();
+            if(history){
+                statusPredicate = cb.or(cb.equal(logs.get(Log_.state), State.Active), cb.equal(logs.get(Log_.state), State.Inactive));
             } else {
-                Collection<String> cleanedMatchesValues = new HashSet<String>();
-                for (String m : matchesValues) {
-                    if (m.contains("?") || m.contains("*")) {
-                        if (m.contains("\\?") || m.contains("\\*")) {
-                            m = m.replace("\\", "");
-                            cleanedMatchesValues.add(m);
-                        } else {
-                            m = m.replace("*", "%");
-                            m = m.replace("?", "_");
-                            cleanedMatchesValues.add(m);
-                        }
-                    } else {
-                        cleanedMatchesValues.add(m);
+                statusPredicate = cb.equal(logs.get(Log_.state), State.Active);
+            }
+            Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, propertyPredicate, propertyAttributePredicate,
+                    datePredicate, searchPredicate, idPredicate, ownerPredicate, sourcePredicate);
+            cq.select(from);
+            cq.where(finalPredicate);
+            cq.groupBy(from);
+            cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
+            TypedQuery<Entry> typedQuery = em.createQuery(cq);
+            if (!paginate_matches.isEmpty()) {
+                String page = null, limit = null;
+                for (Map.Entry<String, Collection<String>> match : paginate_matches.asMap().entrySet()) {
+                    if (match.getKey().toLowerCase().equals("limit")) {
+                        limit = match.getValue().iterator().next();
+                    }
+                    if (match.getKey().toLowerCase().equals("page")) {
+                        page = match.getValue().iterator().next();
                     }
                 }
-                value_patterns.putAll(key, cleanedMatchesValues);
+                if (limit != null && page != null) {
+                    Integer offset = Integer.valueOf(page) * Integer.valueOf(limit) - Integer.valueOf(limit);
+                    typedQuery.setFirstResult(offset);
+                    typedQuery.setMaxResults(Integer.valueOf(limit));
+                } else if (limit != null) {
+                    typedQuery.setMaxResults(Integer.valueOf(limit));
+                } /* else {
+                    //set a hardcoded limit so the server will not run out of memory
+                    typedQuery.setMaxResults(maxResults);
+                }*/
             }
-        }
-
-        //cb.or() causes an error in eclipselink with p1 as first argument
-        Predicate tagPredicate = cb.disjunction();
-        if (!tag_matches.isEmpty()) {
-            tagPredicate = cb.or(tags.get(Tag_.name).in(tag_matches), tagPredicate);
-        }
-        for (String s : tag_patterns) {
-            tagPredicate = cb.or(cb.like(tags.get(Tag_.name), s), tagPredicate);
-        }
-
-        Predicate logbookPredicate = cb.disjunction();
-        if (!logbook_matches.isEmpty()) {
-            logbookPredicate = cb.and(logbookPredicate, logbooks.get(Logbook_.name).in(logbook_matches));
-        }
-        for (String s : logbook_patterns) {
-            logbookPredicate = cb.and(logbookPredicate, cb.like(logbooks.get(Logbook_.name), s));
-        }
-
-        Predicate propertyPredicate = cb.disjunction();
-        if (!property_matches.isEmpty()) {
-            propertyPredicate = cb.and(propertyPredicate, property.get(Property_.name).in(property_matches));
-        }
-        for (String s : property_patterns) {
-            propertyPredicate = cb.and(propertyPredicate, cb.like(property.get(Property_.name), s));
-        }
-
-        Predicate propertyAttributePredicate = cb.disjunction();
-        for (Map.Entry<String, String> match : value_patterns.entries()) {
-            // Key is coming in as property.attribute
-            List<String> group = Arrays.asList(match.getKey().split("\\."));
-            if (group.size() == 2) {
-                propertyAttributePredicate = cb.and(propertyAttributePredicate,
-                        cb.like(logAttribute.get(LogAttribute_.value),
-                                match.getValue()), property.get(Property_.name).in(group.get(0),
-                        attribute.get(Attribute_.name).in(group.get(1))));
-            }
-        }
-
-        Predicate idPredicate = cb.disjunction();
-        for (String s : id_patterns) {
-            idPredicate = cb.or(cb.equal(from.get(Entry_.id), Long.valueOf(s)), idPredicate);
-        }
-
-        Predicate searchPredicate = cb.disjunction();
-        for (String s : log_patterns) {
-            searchPredicate = cb.or(cb.like(logs.get(Log_.description), s), searchPredicate);
-            List<Long> ids = AttachmentManager.findAll(s);
-            if (!ids.isEmpty()) {
-                searchPredicate = cb.or(from.get(Entry_.id).in(ids), searchPredicate);
-            }
-        }
-
-        Predicate datePredicate = cb.disjunction();
-        if (!date_matches.isEmpty()) {
-            String start = null, end = null;
-            for (Map.Entry<String, Collection<String>> match : date_matches.asMap().entrySet()) {
-                if (match.getKey().toLowerCase().equals("start")) {
-                    start = match.getValue().iterator().next();
-                }
-                if (match.getKey().toLowerCase().equals("end")) {
-                    end = match.getValue().iterator().next();
-                }
-            }
-            if (start != null && end == null) {
-                Date jStart = new java.util.Date(Long.valueOf(start) * 1000);
-                Date jEndNow = new java.util.Date(Calendar.getInstance().getTime().getTime());
-                datePredicate = cb.between(from.get(Entry_.createdDate),
-                        jStart,
-                        jEndNow);
-            } else if (start == null && end != null) {
-                Date jStart1970 = new java.util.Date(0);
-                Date jEnd = new java.util.Date(Long.valueOf(end) * 1000);
-                datePredicate = cb.between(from.get(Entry_.createdDate),
-                        jStart1970,
-                        jEnd);
-            } else {
-                Date jStart = new java.util.Date(Long.valueOf(start) * 1000);
-                Date jEnd = new java.util.Date(Long.valueOf(end) * 1000);
-                datePredicate = cb.between(from.get(Entry_.createdDate),
-                        jStart,
-                        jEnd);
-            }
-        }
-
-        cq.distinct(true);
-        Predicate statusPredicate = cb.disjunction();
-        if(history){
-            statusPredicate = cb.or(cb.equal(logs.get(Log_.state), State.Active), cb.equal(logs.get(Log_.state), State.Inactive));
-        } else {
-            statusPredicate = cb.equal(logs.get(Log_.state), State.Active);
-        }
-        Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, propertyPredicate, propertyAttributePredicate, datePredicate, searchPredicate, idPredicate);
-        cq.select(from);
-        cq.where(finalPredicate);
-        cq.groupBy(from);
-        cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
-        TypedQuery<Entry> typedQuery = em.createQuery(cq);
-        if (!paginate_matches.isEmpty()) {
-            String page = null, limit = null;
-            for (Map.Entry<String, Collection<String>> match : paginate_matches.asMap().entrySet()) {
-                if (match.getKey().toLowerCase().equals("limit")) {
-                    limit = match.getValue().iterator().next();
-                }
-                if (match.getKey().toLowerCase().equals("page")) {
-                    page = match.getValue().iterator().next();
-                }
-            }
-            if (limit != null && page != null) {
-                Integer offset = Integer.valueOf(page) * Integer.valueOf(limit) - Integer.valueOf(limit);
-                typedQuery.setFirstResult(offset);
-                typedQuery.setMaxResults(Integer.valueOf(limit));
-            } else if (limit != null) {
-                typedQuery.setMaxResults(Integer.valueOf(limit));
-            } /* else {
-                //set a hardcoded limit so the server will not run out of memory
-                typedQuery.setMaxResults(maxResults);
-            }*/
-        }
 
             Logs result = new Logs();
 
@@ -377,8 +416,9 @@ public class LogManager {
             em.getTransaction().commit();
             return result;
         } catch (OlogException e) {
-            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "JPA exception: " + e);
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR, "JPA exception: " + e);
+        } catch (Exception e) {
+            throw new OlogException(Response.Status.BAD_REQUEST, "Bad Parameters Exception: " + e);
         } finally {
             try {
                 if (em.getTransaction() != null && !em.getTransaction().isActive()) {
