@@ -250,9 +250,7 @@
                 <version>2.4</version>
 		<configuration>
                     <useReleaseProfile>false</useReleaseProfile>
-                    <releaseProfiles>release</releaseProfiles>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <localCheckout>true</localCheckout>
                 </configuration>
             </plugin>
             <plugin>
