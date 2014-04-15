@@ -29,7 +29,7 @@ public class PropertyManager {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
             em.getTransaction().begin();
-            
+
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Property> cq = cb.createQuery(Property.class);
             Root<Property> from = cq.from(Property.class);
@@ -153,13 +153,13 @@ public class PropertyManager {
      * @param attributes attributes of property
      * @throws OlogException wrapping an SQLException
      */
-    public static Property create(Property property) throws OlogException {        
+    public static Property create(Property property) throws OlogException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        
+
         try {
             em.getTransaction().begin();
-            
-            if (property.getAttributes() != null) {
+
+        /*    if (property.getAttributes() != null) {
                 Iterator<Attribute> iterator = property.getAttributes().iterator();
                 while (iterator.hasNext()) {
                     Attribute att = AttributeManager.findAttribute(property, iterator.next().getName());
@@ -168,7 +168,7 @@ public class PropertyManager {
                     }
                 }
 
-            }
+            }*/
             Property Inactiveproperty = findProperty(property.getName());
             if (Inactiveproperty != null) {
                 Inactiveproperty.setState(State.Active);
@@ -205,7 +205,7 @@ public class PropertyManager {
      */
     public static void remove(String propertyName) throws OlogException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        
+
         try {
             em.getTransaction().begin();
             Property property = findProperty(propertyName);

@@ -4,14 +4,13 @@
  */
 package edu.msu.nscl.olog;
 
+import com.google.common.collect.Iterables;
+
 import java.util.Iterator;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import javax.ws.rs.core.Response;
 
 /**
@@ -19,7 +18,7 @@ import javax.ws.rs.core.Response;
  * @author berryman
  */
 public class LogbookManager {
-    
+
     private LogbookManager() {
     }
 
@@ -33,20 +32,61 @@ public class LogbookManager {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
             em.getTransaction().begin();
-            CriteriaBuilder cb = em.getCriteriaBuilder();
-            CriteriaQuery<Logbook> cq = cb.createQuery(Logbook.class);
-            Root<Logbook> from = cq.from(Logbook.class);
-            CriteriaQuery<Logbook> select = cq.select(from);
-            Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
-            select.where(statusPredicate);
-            select.orderBy(cb.asc(from.get("name")));
-            TypedQuery<Logbook> typedQuery = em.createQuery(select);            
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Logbook> cq = cb.createQuery(Logbook.class);
+        Root<Logbook> from = cq.from(Logbook.class);
+        CriteriaQuery<Logbook> select = cq.select(from);
+        Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
+        select.where(statusPredicate);
+        select.orderBy(cb.asc(from.get("name")));
+        TypedQuery<Logbook> typedQuery = em.createQuery(select);
             Logbooks result = new Logbooks();
+            List<Logbook> rs = typedQuery.getResultList();
+            if (rs != null) {
+                result.setLogbooks(rs);
+            }
+            em.getTransaction().commit();
+            return result;
+        } catch (Exception e) {
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "JPA exception: " + e);
+        } finally {
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+        }
+            } catch (Exception e) {
+    }
+            em.close();
+        }
+    }
+
+    /**
+     * Finds a logbook in the database by name.
+     *
+     * @return Logbook
+     * @throws OlogException wrapping an SQLException
+     */
+    @Deprecated
+    public static Logbook findLogbookOld(String name) throws OlogException {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            em.getTransaction().begin();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Logbook> cq = cb.createQuery(Logbook.class);
+        Root<Logbook> from = cq.from(Logbook.class);
+        CriteriaQuery<Logbook> select = cq.select(from);
+        Predicate namePredicate = cb.equal(from.get("name"), name);
+        //Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
+        select.where(namePredicate);
+        select.orderBy(cb.asc(from.get("name")));
+        TypedQuery<Logbook> typedQuery = em.createQuery(select);
+            Logbook result = null;
             List<Logbook> rs = typedQuery.getResultList();
             if (rs != null) {
                 Iterator<Logbook> iterator = rs.iterator();
                 while (iterator.hasNext()) {
-                    result.addLogbook(iterator.next());
+                    result = iterator.next();
                 }
             }
             em.getTransaction().commit();
@@ -65,8 +105,14 @@ public class LogbookManager {
         }
     }
 
+
     /**
-     * Finds a logbook in the database by name.
+     *  XXX: The biggest bottom neck here is that if the logbook contains more than 1000 logs, the merge times goes up
+     *  exponentially, to prevent this, lets get a logbook without logs, removing the botton neck.
+     *  this works without needing to remove the Logbook cache, since we never marshall the Log objects for the Logbook
+     *  if this change, this approach will not work and the cache should be remove at the end of the log creation by
+     *  em.getEntityManagerFactory().getCache().evict(Logbook.class);\
+     *  Finds a logbook in the database by name.
      *
      * @return Logbook
      * @throws OlogException wrapping an SQLException
@@ -78,7 +124,10 @@ public class LogbookManager {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Logbook> cq = cb.createQuery(Logbook.class);
             Root<Logbook> from = cq.from(Logbook.class);
-            CriteriaQuery<Logbook> select = cq.select(from);
+            Path<Long> idPath = from.get(Logbook_.id);
+            Path<String> namePath = from.get(Logbook_.name);
+            Path<String> ownerPath = from.get(Logbook_.owner);
+            CriteriaQuery<Logbook> select = cq.select(cb.construct(Logbook.class, idPath, namePath, ownerPath, from.get("state")));
             Predicate namePredicate = cb.equal(from.get("name"), name);
             //Predicate statusPredicate = cb.equal(from.get("state"), State.Active);
             select.where(namePredicate);
@@ -86,11 +135,8 @@ public class LogbookManager {
             TypedQuery<Logbook> typedQuery = em.createQuery(select);
             Logbook result = null;
             List<Logbook> rs = typedQuery.getResultList();
-            if (rs != null) {
-                Iterator<Logbook> iterator = rs.iterator();
-                while (iterator.hasNext()) {
-                    result = iterator.next();
-                }
+            if (rs != null && !rs.isEmpty()) {
+                result = Iterables.getLast(rs);
             }
             em.getTransaction().commit();
             return result;
@@ -134,7 +180,7 @@ public class LogbookManager {
                 em.persist(xmlLogbook);
                 em.getTransaction().commit();
                 return xmlLogbook;
-            }             
+            }
         } catch (Exception e) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
@@ -142,13 +188,13 @@ public class LogbookManager {
             try {
                 if (em.getTransaction() != null && !em.getTransaction().isActive()) {
                     em.getTransaction().rollback();
-                }
+        }
             } catch (Exception e) {
-            }
+    }
             em.close();
         }
     }
-    
+
     /**
      * Remove a logbook (mark as Inactive).
      *
@@ -158,8 +204,8 @@ public class LogbookManager {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
             em.getTransaction().begin();
-            Logbook logbook = findLogbook(name);
-            logbook.setState(State.Inactive);
+                Logbook logbook = findLogbook(name);
+                logbook.setState(State.Inactive);
             em.merge(logbook);
             em.getTransaction().commit();
         } catch (Exception e) {

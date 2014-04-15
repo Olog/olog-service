@@ -20,8 +20,7 @@ import javax.ws.rs.core.Response;
  * @author berryman
  */
 public class TagManager {
-    private static EntityManager em = null;
-    
+
     private TagManager() {
     }
     /**
@@ -110,7 +109,7 @@ public class TagManager {
             em.close();
         }
     }
-            /**
+    /**
      * Creates a tag in the database.
      *
      * @param name name of tag
@@ -150,13 +149,13 @@ public class TagManager {
             em.close();
         }
     }
-    
+
     /**
      * Remove a tag (mark as Inactive).
      *
      * @param name tag name
      */
-     public static void remove(String name) throws OlogException {
+    public static void remove(String name) throws OlogException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
 
         try {

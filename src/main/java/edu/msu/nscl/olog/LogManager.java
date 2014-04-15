@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response;
  */
 public class LogManager {
 
+    private static final int maxResults = 1000;
     private LogManager() {
     }
 
@@ -30,6 +31,7 @@ public class LogManager {
      * @return Logs
      * @throws OlogException wrapping an SQLException
      */
+    @Deprecated
     public static Logs findAll() throws OlogException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
 
@@ -49,7 +51,7 @@ public class LogManager {
             if (rs != null) {
                 Iterator<Log> iterator = rs.iterator();
                 while (iterator.hasNext()) {
-                    result.addLog(iterator.next());
+                    result.addLog(removeLogsFromLogBooks(iterator.next()));
                 }
             }
             em.getTransaction().commit();
@@ -61,15 +63,16 @@ public class LogManager {
             try {
                 if (em.getTransaction() != null && !em.getTransaction().isActive()) {
                     em.getTransaction().rollback();
-                }
+        }
             } catch (Exception e) {
-            }
+    }
             em.close();
         }
     }
 
     public static Logs findLog(MultivaluedMap<String, String> matches) throws OlogException {
 
+        // XXX: should mandate a limit for it, since for big db it can run out of memory
         List<String> log_patterns = new ArrayList();
         List<String> id_patterns = new ArrayList();
         List<String> tag_matches = new ArrayList();
@@ -78,6 +81,8 @@ public class LogManager {
         List<String> logbook_patterns = new ArrayList();
         List<String> property_matches = new ArrayList();
         List<String> property_patterns = new ArrayList();
+        List<String> owner_patterns = new ArrayList();
+        List<String> source_patterns = new ArrayList();
         Multimap<String, String> date_matches = ArrayListMultimap.create();
         Multimap<String, String> paginate_matches = ArrayListMultimap.create();
         Multimap<String, String> value_patterns = ArrayListMultimap.create();
@@ -88,14 +93,14 @@ public class LogManager {
         try {
             em.getTransaction().begin();
             CriteriaBuilder cb = em.getCriteriaBuilder();
-            CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
+            CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
             Root<Entry> from = cq.from(Entry.class);
-            Join<Entry, Log> logs = from.join(Entry_.logs, JoinType.INNER);
+            Join<Entry,Log> logs = from.join(Entry_.logs, JoinType.INNER);
             SetJoin<Log, Tag> tags = logs.join(Log_.tags, JoinType.LEFT);
-            SetJoin<Log, Logbook> logbooks = logs.join(Log_.logbooks, JoinType.INNER);
-            Join<Attribute, Property> property = logs.join(Log_.attributes, JoinType.LEFT).join(LogAttribute_.attribute, JoinType.LEFT).join(Attribute_.property, JoinType.LEFT);
-            Join<LogAttribute, Attribute> attribute = logs.join(Log_.attributes, JoinType.LEFT).join(LogAttribute_.attribute, JoinType.LEFT);
+            SetJoin<Log, Logbook> logbooks = logs.join(Log_.logbooks, JoinType.LEFT);
             Join<Log, LogAttribute> logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
+            Join<LogAttribute, Attribute> attribute = logAttribute.join(LogAttribute_.attribute, JoinType.LEFT);
+            Join<Attribute, Property> property = attribute.join(Attribute_.property, JoinType.LEFT);
 
             for (Map.Entry<String, List<String>> match : matches.entrySet()) {
                 String key = match.getKey().toLowerCase();
@@ -185,6 +190,36 @@ public class LogManager {
                             property_matches.add(m);
                         }
                     }
+                } else if (key.equals("owner")) {
+                    for (String m : matchesValues) {
+                        if (m.contains("?") || m.contains("*")) {
+                            if (m.contains("\\?") || m.contains("\\*")) {
+                                m = m.replace("\\", "");
+                                owner_patterns.add(m);
+                            } else {
+                                m = m.replace("*", "%");
+                                m = m.replace("?", "_");
+                                owner_patterns.add(m);
+                            }
+                        } else {
+                            owner_patterns.add(m);
+                        }
+                    }
+                } else if (key.equals("source")) {
+                    for (String m : matchesValues) {
+                        if (m.contains("?") || m.contains("*")) {
+                            if (m.contains("\\?") || m.contains("\\*")) {
+                                m = m.replace("\\", "");
+                                source_patterns.add(m);
+                            } else {
+                                m = m.replace("*", "%");
+                                m = m.replace("?", "_");
+                                source_patterns.add(m);
+                            }
+                        } else {
+                            source_patterns.add(m);
+                        }
+                    }
                 } else if (key.equals("page")) {
                     paginate_matches.putAll(key, match.getValue());
                 } else if (key.equals("limit")) {
@@ -195,7 +230,7 @@ public class LogManager {
                     date_matches.putAll(key, match.getValue());
                 } else if (key.equals("empty")) {
                     empty = true;
-                } else if (key.equals("history")) {
+                } else if (key.equals("history")){
                     history = true;
                 } else {
                     Collection<String> cleanedMatchesValues = new HashSet<String>();
@@ -216,7 +251,6 @@ public class LogManager {
                     value_patterns.putAll(key, cleanedMatchesValues);
                 }
             }
-
             //cb.or() causes an error in eclipselink with p1 as first argument
             Predicate tagPredicate = cb.disjunction();
             if (!tag_matches.isEmpty()) {
@@ -249,7 +283,7 @@ public class LogManager {
                 if (group.size() == 2) {
                     propertyAttributePredicate = cb.and(propertyAttributePredicate,
                             cb.like(logAttribute.get(LogAttribute_.value),
-                            match.getValue()), property.get(Property_.name).in(group.get(0),
+                                    match.getValue()), property.get(Property_.name).in(group.get(0),
                             attribute.get(Attribute_.name).in(group.get(1))));
                 }
             }
@@ -258,7 +292,14 @@ public class LogManager {
             for (String s : id_patterns) {
                 idPredicate = cb.or(cb.equal(from.get(Entry_.id), Long.valueOf(s)), idPredicate);
             }
-
+            Predicate ownerPredicate = cb.disjunction();
+            for (String s : owner_patterns) {
+                ownerPredicate = cb.or(cb.equal(logs.get(Log_.owner), s), ownerPredicate);
+            }
+            Predicate sourcePredicate = cb.disjunction();
+            for (String s : source_patterns) {
+                sourcePredicate = cb.or(cb.equal(logs.get(Log_.source), s), sourcePredicate);
+            }
             Predicate searchPredicate = cb.disjunction();
             for (String s : log_patterns) {
                 searchPredicate = cb.or(cb.like(logs.get(Log_.description), s), searchPredicate);
@@ -302,18 +343,18 @@ public class LogManager {
 
             cq.distinct(true);
             Predicate statusPredicate = cb.disjunction();
-            if (history) {
+            if(history){
                 statusPredicate = cb.or(cb.equal(logs.get(Log_.state), State.Active), cb.equal(logs.get(Log_.state), State.Inactive));
             } else {
                 statusPredicate = cb.equal(logs.get(Log_.state), State.Active);
             }
-            Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, propertyPredicate, propertyAttributePredicate, datePredicate, searchPredicate, idPredicate);
-            cq.multiselect(from, logs);
+            Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, propertyPredicate, propertyAttributePredicate,
+                    datePredicate, searchPredicate, idPredicate, ownerPredicate, sourcePredicate);
+            cq.select(from);
             cq.where(finalPredicate);
             //cq.groupBy(from);
             cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
-            TypedQuery<Tuple> typedQuery = em.createQuery(cq);
-
+            TypedQuery<Entry> typedQuery = em.createQuery(cq);
             if (!paginate_matches.isEmpty()) {
                 String page = null, limit = null;
                 for (Map.Entry<String, Collection<String>> match : paginate_matches.asMap().entrySet()) {
@@ -328,7 +369,12 @@ public class LogManager {
                     Integer offset = Integer.valueOf(page) * Integer.valueOf(limit) - Integer.valueOf(limit);
                     typedQuery.setFirstResult(offset);
                     typedQuery.setMaxResults(Integer.valueOf(limit));
-                }
+                } else if (limit != null) {
+                    typedQuery.setMaxResults(Integer.valueOf(limit));
+                } /* else {
+                    //set a hardcoded limit so the server will not run out of memory
+                    typedQuery.setMaxResults(maxResults);
+                }*/
             }
 
             Logs result = new Logs();
@@ -340,18 +386,14 @@ public class LogManager {
                 em.getTransaction().commit();
                 return result;
             }
-
-            List<Tuple> rs = typedQuery.getResultList();
+            List<Entry> rs = typedQuery.getResultList();
             Map<Long, Integer> versionMap = new HashMap<Long, Integer>();
-
             if (rs != null) {
-                Iterator<Tuple> iterator = rs.iterator();
+                Iterator<Entry> iterator = rs.iterator();
                 while (iterator.hasNext()) {
-                    Tuple tuple = iterator.next();
-                    Entry e = tuple.get(0, Entry.class);
-                    List<Log> all = em.find(Entry.class, e.getId()).getLogs();
-
+                    Entry e = iterator.next();
                     if (history) {
+                        List<Log> all= ((Entry) em.find(Entry.class, e.getId())).getLogs();
                         for (Log log : all) {
                             int version;
                             if (versionMap.containsKey(e.getId())) {
@@ -366,9 +408,7 @@ public class LogManager {
                             result.addLog(log);
                         }
                     } else {
-                        Log log = tuple.get(1, Log.class);
-                        log.setVersion(String.valueOf(all.size()));
-                        log = populateLog(log);
+                        Log log = findLog(e.getId());
                         result.addLog(log);
                     }
                 }
@@ -376,21 +416,21 @@ public class LogManager {
             em.getTransaction().commit();
             return result;
         } catch (OlogException e) {
-            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
-                    "JPA exception: " + e);
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR, "JPA exception: " + e);
+        } catch (Exception e) {
+            throw new OlogException(Response.Status.BAD_REQUEST, "Bad Parameters Exception: " + e);
         } finally {
             try {
                 if (em.getTransaction() != null && !em.getTransaction().isActive()) {
                     em.getTransaction().rollback();
-                }
+        }
             } catch (Exception e) {
-            }
+    }
             em.close();
         }
     }
 
     private static Log populateLog(Log log) throws OlogException {
-
         log.setXmlAttachments(AttachmentManager.findAll(log.getEntryId()).getAttachments());
         Iterator<LogAttribute> iter = log.getAttributes().iterator();
         Set<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
@@ -411,50 +451,44 @@ public class LogManager {
             xmlProperties.add(xmlProperty);
         }
         log.setXmlProperties(xmlProperties);
-        return log;
+        return removeLogsFromLogBooks(log);
     }
 
     /**
-     * Finds a log and edits in the database by id and parameters.
+     * Finds a log and edits in the database by id.
      *
      * @return Log
      * @throws OlogException wrapping an SQLException
      */
-    public static Log findLog(Long id, MultivaluedMap<String, String> matches) throws OlogException {
-        
+    public static Log findLog(Long id) throws OlogException {
+
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
             em.getTransaction().begin();
-            Multimap<String, String> version_matches = ArrayListMultimap.create();
             Entry entry = em.find(Entry.class, id);
-            Log result = new Log();
-            String version = null;
-            if (matches != null) {
-                for (Map.Entry<String, List<String>> match : matches.entrySet()) {
-                    String key = match.getKey().toLowerCase();
-                    if (key.equals("version")) {
-                        version_matches.putAll(key, match.getValue());
+            Collection<Log> logs = entry.getLogs();
+            Log result = removeLogsFromLogBooks(Collections.max(logs));
+            result.setVersion(String.valueOf(logs.size()));
+            result.setXmlAttachments(AttachmentManager.findAll(result.getEntryId()).getAttachments());
+            Iterator<LogAttribute> iter = result.getAttributes().iterator();
+            Set<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
+            while (iter.hasNext()) {
+                XmlProperty xmlProperty = new XmlProperty();
+                Map<String, String> map = new HashMap<String, String>();
+                LogAttribute logattr = iter.next();
+                Attribute attr = logattr.getAttribute();
+                xmlProperty.setName(attr.getProperty().getName());
+                xmlProperty.setId(attr.getProperty().getId());
+                for (XmlProperty prevXmlProperty : xmlProperties) {
+                    if (prevXmlProperty.getId().equals(xmlProperty.getId())) {
+                        map = prevXmlProperty.getAttributes();
                     }
                 }
-                for (Map.Entry<String, Collection<String>> match : version_matches.asMap().entrySet()) {
-                    if (!version_matches.isEmpty()) {
-                        if (match.getKey().toLowerCase().equals("version")) {
-                            version = match.getValue().iterator().next();
-                        }
-                    }
-                }
-
+                map.put(attr.getName(), logattr.getValue());
+                xmlProperty.setAttributes(map);
+                xmlProperties.add(xmlProperty);
             }
-            if (version != null) {
-                List<Log> logs = entry.getLogs();
-                result = logs.get(Integer.valueOf(version) - 1);
-                result.setVersion(version);
-            } else {
-                Collection<Log> logs = entry.getLogs();
-                result = Collections.max(logs);
-                result.setVersion(String.valueOf(logs.size()));
-            }
-            result = populateLog(result);
+            result.setXmlProperties(xmlProperties);
             em.getTransaction().commit();
             return result;
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -470,80 +504,72 @@ public class LogManager {
             try {
                 if (em.getTransaction() != null && !em.getTransaction().isActive()) {
                     em.getTransaction().rollback();
-                }
+        }
             } catch (Exception e) {
-            }
+    }
             em.close();
         }
     }
 
     /**
-     * Finds a log and edits in the database by id.
-     *
-     * @return Log
-     * @throws OlogException wrapping an SQLException
-     */
-    public static Log findLog(Long id) throws OlogException {
-        return findLog(id, null);
-    }
-
-    /**
      * Creates a Log in the database.
      *
-     * @param name name of tag
-     * @param owner owner of tag
+
      * @throws OlogException wrapping an SQLException
      */
     public static Log create(Log log) throws OlogException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
             em.getTransaction().begin();
-            Log newLog = new Log();
-            newLog.setState(State.Active);
-            newLog.setLevel(log.getLevel());
-            newLog.setOwner(log.getOwner());
-            newLog.setDescription(log.getDescription());
-            newLog.setSource(log.getSource());
-            em.persist(newLog);
-            if (!log.getLogbooks().isEmpty()) {
-                Iterator<Logbook> iterator = log.getLogbooks().iterator();
-                Set<Logbook> logbooks = new HashSet<Logbook>();
-                while (iterator.hasNext()) {
-                    String logbookName = iterator.next().getName();
-                    Logbook logbook = LogbookManager.findLogbook(logbookName);
-                    if (logbook != null) {
-                        logbook = em.merge(logbook);
-                        logbook.addLog(newLog);
-                        logbooks.add(logbook);
-                    } else {
-                        throw new OlogException(Response.Status.NOT_FOUND,
-                                "Log entry " + log.getId() + " logbook:" + logbookName + " does not exists.");
-                    }
+        Log newLog = new Log();
+        newLog.setState(State.Active);
+        newLog.setLevel(log.getLevel());
+        newLog.setOwner(log.getOwner());
+        newLog.setDescription(log.getDescription());
+        //XXX: Use for psql db olog;
+        //XXX: remove new line and tab character since psql do not convert them
+        //newLog.setDescription(log.getDescription().replaceAll("\n", " ").replaceAll("\t", " "));
+        newLog.setSource(log.getSource());
+        em.persist(newLog);
+        if (!log.getLogbooks().isEmpty()) {
+            Iterator<Logbook> iterator = log.getLogbooks().iterator();
+            Set<Logbook> logbooks = new HashSet<Logbook>();
+            while (iterator.hasNext()) {
+                String logbookName = iterator.next().getName();
+                Logbook logbook = LogbookManager.findLogbook(logbookName);
+                if (logbook != null) {
+                    logbook = em.merge(logbook);
+                    logbook.addLog(newLog);
+                    logbooks.add(logbook);
+                } else {
+                    throw new OlogException(Response.Status.NOT_FOUND,
+                            "Log entry " + log.getId() + " logbook:" + logbookName + " does not exists.");
                 }
-                newLog.setLogbooks(logbooks);
-            } else {
-                throw new OlogException(Response.Status.NOT_FOUND,
-                        "Log entry " + log.getId() + " must be in at least one logbook.");
             }
-            if (log.getTags() != null) {
-                Iterator<Tag> iterator2 = log.getTags().iterator();
-                Set<Tag> tags = new HashSet<Tag>();
-                while (iterator2.hasNext()) {
-                    String tagName = iterator2.next().getName();
-                    Tag tag = TagManager.findTag(tagName);
-                    if (tag != null) {
-                        tag = em.merge(tag);
-                        tag.addLog(newLog);
-                        tags.add(tag);
-                    } else {
-                        throw new OlogException(Response.Status.NOT_FOUND,
-                                "Log entry " + log.getId() + " tag:" + tagName + " does not exists.");
-                    }
+            newLog.setLogbooks(logbooks);
+        } else {
+            throw new OlogException(Response.Status.NOT_FOUND,
+                    "Log entry " + log.getId() + " must be in at least one logbook.");
+        }
+        if (log.getTags() != null) {
+            Iterator<Tag> iterator2 = log.getTags().iterator();
+            Set<Tag> tags = new HashSet<Tag>();
+            while (iterator2.hasNext()) {
+                String tagName = iterator2.next().getName();
+                Tag tag = TagManager.findTag(tagName);
+                if (tag != null) {
+                    tag = em.merge(tag);
+                    tag.addLog(newLog);
+                    tags.add(tag);
+                } else {
+                    throw new OlogException(Response.Status.NOT_FOUND,
+                            "Log entry " + log.getId() + " tag:" + tagName + " does not exists.");
                 }
-                newLog.setTags(tags);
             }
+            newLog.setTags(tags);
+        }
             if (log.getEntryId() != null) {
-                Entry entry = (Entry) JPAUtil.findByID(Entry.class, log.getEntryId());
+                Entry entry = (Entry) em.find(Entry.class, log.getEntryId());
                 if (entry.getLogs() != null) {
                     List<Log> logs = entry.getLogs();
                     ListIterator<Log> iterator = logs.listIterator();
@@ -571,10 +597,10 @@ public class LogManager {
                 Long i = 0L;
                 for (XmlProperty p : log.getXmlProperties()) {
                     Property prop = PropertyManager.findProperty(p.getName());
-                    if (prop != null) {
+                    if(prop != null){
                         for (Map.Entry<String, String> att : p.getAttributes().entrySet()) {
                             Attribute newAtt = AttributeManager.findAttribute(prop, att.getKey());
-                            if (newAtt != null) {
+                            if(newAtt != null){
                                 LogAttribute logattr = new LogAttribute();
                                 logattr.setAttribute(newAtt);
                                 logattr.setLog(newLog);
@@ -584,7 +610,7 @@ public class LogManager {
                                 logattr.setGroupingNum(i);
                                 em.persist(logattr);
                                 logattrs.add(logattr);
-                            } else {
+                            }else{
                                 throw new OlogException(Response.Status.NOT_FOUND,
                                         "Log entry " + log.getId() + " property attribute:" + prop.getName() + newAtt.getName() + " does not exists.");
                             }
@@ -606,9 +632,9 @@ public class LogManager {
             try {
                 if (em.getTransaction() != null && !em.getTransaction().isActive()) {
                     em.getTransaction().rollback();
-                }
+        }
             } catch (Exception e) {
-            }
+    }
             em.close();
         }
 
@@ -617,7 +643,7 @@ public class LogManager {
     /**
      * Remove a tag (mark as Inactive).
      *
-     * @param name tag name
+     * @param id tag id
      */
     public static void remove(Long id) throws OlogException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
@@ -649,5 +675,17 @@ public class LogManager {
             }
             em.close();
         }
+    }
+
+    /**
+     * Remove the logs from logbooks to speed up persistance and reduce memory usage since we do not use that relation.
+     *
+     * @param log Log
+     */
+    private static Log removeLogsFromLogBooks(Log log) {
+        for(Logbook logbook : log.getLogbooks()) {
+            logbook.setLogs(new Logs());
+        }
+        return log;
     }
 }

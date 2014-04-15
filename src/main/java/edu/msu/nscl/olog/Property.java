@@ -184,4 +184,28 @@ public class Property implements Serializable {
             return data.getName() + "(" + data.getAttributes().toString() + ")";
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Property)) return false;
+
+        Property property = (Property) o;
+
+        if (groupingNum != property.groupingNum) return false;
+        if (!id.equals(property.id)) return false;
+        if (name != null ? !name.equals(property.name) : property.name != null) return false;
+        if (state != property.state) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + groupingNum;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (state != null ? state.hashCode() : 0);
+        return result;
+    }
 }

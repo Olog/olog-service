@@ -107,4 +107,28 @@ public class XmlAttachment {
     public static String toLogger(XmlAttachment data) {
         return data.getFileName() + "(" + data.getContentType() + ")";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof XmlAttachment)) return false;
+
+        XmlAttachment that = (XmlAttachment) o;
+
+        if (contentType != null ? !contentType.equals(that.contentType) : that.contentType != null) return false;
+        if (fileName != null ? !fileName.equals(that.fileName) : that.fileName != null) return false;
+        if (fileSize != null ? !fileSize.equals(that.fileSize) : that.fileSize != null) return false;
+        if (thumbnail != null ? !thumbnail.equals(that.thumbnail) : that.thumbnail != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = fileName != null ? fileName.hashCode() : 0;
+        result = 31 * result + (contentType != null ? contentType.hashCode() : 0);
+        result = 31 * result + (thumbnail != null ? thumbnail.hashCode() : 0);
+        result = 31 * result + (fileSize != null ? fileSize.hashCode() : 0);
+        return result;
+    }
 }

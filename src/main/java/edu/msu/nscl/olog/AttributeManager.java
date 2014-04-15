@@ -29,9 +29,9 @@ public class AttributeManager {
      * @throws OlogException wrapping an SQLException
      */
     public static Set<Attribute> findAll(Property property) throws OlogException {
-    
+
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        try {        
+        try {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Attribute> cq = cb.createQuery(Attribute.class);
             Root<Property> from = cq.from(Property.class);
@@ -127,7 +127,7 @@ public class AttributeManager {
 
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
-            em.getTransaction().begin();            
+            em.getTransaction().begin();
             property = PropertyManager.findProperty(property.getName());
             Attribute attribute = findAttribute(property, attributeName);
             if (attribute.getId() != null) {
@@ -169,7 +169,7 @@ public class AttributeManager {
     public static void remove(Property property, String attributeName) throws OlogException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
-            em.getTransaction().begin();            
+            em.getTransaction().begin();
             Attribute attribute = findAttribute(property, attributeName);
             attribute.setState(State.Inactive);
             em.merge(attribute);

@@ -5,6 +5,9 @@
  */
 package edu.msu.nscl.olog;
 
+import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -40,7 +43,9 @@ public class Logs extends ArrayList<Log> {
     }
 
     public Logs(List<Log> logs) {
-        this.addAll(logs);
+        if (!CollectionUtils.isEmpty(logs)) {
+            this.addAll(logs);
+        }
     }
     
     @XmlAttribute(name = "count")
@@ -120,5 +125,25 @@ public class Logs extends ArrayList<Log> {
             s.append("]");
             return s.toString();
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Logs)) return false;
+        if (!super.equals(o)) return false;
+
+        Logs logs = (Logs) o;
+
+        if (count != null ? !count.equals(logs.count) : logs.count != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (count != null ? count.hashCode() : 0);
+        return result;
     }
 }

@@ -80,4 +80,21 @@ public class XmlProperties {
             return s.toString();
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof XmlProperties)) return false;
+
+        XmlProperties that = (XmlProperties) o;
+
+        if (properties != null ? !properties.equals(that.properties) : that.properties != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return properties != null ? properties.hashCode() : 0;
+    }
 }

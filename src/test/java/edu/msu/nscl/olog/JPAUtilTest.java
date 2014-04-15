@@ -19,15 +19,16 @@ import org.apache.log4j.Logger;
  *
  * @author berryman
  */
-public class JPAUtil {
+public class JPAUtilTest {
 
     private static final EntityManagerFactory factory;
     private static volatile long aliasCount = 0;
-    private static final Logger logger = Logger.getLogger(edu.msu.nscl.olog.JPAUtil.class);
+    private static final Logger logger = Logger.getLogger(edu.msu.nscl.olog.JPAUtilTest.class);
 
     static {
         try {
-            factory = Persistence.createEntityManagerFactory("olog_prod");
+            factory = Persistence.createEntityManagerFactory("olog_test");
+
         } catch (Throwable ex) {
             logger.error("Initial SessionFactory creation failed", ex);
             throw new ExceptionInInitializerError(ex);
@@ -66,13 +67,13 @@ public class JPAUtil {
         EntityManager em = null;
 
         try {
-            em = JPAUtil.getEntityManagerFactory().createEntityManager();
-            JPAUtil.startTransaction(em);
+            em = JPAUtilTest.getEntityManagerFactory().createEntityManager();
+            JPAUtilTest.startTransaction(em);
             em.persist(o);
-            JPAUtil.finishTransacton(em);
+            JPAUtilTest.finishTransacton(em);
 
         } catch (PersistenceException e) {
-            JPAUtil.transactionFailed(em);
+            JPAUtilTest.transactionFailed(em);
             throw e;
         }
     }
@@ -81,14 +82,14 @@ public class JPAUtil {
         EntityManager em = null;
 
         try {
-            em = JPAUtil.getEntityManagerFactory().createEntityManager();
-            JPAUtil.startTransaction(em);
+            em = JPAUtilTest.getEntityManagerFactory().createEntityManager();
+            JPAUtilTest.startTransaction(em);
             o = em.merge(o);
-            JPAUtil.finishTransacton(em);
+            JPAUtilTest.finishTransacton(em);
             return o;
 
         } catch (PersistenceException e) {
-            JPAUtil.transactionFailed(em);
+            JPAUtilTest.transactionFailed(em);
             throw e;
         }
     }
@@ -97,16 +98,16 @@ public class JPAUtil {
         EntityManager em = null;
 
         try {
-            em = JPAUtil.getEntityManagerFactory().createEntityManager();
-            JPAUtil.startTransaction(em);
+            em = JPAUtilTest.getEntityManagerFactory().createEntityManager();
+            JPAUtilTest.startTransaction(em);
 
             Query query = em.createQuery("UPDATE " + type.getName() + " c  SET c.state= edu.msu.nscl.olog.State.Inactive  WHERE c.id = " + id.toString());
             query.executeUpdate();
 
-            JPAUtil.finishTransacton(em);
+            JPAUtilTest.finishTransacton(em);
 
         } catch (PersistenceException e) {
-            JPAUtil.transactionFailed(em);
+            JPAUtilTest.transactionFailed(em);
             throw e;
         }
     }
@@ -115,19 +116,18 @@ public class JPAUtil {
         EntityManager em = null;
 
         try {
-            em = JPAUtil.getEntityManagerFactory().createEntityManager();
-            JPAUtil.startTransaction(em);
+            em = JPAUtilTest.getEntityManagerFactory().createEntityManager();
+            JPAUtilTest.startTransaction(em);
             Object o = em.find(type, id);
-            JPAUtil.finishTransacton(em);
+            JPAUtilTest.finishTransacton(em);
 
             return o;
 
         } catch (PersistenceException e) {
-            JPAUtil.transactionFailed(em);
+            JPAUtilTest.transactionFailed(em);
             throw e;
         }
     }
-
     /**
      * Result count from a CriteriaQuery
      *
@@ -136,7 +136,7 @@ public class JPAUtil {
      * @return row count
      */
     public static <T> Long count(EntityManager em, CriteriaQuery<T> criteria) {
-            return em.createQuery(countCriteria(em, criteria)).getSingleResult();
+        return em.createQuery(countCriteria(em, criteria)).getSingleResult();
     }
 
     /**
@@ -151,15 +151,15 @@ public class JPAUtil {
         CriteriaQuery<Long> countCriteria = builder.createQuery(Long.class);
         copyCriteriaNoSelection(criteria, countCriteria, true);
         Root<T> root = findRoot(countCriteria, criteria.getResultType());
-        
+
         Expression<Long> countExpression;
         if (criteria.isDistinct()) {
-        	countExpression = builder.countDistinct(root);
-		} else {
-			countExpression = builder.count(root);
-		}
+            countExpression = builder.countDistinct(root);
+        } else {
+            countExpression = builder.count(root);
+        }
 
-		countCriteria.select(countExpression);
+        countCriteria.select(countExpression);
 
         return countCriteria;
     }
@@ -171,7 +171,7 @@ public class JPAUtil {
      * @param to destination Criteria
      */
     public static void copyCriteriaNoSelection(CriteriaQuery<?> from,
-    		CriteriaQuery<?> to, boolean withoutOrderBy) {
+                                               CriteriaQuery<?> to, boolean withoutOrderBy) {
 
         //for (Root<?> root : from.getRoots()) {
         //    Root<?> dest = to.from(root.getJavaType());
@@ -184,7 +184,7 @@ public class JPAUtil {
         //to.having(from.getGroupRestriction());
         to.where(from.getRestriction());
         if (!withoutOrderBy) {
-        to.orderBy(from.getOrderList());
+            to.orderBy(from.getOrderList());
         }
     }
 
