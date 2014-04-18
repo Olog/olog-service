@@ -8,10 +8,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.*;
 import javax.persistence.EntityManager;
-import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
-import javax.sound.midi.SysexMessage;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
@@ -398,7 +396,7 @@ public class LogManager {
                             result.addLog(log);
                         }
                     } else {
-                        Log log = findLog(e.getId());
+                        Log log = populateLog(Collections.max(e.getLogs()));
                         result.addLog(log);
                     }
                 }
