@@ -87,18 +87,17 @@ public class LogManager {
         Boolean empty = false;
         Boolean history = false;
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-
         try {
             em.getTransaction().begin();
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
             Root<Entry> from = cq.from(Entry.class);
             Join<Entry,Log> logs = from.join(Entry_.logs, JoinType.INNER);
-            SetJoin<Log, Tag> tags = logs.join(Log_.tags, JoinType.LEFT);
-            SetJoin<Log, Logbook> logbooks = logs.join(Log_.logbooks, JoinType.LEFT);
-            Join<Log, LogAttribute> logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
-            Join<LogAttribute, Attribute> attribute = logAttribute.join(LogAttribute_.attribute, JoinType.LEFT);
-            Join<Attribute, Property> property = attribute.join(Attribute_.property, JoinType.LEFT);
+            SetJoin<Log, Tag> tags = null;
+            SetJoin<Log, Logbook> logbooks = null;
+            Join<Log, LogAttribute> logAttribute = null;
+            Join<LogAttribute, Attribute> attribute = null;
+            Join<Attribute, Property> property = null;
 
             for (Map.Entry<String, List<String>> match : matches.entrySet()) {
                 String key = match.getKey().toLowerCase();
@@ -251,27 +250,25 @@ public class LogManager {
             }
             //cb.or() causes an error in eclipselink with p1 as first argument
             Predicate tagPredicate = cb.disjunction();
-            if (!tag_matches.isEmpty()) {
-                tagPredicate = cb.or(tags.get(Tag_.name).in(tag_matches), tagPredicate);
-            }
-            for (String s : tag_patterns) {
-                tagPredicate = cb.or(cb.like(tags.get(Tag_.name), s), tagPredicate);
+            if(!tag_matches.isEmpty() || !tag_patterns.isEmpty()) {
+                tags = logs.join(Log_.tags, JoinType.LEFT);
+                if (!tag_matches.isEmpty()) {
+                    tagPredicate = cb.or(tags.get(Tag_.name).in(tag_matches), tagPredicate);
+                }
+                for (String s : tag_patterns) {
+                    tagPredicate = cb.or(cb.like(tags.get(Tag_.name), s), tagPredicate);
+                }
             }
 
             Predicate logbookPredicate = cb.disjunction();
-            if (!logbook_matches.isEmpty()) {
-                logbookPredicate = cb.and(logbookPredicate, logbooks.get(Logbook_.name).in(logbook_matches));
-            }
-            for (String s : logbook_patterns) {
-                logbookPredicate = cb.and(logbookPredicate, cb.like(logbooks.get(Logbook_.name), s));
-            }
-
-            Predicate propertyPredicate = cb.disjunction();
-            if (!property_matches.isEmpty()) {
-                propertyPredicate = cb.and(propertyPredicate, property.get(Property_.name).in(property_matches));
-            }
-            for (String s : property_patterns) {
-                propertyPredicate = cb.and(propertyPredicate, cb.like(property.get(Property_.name), s));
+            if(!logbook_matches.isEmpty() || !logbook_patterns.isEmpty()) {
+                logbooks = logs.join(Log_.logbooks, JoinType.LEFT);
+                if (!logbook_matches.isEmpty()) {
+                    logbookPredicate = cb.and(logbookPredicate, logbooks.get(Logbook_.name).in(logbook_matches));
+                }
+                for (String s : logbook_patterns) {
+                    logbookPredicate = cb.and(logbookPredicate, cb.like(logbooks.get(Logbook_.name), s));
+                }
             }
 
             Predicate propertyAttributePredicate = cb.disjunction();
@@ -279,12 +276,32 @@ public class LogManager {
                 // Key is coming in as property.attribute
                 List<String> group = Arrays.asList(match.getKey().split("\\."));
                 if (group.size() == 2) {
+                    if (logAttribute == null) {
+                        logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
+                        attribute = logAttribute.join(LogAttribute_.attribute, JoinType.LEFT);
+                        property = attribute.join(Attribute_.property, JoinType.LEFT);
+                    }
                     propertyAttributePredicate = cb.and(propertyAttributePredicate,
                             cb.like(logAttribute.get(LogAttribute_.value),
                                     match.getValue()), property.get(Property_.name).in(group.get(0),
                             attribute.get(Attribute_.name).in(group.get(1))));
                 }
             }
+
+            Predicate propertyPredicate = cb.disjunction();
+            if (logAttribute == null && (!property_matches.isEmpty() || !property_patterns.isEmpty())) {
+                logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
+                attribute = logAttribute.join(LogAttribute_.attribute, JoinType.LEFT);
+                property = attribute.join(Attribute_.property, JoinType.LEFT);
+            }
+            if (!property_matches.isEmpty()) {
+                propertyPredicate = cb.and(propertyPredicate, property.get(Property_.name).in(property_matches));
+            }
+            for (String s : property_patterns) {
+                propertyPredicate = cb.and(propertyPredicate, cb.like(property.get(Property_.name), s));
+            }
+
+
 
             Predicate idPredicate = cb.disjunction();
             for (String s : id_patterns) {
