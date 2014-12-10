@@ -31,8 +31,8 @@ public class Log implements Serializable, Comparable<Log> {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-    
-    @Transient
+
+    @Column(name = "version", nullable = false, length = 50, insertable = true, updatable = false)
     private String version;
     
     @Column(name = "owner", nullable = false, length = 50, insertable = true, updatable = false)

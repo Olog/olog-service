@@ -8,10 +8,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.*;
 import javax.persistence.EntityManager;
-import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
-import javax.sound.midi.SysexMessage;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
@@ -89,18 +87,17 @@ public class LogManager {
         Boolean empty = false;
         Boolean history = false;
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-
         try {
             em.getTransaction().begin();
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
             Root<Entry> from = cq.from(Entry.class);
             Join<Entry,Log> logs = from.join(Entry_.logs, JoinType.INNER);
-            SetJoin<Log, Tag> tags = logs.join(Log_.tags, JoinType.LEFT);
-            SetJoin<Log, Logbook> logbooks = logs.join(Log_.logbooks, JoinType.LEFT);
-            Join<Log, LogAttribute> logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
-            Join<LogAttribute, Attribute> attribute = logAttribute.join(LogAttribute_.attribute, JoinType.LEFT);
-            Join<Attribute, Property> property = attribute.join(Attribute_.property, JoinType.LEFT);
+            SetJoin<Log, Tag> tags = null;
+            SetJoin<Log, Logbook> logbooks = null;
+            Join<Log, LogAttribute> logAttribute = null;
+            Join<LogAttribute, Attribute> attribute = null;
+            Join<Attribute, Property> property = null;
 
             for (Map.Entry<String, List<String>> match : matches.entrySet()) {
                 String key = match.getKey().toLowerCase();
@@ -253,27 +250,25 @@ public class LogManager {
             }
             //cb.or() causes an error in eclipselink with p1 as first argument
             Predicate tagPredicate = cb.disjunction();
-            if (!tag_matches.isEmpty()) {
-                tagPredicate = cb.or(tags.get(Tag_.name).in(tag_matches), tagPredicate);
-            }
-            for (String s : tag_patterns) {
-                tagPredicate = cb.or(cb.like(tags.get(Tag_.name), s), tagPredicate);
+            if(!tag_matches.isEmpty() || !tag_patterns.isEmpty()) {
+                tags = logs.join(Log_.tags, JoinType.LEFT);
+                if (!tag_matches.isEmpty()) {
+                    tagPredicate = cb.or(tags.get(Tag_.name).in(tag_matches), tagPredicate);
+                }
+                for (String s : tag_patterns) {
+                    tagPredicate = cb.or(cb.like(tags.get(Tag_.name), s), tagPredicate);
+                }
             }
 
             Predicate logbookPredicate = cb.disjunction();
-            if (!logbook_matches.isEmpty()) {
-                logbookPredicate = cb.and(logbookPredicate, logbooks.get(Logbook_.name).in(logbook_matches));
-            }
-            for (String s : logbook_patterns) {
-                logbookPredicate = cb.and(logbookPredicate, cb.like(logbooks.get(Logbook_.name), s));
-            }
-
-            Predicate propertyPredicate = cb.disjunction();
-            if (!property_matches.isEmpty()) {
-                propertyPredicate = cb.and(propertyPredicate, property.get(Property_.name).in(property_matches));
-            }
-            for (String s : property_patterns) {
-                propertyPredicate = cb.and(propertyPredicate, cb.like(property.get(Property_.name), s));
+            if(!logbook_matches.isEmpty() || !logbook_patterns.isEmpty()) {
+                logbooks = logs.join(Log_.logbooks, JoinType.LEFT);
+                if (!logbook_matches.isEmpty()) {
+                    logbookPredicate = cb.and(logbookPredicate, logbooks.get(Logbook_.name).in(logbook_matches));
+                }
+                for (String s : logbook_patterns) {
+                    logbookPredicate = cb.and(logbookPredicate, cb.like(logbooks.get(Logbook_.name), s));
+                }
             }
 
             Predicate propertyAttributePredicate = cb.disjunction();
@@ -281,12 +276,32 @@ public class LogManager {
                 // Key is coming in as property.attribute
                 List<String> group = Arrays.asList(match.getKey().split("\\."));
                 if (group.size() == 2) {
+                    if (logAttribute == null) {
+                        logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
+                        attribute = logAttribute.join(LogAttribute_.attribute, JoinType.LEFT);
+                        property = attribute.join(Attribute_.property, JoinType.LEFT);
+                    }
                     propertyAttributePredicate = cb.and(propertyAttributePredicate,
                             cb.like(logAttribute.get(LogAttribute_.value),
                                     match.getValue()), property.get(Property_.name).in(group.get(0),
                             attribute.get(Attribute_.name).in(group.get(1))));
                 }
             }
+
+            Predicate propertyPredicate = cb.disjunction();
+            if (logAttribute == null && (!property_matches.isEmpty() || !property_patterns.isEmpty())) {
+                logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
+                attribute = logAttribute.join(LogAttribute_.attribute, JoinType.LEFT);
+                property = attribute.join(Attribute_.property, JoinType.LEFT);
+            }
+            if (!property_matches.isEmpty()) {
+                propertyPredicate = cb.and(propertyPredicate, property.get(Property_.name).in(property_matches));
+            }
+            for (String s : property_patterns) {
+                propertyPredicate = cb.and(propertyPredicate, cb.like(property.get(Property_.name), s));
+            }
+
+
 
             Predicate idPredicate = cb.disjunction();
             for (String s : id_patterns) {
@@ -387,7 +402,6 @@ public class LogManager {
                 return result;
             }
             List<Entry> rs = typedQuery.getResultList();
-            Map<Long, Integer> versionMap = new HashMap<Long, Integer>();
             if (rs != null) {
                 Iterator<Entry> iterator = rs.iterator();
                 while (iterator.hasNext()) {
@@ -395,20 +409,11 @@ public class LogManager {
                     if (history) {
                         List<Log> all= ((Entry) em.find(Entry.class, e.getId())).getLogs();
                         for (Log log : all) {
-                            int version;
-                            if (versionMap.containsKey(e.getId())) {
-                                version = versionMap.get(e.getId()) + 1;
-                            } else {
-                                version = 1;
-                            }
-                            versionMap.put(e.getId(), version);
-                            log.setVersion(String.valueOf(version));
-
                             log = populateLog(log);
                             result.addLog(log);
                         }
                     } else {
-                        Log log = findLog(e.getId());
+                        Log log = populateLog(Collections.max(e.getLogs()));
                         result.addLog(log);
                     }
                 }
@@ -468,7 +473,6 @@ public class LogManager {
             Entry entry = em.find(Entry.class, id);
             Collection<Log> logs = entry.getLogs();
             Log result = removeLogsFromLogBooks(Collections.max(logs));
-            result.setVersion(String.valueOf(logs.size()));
             result.setXmlAttachments(AttachmentManager.findAll(result.getEntryId()).getAttachments());
             Iterator<LogAttribute> iter = result.getAttributes().iterator();
             Set<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
@@ -512,6 +516,68 @@ public class LogManager {
     }
 
     /**
+     * Finds a log and edits in the database by id and version.
+     *
+     * @return Log
+     * @throws OlogException wrapping an SQLException
+     */
+    public static Log findLogWithVersion(Long id, String version) throws OlogException {
+
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            em.getTransaction().begin();
+            Entry entry = em.find(Entry.class, id);
+            Collection<Log> logs = entry.getLogs();
+            Log result = null;
+            for(Log log : logs) {
+                if (log.getVersion().equals(version)) {
+                    result = removeLogsFromLogBooks(log);
+                    break;
+                }
+            }
+            result.setXmlAttachments(AttachmentManager.findAll(result.getEntryId()).getAttachments());
+            Iterator<LogAttribute> iter = result.getAttributes().iterator();
+            Set<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
+            while (iter.hasNext()) {
+                XmlProperty xmlProperty = new XmlProperty();
+                Map<String, String> map = new HashMap<String, String>();
+                LogAttribute logattr = iter.next();
+                Attribute attr = logattr.getAttribute();
+                xmlProperty.setName(attr.getProperty().getName());
+                xmlProperty.setId(attr.getProperty().getId());
+                for (XmlProperty prevXmlProperty : xmlProperties) {
+                    if (prevXmlProperty.getId().equals(xmlProperty.getId())) {
+                        map = prevXmlProperty.getAttributes();
+                    }
+                }
+                map.put(attr.getName(), logattr.getValue());
+                xmlProperty.setAttributes(map);
+                xmlProperties.add(xmlProperty);
+            }
+            result.setXmlProperties(xmlProperties);
+            em.getTransaction().commit();
+            return result;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new OlogException(Response.Status.NOT_FOUND,
+                    "Exception: " + e);
+        } catch (OlogException e) {
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "JPA exception: " + e);
+        } catch (NumberFormatException e) {
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "JPA exception: " + e);
+        } finally {
+            try {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+            } catch (Exception e) {
+            }
+            em.close();
+        }
+    }
+
+    /**
      * Creates a Log in the database.
      *
 
@@ -521,53 +587,53 @@ public class LogManager {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
             em.getTransaction().begin();
-        Log newLog = new Log();
-        newLog.setState(State.Active);
-        newLog.setLevel(log.getLevel());
-        newLog.setOwner(log.getOwner());
-        newLog.setDescription(log.getDescription());
-        //XXX: Use for psql db olog;
-        //XXX: remove new line and tab character since psql do not convert them
-        //newLog.setDescription(log.getDescription().replaceAll("\n", " ").replaceAll("\t", " "));
-        newLog.setSource(log.getSource());
-        em.persist(newLog);
-        if (!log.getLogbooks().isEmpty()) {
-            Iterator<Logbook> iterator = log.getLogbooks().iterator();
-            Set<Logbook> logbooks = new HashSet<Logbook>();
-            while (iterator.hasNext()) {
-                String logbookName = iterator.next().getName();
-                Logbook logbook = LogbookManager.findLogbook(logbookName);
-                if (logbook != null) {
-                    logbook = em.merge(logbook);
-                    logbook.addLog(newLog);
-                    logbooks.add(logbook);
-                } else {
-                    throw new OlogException(Response.Status.NOT_FOUND,
-                            "Log entry " + log.getId() + " logbook:" + logbookName + " does not exists.");
+            Log newLog = new Log();
+            newLog.setState(State.Active);
+            newLog.setLevel(log.getLevel());
+            newLog.setOwner(log.getOwner());
+            newLog.setDescription(log.getDescription());
+            //XXX: Use for psql db olog;
+            //XXX: remove new line and tab character since psql do not convert them
+            //newLog.setDescription(log.getDescription().replaceAll("\n", " ").replaceAll("\t", " "));
+            newLog.setSource(log.getSource());
+            em.persist(newLog);
+            if (!log.getLogbooks().isEmpty()) {
+                Iterator<Logbook> iterator = log.getLogbooks().iterator();
+                Set<Logbook> logbooks = new HashSet<Logbook>();
+                while (iterator.hasNext()) {
+                    String logbookName = iterator.next().getName();
+                    Logbook logbook = LogbookManager.findLogbook(logbookName);
+                    if (logbook != null) {
+                        logbook = em.merge(logbook);
+                        logbook.addLog(newLog);
+                        logbooks.add(logbook);
+                    } else {
+                        throw new OlogException(Response.Status.NOT_FOUND,
+                                "Log entry " + log.getId() + " logbook:" + logbookName + " does not exists.");
+                    }
                 }
+                newLog.setLogbooks(logbooks);
+            } else {
+                throw new OlogException(Response.Status.NOT_FOUND,
+                        "Log entry " + log.getId() + " must be in at least one logbook.");
             }
-            newLog.setLogbooks(logbooks);
-        } else {
-            throw new OlogException(Response.Status.NOT_FOUND,
-                    "Log entry " + log.getId() + " must be in at least one logbook.");
-        }
-        if (log.getTags() != null) {
-            Iterator<Tag> iterator2 = log.getTags().iterator();
-            Set<Tag> tags = new HashSet<Tag>();
-            while (iterator2.hasNext()) {
-                String tagName = iterator2.next().getName();
-                Tag tag = TagManager.findTag(tagName);
-                if (tag != null) {
-                    tag = em.merge(tag);
-                    tag.addLog(newLog);
-                    tags.add(tag);
-                } else {
-                    throw new OlogException(Response.Status.NOT_FOUND,
-                            "Log entry " + log.getId() + " tag:" + tagName + " does not exists.");
+            if (log.getTags() != null) {
+                Iterator<Tag> iterator2 = log.getTags().iterator();
+                Set<Tag> tags = new HashSet<Tag>();
+                while (iterator2.hasNext()) {
+                    String tagName = iterator2.next().getName();
+                    Tag tag = TagManager.findTag(tagName);
+                    if (tag != null) {
+                        tag = em.merge(tag);
+                        tag.addLog(newLog);
+                        tags.add(tag);
+                    } else {
+                        throw new OlogException(Response.Status.NOT_FOUND,
+                                "Log entry " + log.getId() + " tag:" + tagName + " does not exists.");
+                    }
                 }
+                newLog.setTags(tags);
             }
-            newLog.setTags(tags);
-        }
             if (log.getEntryId() != null) {
                 Entry entry = (Entry) em.find(Entry.class, log.getEntryId());
                 if (entry.getLogs() != null) {
@@ -583,12 +649,14 @@ public class LogManager {
                 }
                 newLog.setState(State.Active);
                 newLog.setEntry(entry);
+                newLog.setVersion(String.valueOf(entry.getLogs().size()));
                 em.merge(entry);
             } else {
                 Entry entry = new Entry();
                 newLog.setState(State.Active);
                 entry.addLog(newLog);
                 newLog.setEntry(entry);
+                newLog.setVersion("1");
                 em.persist(entry);
             }
             em.flush();

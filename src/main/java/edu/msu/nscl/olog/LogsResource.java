@@ -137,7 +137,7 @@ public class LogsResource {
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         Log result = null;
         try {
-            result = cm.findLogById(logId);
+            result = cm.findLogById(logId, uriInfo.getQueryParameters());
             Response r;
             if (result == null) {
                 r = Response.status(Response.Status.NOT_FOUND).build();

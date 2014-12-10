@@ -95,6 +95,21 @@ public class OlogImpl {
     }
 
     /**
+     * Return single log found by log id.
+     *
+     * @param logId id to look for
+     * @return Log with found log and its logbooks
+     * @throws OlogException on SQLException
+     */
+    public Log findLogById(Long logId, MultivaluedMap<String, String> matches) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        if (matches != null && matches.containsKey("version") && !matches.get("version").isEmpty()) {
+            return LogManager.findLogWithVersion(logId, matches.get("version").iterator().next());
+        } else {
+            return LogManager.findLog(logId);
+        }
+    }
+
+    /**
      * Returns logs found by matching logbook names, tag names, log description.
      *
      * @param matches multivalued map of logbook, tag, log names and patterns to
@@ -147,7 +162,6 @@ public class OlogImpl {
      * Add the logbook identified by <tt>logbook</tt> to the logs specified in
      * the Logs <tt>data</tt>.
      *
-     * @param logbook logbook to add
      * @param data Logbook data with all logs
      * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
@@ -160,7 +174,6 @@ public class OlogImpl {
      * logs specified in the Logbook payload <tt>data</tt>, creating it if
      * necessary.
      *
-     * @param logbook logbook to add
      * @param data Logbook container with all logs to add logbook to
      * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
@@ -203,9 +216,8 @@ public class OlogImpl {
      *
      * TODO: this couldn't work as stated
      *
-     * @param logbook logbook to add
      * @param logId log to add the logbook to
-     * @param data Logbook
+     * @param logbookName String
      * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
     public Logbook addSingleLogbook(String logbookName, Long logId) throws OlogException {
@@ -242,7 +254,7 @@ public class OlogImpl {
     /**
      * Deletes a logbook identified by <tt>name</tt> from a single log.
      *
-     * @param logbook tag to delete
+     * @param logbookName String to delete
      * @param logId log to delete it from
      * @throws OlogException wrapping an SQLException
      */
@@ -284,7 +296,7 @@ public class OlogImpl {
      * Add the tag identified by <tt>tag</tt> and <tt>state</tt> to the logs
      * specified in the Logs <tt>data</tt>.
      *
-     * @param tag tag to add
+     * @param tagName tag to add
      * @param data Tag with list of all logs to add tag to
      * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
@@ -314,7 +326,7 @@ public class OlogImpl {
      * @TODO Right now, this is only a create tag; not create/replace. To
      * Delete, and recreate log key ids every time is too expensive
      *
-     * @param tag tag to add
+     * @param tagName tag to add
      * @param data Tag container with all logs to add tag to
      * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
@@ -363,7 +375,7 @@ public class OlogImpl {
      * Deletes a logbook identified by <tt>name</tt> from all logs, failing if
      * the logbook does not exists.
      *
-     * @param logbook tag to delete
+     * @param tag tag to delete
      * @throws OlogException wrapping an SQLException or on failure
      */
     public void removeExistingTag(String tag) throws OlogException {
@@ -373,7 +385,7 @@ public class OlogImpl {
     /**
      * Add the tag identified by <tt>tag</tt> to the single log <tt>logId</tt>.
      *
-     * @param tag tag to add
+     * @param tagName tag to add
      * @param logId
      * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
@@ -400,7 +412,7 @@ public class OlogImpl {
     /**
      * Deletes a tag identified by <tt>name</tt> from a single log.
      *
-     * @param tag tag to delete
+     * @param tagName tag to delete
      * @param logId log to delete it from
      * @throws OlogException wrapping an SQLException
      */
@@ -446,8 +458,8 @@ public class OlogImpl {
     /**
      * Adds a new property.
      *
-     * @param Property data incoming payload
-     * @param boolean destructive is this action to be destructive (true) or not
+     * @param data XmlProperty incoming payload
+     * @param destructive boolean is this action to be destructive (true) or not
      * @throws OlogException wrapping an SQLException
      */
     XmlProperty addProperty(XmlProperty data, boolean destructive) throws OlogException {
@@ -472,9 +484,8 @@ public class OlogImpl {
     /**
      * Adds a new property attribute to a log entry.
      *
-     * @param String property name of the property
-     * @param Long logId log that the property attribute will be associated with
-     * @param Property data incoming payload
+     * @param logId Long  log that the property attribute will be associated with
+     * @param data Property  incoming payload
      * @throws OlogException wrapping an SQLException
      */
     Log addAttribute(Long logId, XmlProperty data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
@@ -489,7 +500,7 @@ public class OlogImpl {
     /**
      * Remove a property.
      *
-     * @param String property name of the property to be removed
+     * @param  propertyName String of the property to be removed
      * @throws OlogException wrapping an SQLException
      */
     void removeProperty(String propertyName) throws OlogException {
@@ -499,8 +510,8 @@ public class OlogImpl {
     /**
      * Removes a properties attribute from a log entry.
      *
-     * @param Long logId log that the property attribute will be removed
-     * @param Property data incoming payload
+     * @param logId Long log that the property attribute will be removed
+     * @param  data Property incoming payload
      * @throws OlogException wrapping an SQLException
      */
     Log removeAttribute(Long logId, XmlProperty data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
@@ -587,7 +598,7 @@ public class OlogImpl {
      * SQLException
      */
     public Log updateLog(Long logId, Log data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        Log dest = findLogById(logId);
+        Log dest = findLogById(logId, null);
         if (dest == null) {
             throw new OlogException(Response.Status.NOT_FOUND,
                     "Log entry " + logId + " could not be updated: Does not exists");
