@@ -36,13 +36,14 @@ public class JacksonJsonProvider extends JacksonJaxbJsonProvider {
     public JacksonJsonProvider() throws Exception {
         if (objectMapper == null) {
             objectMapper = new ObjectMapper();
-            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+            //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+           // objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
             objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
             objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
             objectMapper.configure(DeserializationFeature.UNWRAP_ROOT_VALUE, false);
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             objectMapper.getTypeFactory().constructCollectionType(List.class, Log.class);
+            
             objectMapper.enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME);
 
         }

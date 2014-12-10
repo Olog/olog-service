@@ -454,6 +454,7 @@ public class Log implements Serializable, Comparable<Log> {
     }
     
     @XmlTransient
+    @JsonIgnore
     public Set<LogAttribute> getAttributes() {
         return attributes;
     }

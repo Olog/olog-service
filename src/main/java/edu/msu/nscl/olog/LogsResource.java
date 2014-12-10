@@ -59,7 +59,7 @@ public class LogsResource {
      * @return HTTP Response
      */
     @GET
-    @Produces({"application/xml", "application/json"})
+    @Produces("application/xml")
     @CrossOriginResourceSharing(allowAllOrigins = true)
     public Response query() throws RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
@@ -67,6 +67,25 @@ public class LogsResource {
         try {
             Logs result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
             Response r = Response.ok(result).build();
+            log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
+                    + "|returns " + result.getLogs().size() + " logs");
+            return r;
+        } catch (OlogException e) {
+            log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
+                    + e.getResponseStatusCode() +  "|cause=" + e);
+            return e.toResponse();
+        } 
+    }
+    
+    @GET
+    @Produces("application/json")
+    @CrossOriginResourceSharing(allowAllOrigins = true)
+    public Response queryjson() throws RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        OlogImpl cm = OlogImpl.getInstance();
+        String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
+        try {
+            Logs result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
+            Response r = Response.ok(result.getLogs()).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.getLogs().size() + " logs");
             return r;
@@ -85,10 +104,47 @@ public class LogsResource {
      * @throws IOException when audit or log fail
      */
     @POST
-    @Consumes({"application/xml", "application/json"})
-    @Produces({"application/xml", "application/json"})
+    @Consumes("application/xml")
+    @Produces("application/xml")
     @CrossOriginResourceSharing(allowAllOrigins = true)
-    public Response add(@Context HttpServletRequest req, @Context HttpHeaders headers, List<Log> data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
+    public Response add(@Context HttpServletRequest req, @Context HttpHeaders headers, Logs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
+        OlogImpl cm = OlogImpl.getInstance();
+        UserManager um = UserManager.getInstance();
+        String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
+        um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
+        um.setHostAddress(hostAddress);
+
+        try {
+            Logs data_temp = new Logs();
+            for(Log datum : data.getLogs()){
+                datum.setOwner(um.getUserName());
+                data_temp.addLog(datum);
+            }
+            data = data_temp;
+            cm.checkValid(data);
+            if (!um.userHasAdminRole()) {
+                cm.checkUserBelongsToGroup(um.getUserName(), data);
+            }
+            
+            Logs result = cm.createOrReplaceLogs(data);
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
+                    + "|data=" + Logs.toLogger(data));
+            Response r = Response.ok(result).build();
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
+                    + "|data=" + Logs.toLogger(data));
+            return r;
+        } catch (OlogException e) {
+            log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
+                    + "|data=" + Logs.toLogger(data) + "|cause=" + e);
+            return e.toResponse();
+        }
+    }
+    
+    @POST
+    @Consumes("application/json")
+    @Produces("application/json")
+    @CrossOriginResourceSharing(allowAllOrigins = true)
+    public Response addjson(@Context HttpServletRequest req, @Context HttpHeaders headers, List<Log> data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
