@@ -3,11 +3,9 @@
  */
 package edu.msu.nscl.olog;
 
-import com.sun.jersey.core.header.FormDataContentDisposition;
-import com.sun.jersey.multipart.FormDataBodyPart;
-import com.sun.jersey.multipart.FormDataParam;
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +13,10 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.io.IOUtils;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
+
 
 /**
  * Top level Jersey HTTP methods for the .../attachments URL
@@ -22,6 +24,7 @@ import org.apache.commons.io.IOUtils;
  * @author Eric Berryman
  */
 @Path("/attachments/")
+@CrossOriginResourceSharing(allowAllOrigins = true, allowCredentials = true)
 public class AttachmentsResource {
 
     @Context
@@ -73,7 +76,7 @@ public class AttachmentsResource {
     public Response getFile(@PathParam("logId") Long logId, @PathParam("fileName") String fileName ) {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
-        Attachment result;
+        edu.msu.nscl.olog.Attachment result;
         try {
             String filePath = logId.toString();
             result = cm.getAttachment(filePath, fileName);
@@ -102,7 +105,7 @@ public class AttachmentsResource {
     public Response getThumbnail(@PathParam("logId") Long logId, @PathParam("fileName") String fileName ) {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
-        Attachment result;
+        edu.msu.nscl.olog.Attachment result;
         try {
             String filePath = "thumbnails/"+logId.toString();
             result = cm.getAttachment(filePath, fileName);
@@ -134,25 +137,23 @@ public class AttachmentsResource {
     public Response addAttachment(@Context HttpServletRequest req, 
                                   @Context HttpHeaders headers, 
                                   @PathParam("logId") Long logId,
-                                  @FormDataParam("file") InputStream uploadedInputStream,
-                                  @FormDataParam("file") FormDataContentDisposition disposition,
-                                  @FormDataParam("file") FormDataBodyPart body) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+                                  @Multipart("file") org.apache.cxf.jaxrs.ext.multipart.Attachment incommingAttachment) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For"));
-        Attachment attachment = new Attachment();
+        edu.msu.nscl.olog.Attachment attachment = new edu.msu.nscl.olog.Attachment();
         XmlAttachment result;
         try {
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroupOfLog(um.getUserName(), logId);
             }
             //TODO: Check PathParam fileName?
-            attachment.setFileName(disposition.getFileName());
-            attachment.setMimeType(body.getMediaType().toString());
-            attachment.setContent(uploadedInputStream);
-            attachment.setFileSize(disposition.getSize()); 
-            attachment.setEncoding(nonNull(body.getHeaders().getFirst("Content-Transfer-Encoding")));
+            attachment.setFileName(incommingAttachment.getContentDisposition().getParameter("filename"));
+            attachment.setMimeType(incommingAttachment.getContentType().toString());
+            attachment.setContent(incommingAttachment.getObject(InputStream.class));
+            //attachment.setFileSize(incommingAttachment.getContentDisposition().getParameter(null))); 
+            attachment.setEncoding(nonNull(incommingAttachment.getHeaders().getFirst("Content-Transfer-Encoding")));
             result = cm.createAttachment(attachment, logId);
 
             Response r = Response.ok(result).build();
@@ -181,29 +182,27 @@ public class AttachmentsResource {
                                   @Context HttpHeaders headers, 
                                   @PathParam("fileName") String fileName, 
                                   @PathParam("logId") Long logId,
-                                  @FormDataParam("file") InputStream uploadedInputStream,
-                                  @FormDataParam("file") FormDataContentDisposition disposition,
-                                  @FormDataParam("file") FormDataBodyPart body) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+                                  @Multipart("file") org.apache.cxf.jaxrs.ext.multipart.Attachment incommingAttachment) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For"));
-        Attachment attachment = new Attachment();
+        edu.msu.nscl.olog.Attachment attachment = new edu.msu.nscl.olog.Attachment();
         try {
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroupOfLog(um.getUserName(), logId);
             }
             //TODO: Check PathParam fileName?
-            attachment.setFileName(disposition.getFileName());
-            attachment.setMimeType(body.getMediaType().toString());
-            attachment.setContent(uploadedInputStream);
-            attachment.setFileSize(disposition.getSize());
-            attachment.setEncoding(nonNull(body.getHeaders().getFirst("Content-Transfer-Encoding")));
+            attachment.setFileName(incommingAttachment.getContentDisposition().getParameter("filename"));
+            attachment.setMimeType(incommingAttachment.getContentType().toString());
+            attachment.setContent(incommingAttachment.getObject(InputStream.class));
+            //attachment.setFileSize(incommingAttachment.getContentDisposition().getParameter(null))); 
+            attachment.setEncoding(nonNull(incommingAttachment.getHeaders().getFirst("Content-Transfer-Encoding")));
             //TODO: Should be destructive (replace)
             //cm.removeExistingAttachment(fileName,logId);
             cm.createAttachment(attachment, logId);
  
-            String output = "File uploaded to : " + logId.toString()+"/"+disposition.getFileName();
+            String output = "File uploaded to : " + logId.toString()+"/"+incommingAttachment.getContentDisposition().getParameter("filename");
             Response r = Response.status(200).entity(output).build();
             
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus() + " | " + output);

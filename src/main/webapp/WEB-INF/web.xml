@@ -2,11 +2,24 @@
 <web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
     <servlet>
         <servlet-name>ServletAdaptor</servlet-name>
-        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+        <servlet-class>org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet</servlet-class>
         <init-param>
-            <param-name>com.sun.jersey.spi.container.ContainerResponseFilters</param-name>
-            <param-value>edu.msu.nscl.olog.ResponseCorsFilter</param-value>
-        </init-param>      
+            <param-name>jaxrs.serviceClasses</param-name>
+            <param-value>
+                edu.msu.nscl.olog.AttachmentsResource,
+                edu.msu.nscl.olog.LogbooksResource,
+                edu.msu.nscl.olog.LogsResource,
+                edu.msu.nscl.olog.PropertiesResource,
+                edu.msu.nscl.olog.TagsResource           
+            </param-value>
+        </init-param>
+        <init-param>
+            <param-name>jaxrs.providers</param-name>
+            <param-value>
+                edu.msu.nscl.olog.JacksonJsonProvider,
+                org.apache.cxf.rs.security.cors.CrossOriginResourceSharingFilter        
+            </param-value>
+        </init-param>   
         <load-on-startup>4</load-on-startup>
     </servlet>
     
@@ -15,7 +28,7 @@
     	<!-- This name of a directory name inside src/main/resources/db -->
 
 		<!-- Default Original Migration Path -->
-    	<param-value>migration</param-value>
+    	<param-value>mysql56\migration</param-value>
     	
     	<!-- Migration Path that works on MySQL 5.6 and later  
     	<param-value>migration_MySQL_5_6</param-value> 

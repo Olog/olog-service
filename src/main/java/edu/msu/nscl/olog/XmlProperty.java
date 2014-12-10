@@ -4,6 +4,7 @@
  */
 package edu.msu.nscl.olog;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ public class XmlProperty {
     private int groupingNum;
     private String name = null;
     private Map<String, String> attributes = new HashMap<String, String>();;
-    private List<Log> logs = new Logs();
+    private List<Log> logs = (new Logs()).getLogs();
 
     /**
      * Creates a new instance of XmlProperty.
@@ -129,6 +130,7 @@ public class XmlProperty {
      * @return XmlChannels object
      */
     @XmlJavaTypeAdapter(XmlLogAdapter.class)
+    @JsonIgnore
     public Logs getLogs() {
         return new Logs(logs);
     }
@@ -139,7 +141,7 @@ public class XmlProperty {
      * @param logs Logs object
      */
     public void setLogs(Logs logs) {
-        this.logs = logs;
+        this.logs = logs.getLogs();
     }
 
     public Property toProperty() {
@@ -166,7 +168,7 @@ public class XmlProperty {
             return data.getName() + "(" + data.getAttributes().toString() + ")";
         } else {
             return data.getName() + "(" + data.getAttributes().toString() + ")"
-                    + Logs.toLogger(data.logs);
+                    + Logs.toLogger(new Logs(data.logs));
         }
     }
 

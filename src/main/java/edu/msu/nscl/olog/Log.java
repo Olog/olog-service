@@ -5,6 +5,8 @@
  */
 package edu.msu.nscl.olog;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.persistence.annotations.CacheType;
 
 import java.io.Serializable;
@@ -124,6 +126,7 @@ public class Log implements Serializable, Comparable<Log> {
      * @return id
      */
     @XmlTransient
+    @JsonIgnore
     public Long getId() {
         return id;
     }
@@ -138,6 +141,7 @@ public class Log implements Serializable, Comparable<Log> {
     }
 
     @XmlAttribute(name = "id")
+    @JsonProperty("id")
     public Long getEntryId() {
         if (entry != null) {
             return entry.getId();
@@ -307,6 +311,7 @@ public class Log implements Serializable, Comparable<Log> {
      */
     @XmlElementWrapper(name = "properties")
     @XmlElement(name = "property")
+    @JsonProperty("properties")
     public Collection<XmlProperty> getXmlProperties() {
         return properties;
     }
@@ -406,6 +411,7 @@ public class Log implements Serializable, Comparable<Log> {
      */
     @XmlElementWrapper(name = "attachments")
     @XmlElement(name = "attachment")
+    @JsonProperty("attachments")
     public Collection<XmlAttachment> getXmlAttachments() {
         return attachments;
     }
@@ -435,6 +441,7 @@ public class Log implements Serializable, Comparable<Log> {
     /**
      * @return the entry
      */
+    @JsonIgnore
     public Entry getEntry() {
         return entry;
     }
@@ -481,8 +488,8 @@ public class Log implements Serializable, Comparable<Log> {
         Set<Tag> xt = data.getTags();
 
         return data.getId() + "-v." + data.getVersion() + " : " + "(" + data.getOwner() + "):["
-                + Logbooks.toLogger(xl)
-                + Tags.toLogger(xt)
+//                + Logbooks.toLogger(xl)
+//                + Tags.toLogger(xt)
                 + "]\n";
     }
 

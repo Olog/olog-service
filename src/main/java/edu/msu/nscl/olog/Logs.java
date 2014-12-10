@@ -5,6 +5,7 @@
  */
 package edu.msu.nscl.olog;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 
@@ -23,9 +24,10 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 @XmlRootElement(name = "logs")
-public class Logs extends ArrayList<Log> {
+public class Logs {
 
     private Long count;
+    private List<Log> logs = new ArrayList<Log>();
     
     /**
      * Creates a new instance of Logs.
@@ -39,18 +41,18 @@ public class Logs extends ArrayList<Log> {
      * @param log Log initial element
      */
     public Logs(Log log) {
-        this.add(log);
+        logs.add(log);
     }
 
     public Logs(List<Log> logs) {
         if (!CollectionUtils.isEmpty(logs)) {
-            this.addAll(logs);
+            this.logs.addAll(logs);
         }
     }
     
     @XmlAttribute(name = "count")
     public Long getCount() {
-        return this.count;
+        return count;
     }
     
     public void setCount(Long count) {
@@ -63,14 +65,11 @@ public class Logs extends ArrayList<Log> {
      * @return logs a collection of Log
      */
     @XmlElementRef(type = Log.class, name = "log")
-    public List<Log> getLogList() {
-        return this;
-    }
-
-    @XmlTransient
+    @JsonProperty("log")
     public List<Log> getLogs() {
-        return this;
+        return logs;
     }
+    
 
     /**
      * Sets the collection of logs.
@@ -78,8 +77,8 @@ public class Logs extends ArrayList<Log> {
      * @param items new log collection
      */
     public void setLogs(List<Log> items) {
-        this.clear();
-        this.addAll(items);
+        logs.clear();
+        logs.addAll(items);
     }
 
     /**
@@ -88,7 +87,7 @@ public class Logs extends ArrayList<Log> {
      * @param item the Log to add
      */
     public void addLog(Log item) {
-        this.add(item);
+        logs.add(item);
     }
 
     /**
@@ -104,21 +103,6 @@ public class Logs extends ArrayList<Log> {
             StringBuilder s = new StringBuilder();
             s.append("[");
             for (Log c : data.getLogs()) {
-                s.append(Log.toLogger(c) + ",");
-            }
-            s.delete(s.length() - 1, s.length());
-            s.append("]");
-            return s.toString();
-        }
-    }
-
-    public static String toLogger(List<Log> data) {
-        if (data.size() == 0) {
-            return "[None]";
-        } else {
-            StringBuilder s = new StringBuilder();
-            s.append("[");
-            for (Log c : data) {
                 s.append(Log.toLogger(c) + ",");
             }
             s.delete(s.length() - 1, s.length());

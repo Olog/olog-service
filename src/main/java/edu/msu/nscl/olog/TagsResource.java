@@ -19,6 +19,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
+import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
 
 /**
  * Top level Jersey HTTP methods for the .../tags URL
@@ -26,6 +27,7 @@ import javax.ws.rs.core.UriInfo;
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 @Path("/tags/")
+@CrossOriginResourceSharing(allowAllOrigins = true, allowCredentials = true)
 public class TagsResource {
     @Context
     private UriInfo uriInfo;

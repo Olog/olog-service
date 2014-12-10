@@ -5,13 +5,13 @@
  */
 package edu.msu.nscl.olog;
 
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import javax.jcr.*;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import org.apache.cxf.jaxrs.impl.MetadataMap;
 
 /**
  * Central business logic layer that implements all directory operations.
@@ -167,7 +167,7 @@ public class OlogImpl {
     public Logbook createOrReplaceLogbook(String logbookName, Logbook data) throws OlogException {
         Logbook logbook = LogbookManager.create(logbookName, data.getOwner());
         List<Log> logsData = new ArrayList<Log>();
-        for (Log log : data.getLogs()) {
+        for (Log log : data.getLogs().getLogs()) {
             logsData.add(LogManager.findLog(log.getId()));
             if (log == null) {
                 throw new OlogException(Response.Status.BAD_REQUEST,
@@ -290,9 +290,9 @@ public class OlogImpl {
      */
     public Tag updateTag(String tagName, Tag data) throws OlogException {
         Tag tag = TagManager.create(tagName);
-        if (data.getLogs().size() > 0) {
+        if (data.getLogs().getLogs().size() > 0) {
             List<Log> logsData = new ArrayList<Log>();
-            for (Log log : data.getLogs()) {
+            for (Log log : data.getLogs().getLogs()) {
                 logsData.add(LogManager.findLog(log.getId()));
                 if (log == null) {
                     throw new OlogException(Response.Status.BAD_REQUEST,
@@ -320,19 +320,19 @@ public class OlogImpl {
      */
     public Tag createOrReplaceTag(String tagName, Tag data) throws OlogException {
         Tag tag = TagManager.create(tagName);
-        if (data.getLogs().size() > 0) {
-            MultivaluedMap<String, String> map = new MultivaluedMapImpl();
+        if (data.getLogs().getLogs().size() > 0) {
+            MultivaluedMap<String, String> map = new MetadataMap();
             map.add("tag", tagName);
-            List<Log> logs = LogManager.findLog(map);
+            Logs logs = LogManager.findLog(map);
             List<Log> logsData = new ArrayList<Log>();
-            for (Log log : data.getLogs()) {
+            for (Log log : data.getLogs().getLogs()) {
                 logsData.add(LogManager.findLog(log.getId()));
                 if (log == null) {
                     throw new OlogException(Response.Status.BAD_REQUEST,
                             "Log entry " + log.getId() + " does not exists.");
                 }
             }
-            for (Log log : logs) {
+            for (Log log : logs.getLogs()) {
                 log.removeTag(tag);
                 LogManager.create(log);
             }
@@ -556,7 +556,7 @@ public class OlogImpl {
      * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
     public Logs createOrReplaceLogs(Logs logs) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        ListIterator<Log> iterator = logs.listIterator();
+        ListIterator<Log> iterator = logs.getLogs().listIterator();
         while (iterator.hasNext()) {
             Log log = iterator.next();
             iterator.set(createOneLog(log));
@@ -652,10 +652,10 @@ public class OlogImpl {
      * @throws OlogException on error
      */
     public void checkValid(Logs data) throws OlogException {
-        if (data == null || data.getLogList() == null) {
+        if (data == null || data.getLogs() == null) {
             return;
         }
-        for (Log c : data.getLogList()) {
+        for (Log c : data.getLogs()) {
             checkValid(c);
         }
     }
@@ -843,10 +843,10 @@ public class OlogImpl {
      * @throws OlogException on name mismatch
      */
     public void checkUserBelongsToGroup(String user, Logs data) throws OlogException {
-        if (data == null || data.getLogList() == null) {
+        if (data == null || data.getLogs() == null) {
             return;
         }
-        for (Log log : data.getLogList()) {
+        for (Log log : data.getLogs()) {
             checkUserBelongsToGroup(user, log);
         }
     }

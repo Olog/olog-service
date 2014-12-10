@@ -6,6 +6,7 @@
 
 package edu.msu.nscl.olog;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -38,6 +39,7 @@ public class XmlProperties {
      * @return a collection of Property
      */
     @XmlElement(name = "property")
+    @JsonProperty("property")
     public Collection<XmlProperty> getProperties() {
         return properties;
     }

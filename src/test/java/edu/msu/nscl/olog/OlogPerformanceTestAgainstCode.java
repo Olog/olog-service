@@ -1,7 +1,6 @@
 package edu.msu.nscl.olog;
 
 
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -23,6 +22,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.Set;
+import org.apache.cxf.jaxrs.impl.MetadataMap;
 
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
@@ -85,19 +85,19 @@ public class OlogPerformanceTestAgainstCode {
 
 
     public void findLogByAttribute(String dbTypeText) throws RepositoryException, OlogException, IOException {
-        MultivaluedMap<String, String> map = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> map = new MetadataMap();
         map.add("sweep.crystal_name", "ECF_229");
         long startTime = System.nanoTime();
         Logs logs = LogManager.findLog(map);
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
-        logId = logs.getLogList().size() > 0 ? logs.get(0).getEntryId(): 1l;
+        logId = logs.getLogs().size() > 0 ? logs.getLogs().get(0).getEntryId(): 1l;
         out.write(dbTypeText + " Time consume to find a log by attribute is: " + totalTime + "(s)");
         out.newLine();
     }
 
     public void findLogByDescription(String dbTypeText) throws RepositoryException, OlogException, IOException {
-        MultivaluedMap<String, String> map = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> map = new MetadataMap();
         map.add("search", "Energy");
         long startTime = System.nanoTime();
         Logs logs = LogManager.findLog(map);
@@ -136,7 +136,7 @@ public class OlogPerformanceTestAgainstCode {
     }
 
     public void findLogByDate(String dbTypeText) throws RepositoryException, OlogException, IOException {
-        MultivaluedMap<String, String> map = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> map = new MetadataMap();
         map.add("start", String.valueOf(DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH).getTime() / 1000));
         long startTime = System.nanoTime();
         Logs logs = LogManager.findLog(map);

@@ -4,6 +4,7 @@
  */
 package edu.msu.nscl.olog;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.*;
 import javax.persistence.*;
@@ -34,7 +35,7 @@ public class Tag implements Serializable {
     @Enumerated(EnumType.STRING)
     private State state;
     @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
-    private List<Log> logs = new Logs();
+    private List<Log> logs = (new Logs()).getLogs();
 
     public Tag() {
     }
@@ -107,6 +108,7 @@ public class Tag implements Serializable {
      * @return logs Logs object
      */
     @XmlJavaTypeAdapter(XmlLogAdapter.class)
+    @JsonIgnore
     public Logs getLogs() {
         return new Logs(logs);
     }
@@ -117,7 +119,7 @@ public class Tag implements Serializable {
      * @param logs Logs object
      */
     public void setLogs(Logs logs) {
-        this.logs = logs;
+        this.logs = logs.getLogs();
     }
 
     public void addLog(Log item) {

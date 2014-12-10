@@ -38,7 +38,7 @@ public class JCRUtil extends OlogContextListener {
             String className = url.getFile();
             String filePath = className.substring(0,className.indexOf(WEBINF) + WEBINF.length());
             String xml;
-            Boolean jcrInDb = null;
+            Boolean jcrInDb = Boolean.FALSE;
             try {
                 Context initCtx = new InitialContext();
                 jcrInDb = (Boolean) initCtx.lookup("java:/comp/env/JCR_IN_DB");

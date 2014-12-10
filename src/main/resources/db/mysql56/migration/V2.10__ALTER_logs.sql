@@ -1,4 +1,4 @@
-ALTER TABLE `logs`
+﻿ALTER TABLE `logs`
  ADD COLUMN `entry_id` INT(11) NOT NULL;
 
 
@@ -19,4 +19,3 @@ ALTER TABLE `logs`
     REFERENCES `entries` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION;
-

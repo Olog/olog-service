@@ -20,7 +20,6 @@ import javax.sql.DataSource;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.apache.ddlutils.PlatformUtils;
 import org.apache.ddlutils.platform.mysql.MySqlPlatform;
 import org.apache.ddlutils.platform.postgresql.PostgreSqlPlatform;
@@ -28,6 +27,7 @@ import org.apache.jackrabbit.core.RepositoryImpl;
 
 import com.googlecode.flyway.core.Flyway;
 import com.googlecode.flyway.core.api.MigrationVersion;
+import org.apache.cxf.jaxrs.impl.MetadataMap;
 
 public class OlogContextListener implements ServletContextListener {
 
@@ -141,7 +141,7 @@ public class OlogContextListener implements ServletContextListener {
         OlogImpl cm = OlogImpl.getInstance();
         Logbooks logbooks  = cm.listLogbooks();
         for (Logbook logbook : logbooks.getLogbooks()) {
-            MultivaluedMap<String,String> map = new MultivaluedMapImpl();
+            MultivaluedMap<String,String> map = new MetadataMap();
             map.add("logbook", logbook.getName());
             map.add("limit", "10");
             cm.findLogsByMultiMatch(map);

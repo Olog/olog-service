@@ -20,6 +20,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
+import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
 
 /**
  * Top level Jersey HTTP methods for the .../logbooks URL
@@ -27,6 +28,7 @@ import javax.ws.rs.core.UriInfo;
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 @Path("/logbooks/")
+@CrossOriginResourceSharing(allowAllOrigins = true, allowCredentials = true)
 public class LogbooksResource {
     @Context
     private UriInfo uriInfo;

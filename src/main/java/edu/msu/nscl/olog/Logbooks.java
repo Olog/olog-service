@@ -5,9 +5,9 @@
  */
 package edu.msu.nscl.olog;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 
@@ -43,6 +43,7 @@ public class Logbooks {
      * @return logbooks a collection of Logbook
      */
     @XmlElement(name = "logbook")
+    @JsonProperty("logbook")
     public Collection<Logbook> getLogbooks() {
         return logbooks;
     }
@@ -78,21 +79,6 @@ public class Logbooks {
             StringBuilder s = new StringBuilder();
             s.append("[");
             for (Logbook p : data.getLogbooks()) {
-                s.append(Logbook.toLogger(p) + ",");
-            }
-            s.delete(s.length() - 1, s.length());
-            s.append("]");
-            return s.toString();
-        }
-    }
-
-    public static String toLogger(Set<Logbook> data) {
-        if (data.size() == 0) {
-            return "[None]";
-        } else {
-            StringBuilder s = new StringBuilder();
-            s.append("[");
-            for (Logbook p : data) {
                 s.append(Logbook.toLogger(p) + ",");
             }
             s.delete(s.length() - 1, s.length());

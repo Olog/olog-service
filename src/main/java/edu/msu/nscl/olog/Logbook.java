@@ -5,6 +5,7 @@
  */
 package edu.msu.nscl.olog;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.*;
@@ -36,7 +37,7 @@ public class Logbook implements Serializable {
     @Enumerated(EnumType.STRING)
     private State state;
     @ManyToMany(mappedBy = "logbooks", fetch = FetchType.LAZY)
-    private List<Log> logs = new Logs();
+    private List<Log> logs = (new Logs()).getLogs();
 
     /**
      * Creates a new instance of Logbook.
@@ -141,6 +142,7 @@ public class Logbook implements Serializable {
      * @return logs Logs object
      */
     @XmlJavaTypeAdapter(XmlLogAdapter.class)
+    @JsonIgnore
     public Logs getLogs() {
         return new Logs(logs);
     }
@@ -151,7 +153,7 @@ public class Logbook implements Serializable {
      * @param logs Logs object
      */
     public void setLogs(Logs logs) {
-        this.logs = logs;
+        this.logs = logs.getLogs();
     }
 
     public void addLog(Log item) {

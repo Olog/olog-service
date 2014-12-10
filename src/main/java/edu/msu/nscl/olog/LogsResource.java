@@ -9,6 +9,7 @@ package edu.msu.nscl.olog;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.jcr.RepositoryException;
 import javax.naming.NamingException;
@@ -26,6 +27,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
+import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
 
 /**
  * Top level Jersey HTTP methods for the .../logs URL
@@ -34,6 +36,7 @@ import javax.ws.rs.core.UriInfo;
  */
 
 @Path("/logs/")
+@CrossOriginResourceSharing(allowAllOrigins = true, allowCredentials = true)
 public class LogsResource {
     //@Resource
     //private WebServiceContext wsContext
@@ -57,6 +60,7 @@ public class LogsResource {
      */
     @GET
     @Produces({"application/xml", "application/json"})
+    @CrossOriginResourceSharing(allowAllOrigins = true)
     public Response query() throws RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
@@ -64,7 +68,7 @@ public class LogsResource {
             Logs result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
             Response r = Response.ok(result).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
-                    + "|returns " + result.getLogList().size() + " logs");
+                    + "|returns " + result.getLogs().size() + " logs");
             return r;
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
@@ -83,34 +87,37 @@ public class LogsResource {
     @POST
     @Consumes({"application/xml", "application/json"})
     @Produces({"application/xml", "application/json"})
-    public Response add(@Context HttpServletRequest req, @Context HttpHeaders headers, Logs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
+    @CrossOriginResourceSharing(allowAllOrigins = true)
+    public Response add(@Context HttpServletRequest req, @Context HttpHeaders headers, List<Log> data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(hostAddress);
+        Logs logsData = new Logs();
+        logsData.setLogs(data);
         try {
             Logs data_temp = new Logs();
-            for(Log datum : data.getLogList()){
+            for(Log datum : logsData.getLogs()){
                 datum.setOwner(um.getUserName());
                 data_temp.addLog(datum);
             }
-            data = data_temp;
-            cm.checkValid(data);
+            logsData = data_temp;
+            cm.checkValid(logsData);
             if (!um.userHasAdminRole()) {
-                cm.checkUserBelongsToGroup(um.getUserName(), data);
+                cm.checkUserBelongsToGroup(um.getUserName(), logsData);
             }
             
-            Logs result = cm.createOrReplaceLogs(data);
+            Logs result = cm.createOrReplaceLogs(logsData);
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
-                    + "|data=" + Logs.toLogger(data));
+                    + "|data=" + Logs.toLogger(logsData));
             Response r = Response.ok(result).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
-                    + "|data=" + Logs.toLogger(data));
+                    + "|data=" + Logs.toLogger(logsData));
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + Logs.toLogger(data) + "|cause=" + e);
+                    + "|data=" + Logs.toLogger(logsData) + "|cause=" + e);
             return e.toResponse();
         }
     }
@@ -124,6 +131,7 @@ public class LogsResource {
     @GET
     @Path("{logId}")
     @Produces({"application/xml", "application/json"})
+    @CrossOriginResourceSharing(allowAllOrigins = true)
     public Response read(@PathParam("logId") Long logId) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
@@ -157,6 +165,7 @@ public class LogsResource {
     @PUT
     @Path("{logId}")
     @Consumes({"application/xml", "application/json"})
+    @CrossOriginResourceSharing(allowAllOrigins = true)
     public Response create(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, Log data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
@@ -195,6 +204,7 @@ public class LogsResource {
     @POST
     @Path("{logId}")
     @Consumes({"application/xml", "application/json"})
+    @CrossOriginResourceSharing(allowAllOrigins = true)
     public Response update(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, Log data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
@@ -231,6 +241,7 @@ public class LogsResource {
      */
     @DELETE
     @Path("{logId}")
+    @CrossOriginResourceSharing(allowAllOrigins = true)
     public Response remove(@PathParam("logId") Long logId) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         UserManager um = UserManager.getInstance();
         OlogImpl cm = OlogImpl.getInstance();

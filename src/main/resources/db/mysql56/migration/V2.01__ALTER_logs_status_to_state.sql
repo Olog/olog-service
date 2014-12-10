@@ -1,4 +1,9 @@
-ALTER TABLE `logs` 
+﻿LOCK TABLES
+ `logs` WRITE,
+ logs_attributes WRITE,
+ logs_logbooks WRITE;
+
+ALTER TABLE `logs`
  ADD COLUMN `state` ENUM('Active','Inactive') NOT NULL DEFAULT 'Active' AFTER `parent_id`;
 
 UPDATE `logs` SET `state`='Active' WHERE `status_id`='1';
@@ -27,3 +32,5 @@ ALTER TABLE `logs` MODIFY COLUMN `id` INT(11) NOT NULL,
  DROP COLUMN `status_id`, 
  DROP INDEX `status_id_fk`,
  DROP FOREIGN KEY `status_id_fk`;
+
+UNLOCK TABLES;

@@ -19,6 +19,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
+import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
 
 /**
  * Top level Jersey HTTP methods for the .../properties URL
@@ -26,6 +27,7 @@ import javax.ws.rs.core.UriInfo;
  * @author Robert Gaul III
  */
 @Path("/properties/")
+@CrossOriginResourceSharing(allowAllOrigins = true, allowCredentials = true)
 public class PropertiesResource {
 
     @Context

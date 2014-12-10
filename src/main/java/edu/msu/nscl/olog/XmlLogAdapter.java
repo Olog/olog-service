@@ -32,7 +32,7 @@ public class XmlLogAdapter extends XmlAdapter<Logs, Logs> {
 
     @Override
     public Logs unmarshal(Logs logs) throws Exception {
-        ListIterator<Log> iterator = logs.listIterator();
+        ListIterator<Log> iterator = logs.getLogs().listIterator();
         while (iterator.hasNext()) {
             Log log = iterator.next();
             log.setId(log.getEntryId());
