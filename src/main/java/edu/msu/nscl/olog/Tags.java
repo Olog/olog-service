@@ -37,6 +37,10 @@ public class Tags{
     public Tags(Tag tag) {
         tags.add(tag);
     }
+    
+    public Tags(Collection<Tag> tags) {
+        this.tags.addAll(tags);
+    }
 
     /**
      * Returns a collection of Tag.

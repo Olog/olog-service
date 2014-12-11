@@ -485,13 +485,13 @@ public class Log implements Serializable, Comparable<Log> {
      * @return string representation
      */
     public static String toLogger(Log data) {
-        Set<Logbook> xl = data.getLogbooks();
-        Set<Tag> xt = data.getTags();
+        Logbooks xl = new Logbooks(data.getLogbooks());
+        Tags xt = new Tags(data.getTags());
 
         return data.getId() + "-v." + data.getVersion() + " : " + "(" + data.getOwner() + "):["
-//                + Logbooks.toLogger(xl)
-//                + Tags.toLogger(xt)
-                + "]\n";
+                + Logbooks.toLogger(xl)
+                + Tags.toLogger(xt)
+                + "]";
     }
 
     @Override

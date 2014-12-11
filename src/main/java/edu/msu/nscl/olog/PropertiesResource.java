@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Path;
@@ -75,6 +76,7 @@ public class PropertiesResource {
     @PUT
     @Path("{propName}")
     @Produces({"application/xml", "application/json"})
+    @Consumes({"application/xml", "application/json"})
     public Response addProperty(@PathParam("propName") String newProperty, XmlProperty data) {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
@@ -125,7 +127,7 @@ public class PropertiesResource {
      */
     @POST
     @Path("{propName}")
-    @Produces({"application/xml", "application/json"})
+    @Consumes({"application/xml", "application/json"})
     public Response appendProperty(@PathParam("propName") String newProperty, XmlProperty data) {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
@@ -152,8 +154,7 @@ public class PropertiesResource {
      */
     @DELETE
     @Path("{propName}")
-    @Produces({"application/xml", "application/json"})
-    public Response removeProperty(@PathParam("propName") String property, XmlProperty data) {
+    public Response removeProperty(@PathParam("propName") String property) {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
@@ -178,7 +179,7 @@ public class PropertiesResource {
      */
     @PUT
     @Path("{propName}/{logId}")
-    @Produces({"application/xml", "application/json"})
+    @Consumes({"application/xml", "application/json"})
     public Response addAttribute(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("propName") String property, @PathParam("logId") Long logId, XmlProperty data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
@@ -207,7 +208,7 @@ public class PropertiesResource {
      */
     @DELETE
     @Path("{propName}/{logId}")
-    @Produces({"application/xml", "application/json"})
+    @Consumes({"application/xml", "application/json"})
     public Response removeAttribute(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("propName") String property, @PathParam("logId") Long logId, XmlProperty data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";

@@ -71,6 +71,8 @@ public class LogManager {
     public static Logs findLog(MultivaluedMap<String, String> matches) throws OlogException {
 
         // XXX: should mandate a limit for it, since for big db it can run out of memory
+        List<Predicate> andPredicates = new ArrayList<Predicate>();
+        List<Predicate> orPredicates = new ArrayList<Predicate>();
         List<String> log_patterns = new ArrayList();
         List<String> id_patterns = new ArrayList();
         List<String> tag_matches = new ArrayList();
@@ -248,9 +250,9 @@ public class LogManager {
                     value_patterns.putAll(key, cleanedMatchesValues);
                 }
             }
-            //cb.or() causes an error in eclipselink with p1 as first argument
-            Predicate tagPredicate = cb.disjunction();
+            //cb.or() causes an error in eclipselink with p1 as first argument 
             if(!tag_matches.isEmpty() || !tag_patterns.isEmpty()) {
+                Predicate tagPredicate = cb.disjunction();
                 tags = logs.join(Log_.tags, JoinType.LEFT);
                 if (!tag_matches.isEmpty()) {
                     tagPredicate = cb.or(tags.get(Tag_.name).in(tag_matches), tagPredicate);
@@ -258,10 +260,11 @@ public class LogManager {
                 for (String s : tag_patterns) {
                     tagPredicate = cb.or(cb.like(tags.get(Tag_.name), s), tagPredicate);
                 }
+                orPredicates.add(tagPredicate);
             }
-
-            Predicate logbookPredicate = cb.disjunction();
+            
             if(!logbook_matches.isEmpty() || !logbook_patterns.isEmpty()) {
+                Predicate logbookPredicate = cb.conjunction();
                 logbooks = logs.join(Log_.logbooks, JoinType.LEFT);
                 if (!logbook_matches.isEmpty()) {
                     logbookPredicate = cb.and(logbookPredicate, logbooks.get(Logbook_.name).in(logbook_matches));
@@ -269,63 +272,85 @@ public class LogManager {
                 for (String s : logbook_patterns) {
                     logbookPredicate = cb.and(logbookPredicate, cb.like(logbooks.get(Logbook_.name), s));
                 }
+                andPredicates.add(logbookPredicate);
             }
+            
 
-            Predicate propertyAttributePredicate = cb.disjunction();
-            for (Map.Entry<String, String> match : value_patterns.entries()) {
-                // Key is coming in as property.attribute
-                List<String> group = Arrays.asList(match.getKey().split("\\."));
-                if (group.size() == 2) {
-                    if (logAttribute == null) {
-                        logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
-                        attribute = logAttribute.join(LogAttribute_.attribute, JoinType.LEFT);
-                        property = attribute.join(Attribute_.property, JoinType.LEFT);
+            if (!value_patterns.entries().isEmpty()) {
+                Predicate propertyAttributePredicate = cb.conjunction();
+                for (Map.Entry<String, String> match : value_patterns.entries()) {
+                    // Key is coming in as property.attribute
+                    List<String> group = Arrays.asList(match.getKey().split("\\."));
+                    if (group.size() == 2) {
+                        if (logAttribute == null) {
+                            logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
+                            attribute = logAttribute.join(LogAttribute_.attribute, JoinType.LEFT);
+                            property = attribute.join(Attribute_.property, JoinType.LEFT);
+                        }
+                        propertyAttributePredicate = cb.and(propertyAttributePredicate,
+                                cb.like(logAttribute.get(LogAttribute_.value),
+                                        match.getValue()), property.get(Property_.name).in(group.get(0),
+                                        attribute.get(Attribute_.name).in(group.get(1))));
                     }
-                    propertyAttributePredicate = cb.and(propertyAttributePredicate,
-                            cb.like(logAttribute.get(LogAttribute_.value),
-                                    match.getValue()), property.get(Property_.name).in(group.get(0),
-                            attribute.get(Attribute_.name).in(group.get(1))));
                 }
+                andPredicates.add(propertyAttributePredicate);
             }
 
-            Predicate propertyPredicate = cb.disjunction();
-            if (logAttribute == null && (!property_matches.isEmpty() || !property_patterns.isEmpty())) {
-                logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
-                attribute = logAttribute.join(LogAttribute_.attribute, JoinType.LEFT);
-                property = attribute.join(Attribute_.property, JoinType.LEFT);
-            }
-            if (!property_matches.isEmpty()) {
-                propertyPredicate = cb.and(propertyPredicate, property.get(Property_.name).in(property_matches));
-            }
-            for (String s : property_patterns) {
-                propertyPredicate = cb.and(propertyPredicate, cb.like(property.get(Property_.name), s));
-            }
-
-
-
-            Predicate idPredicate = cb.disjunction();
-            for (String s : id_patterns) {
-                idPredicate = cb.or(cb.equal(from.get(Entry_.id), Long.valueOf(s)), idPredicate);
-            }
-            Predicate ownerPredicate = cb.disjunction();
-            for (String s : owner_patterns) {
-                ownerPredicate = cb.or(cb.equal(logs.get(Log_.owner), s), ownerPredicate);
-            }
-            Predicate sourcePredicate = cb.disjunction();
-            for (String s : source_patterns) {
-                sourcePredicate = cb.or(cb.equal(logs.get(Log_.source), s), sourcePredicate);
-            }
-            Predicate searchPredicate = cb.disjunction();
-            for (String s : log_patterns) {
-                searchPredicate = cb.or(cb.like(logs.get(Log_.description), s), searchPredicate);
-                List<Long> ids = AttachmentManager.findAll(s);
-                if (!ids.isEmpty()) {
-                    searchPredicate = cb.or(from.get(Entry_.id).in(ids), searchPredicate);
+            if ((!property_matches.isEmpty() || !property_patterns.isEmpty())) {
+                Predicate propertyPredicate = cb.conjunction();
+                if (logAttribute == null) {
+                    logAttribute = logs.join(Log_.attributes, JoinType.LEFT);
+                    attribute = logAttribute.join(LogAttribute_.attribute, JoinType.LEFT);
+                    property = attribute.join(Attribute_.property, JoinType.LEFT);
                 }
+                if (!property_matches.isEmpty()) {
+                    propertyPredicate = cb.and(propertyPredicate, property.get(Property_.name).in(property_matches));
+                }
+                for (String s : property_patterns) {
+                    propertyPredicate = cb.and(propertyPredicate, cb.like(property.get(Property_.name), s));
+                }
+                andPredicates.add(propertyPredicate);
             }
 
-            Predicate datePredicate = cb.disjunction();
+
+            if (!id_patterns.isEmpty()) {
+                Predicate idPredicate = cb.disjunction();
+                for (String s : id_patterns) {
+                    idPredicate = cb.or(cb.equal(from.get(Entry_.id), Long.valueOf(s)), idPredicate);
+                }
+                orPredicates.add(idPredicate);
+            }
+            
+            if (!owner_patterns.isEmpty()) {
+                Predicate ownerPredicate = cb.disjunction();
+                for (String s : owner_patterns) {
+                    ownerPredicate = cb.or(cb.equal(logs.get(Log_.owner), s), ownerPredicate);
+                }
+                orPredicates.add(ownerPredicate);
+            }
+            
+            if (!source_patterns.isEmpty()) {
+                Predicate sourcePredicate = cb.disjunction();
+                for (String s : source_patterns) {
+                    sourcePredicate = cb.or(cb.equal(logs.get(Log_.source), s), sourcePredicate);
+                }
+                orPredicates.add(sourcePredicate);
+            }
+            
+            if (!log_patterns.isEmpty()) {
+                Predicate searchPredicate = cb.disjunction();
+                for (String s : log_patterns) {
+                    searchPredicate = cb.or(cb.like(logs.get(Log_.description), s), searchPredicate);
+                    List<Long> ids = AttachmentManager.findAll(s);
+                    if (!ids.isEmpty()) {
+                        searchPredicate = cb.or(from.get(Entry_.id).in(ids), searchPredicate);
+                    }
+                }
+                orPredicates.add(searchPredicate);
+            }
+            
             if (!date_matches.isEmpty()) {
+                Predicate datePredicate = cb.conjunction();
                 String start = null, end = null;
                 for (Map.Entry<String, Collection<String>> match : date_matches.asMap().entrySet()) {
                     if (match.getKey().toLowerCase().equals("start")) {
@@ -354,17 +379,38 @@ public class LogManager {
                             jStart,
                             jEnd);
                 }
+                andPredicates.add(datePredicate);
             }
+            
 
             cq.distinct(true);
-            Predicate statusPredicate = cb.disjunction();
+
             if(history){
-                statusPredicate = cb.or(cb.equal(logs.get(Log_.state), State.Active), cb.equal(logs.get(Log_.state), State.Inactive));
+                Predicate statusPredicate = cb.or(cb.equal(logs.get(Log_.state), State.Active), cb.equal(logs.get(Log_.state), State.Inactive));
+                orPredicates.add(statusPredicate);
             } else {
-                statusPredicate = cb.equal(logs.get(Log_.state), State.Active);
+                Predicate statusPredicate = cb.equal(logs.get(Log_.state), State.Active);
+                andPredicates.add(statusPredicate);
             }
-            Predicate finalPredicate = cb.and(statusPredicate, logbookPredicate, tagPredicate, propertyPredicate, propertyAttributePredicate,
-                    datePredicate, searchPredicate, idPredicate, ownerPredicate, sourcePredicate);
+            
+            Predicate finalPredicate = cb.conjunction();
+            
+            if (!andPredicates.isEmpty()) {
+                Predicate andfinalPredicate = cb.conjunction();
+                for (Predicate predicate : andPredicates) {
+                    andfinalPredicate = cb.and(andfinalPredicate, predicate);
+                }
+                finalPredicate = cb.and(finalPredicate,andfinalPredicate);
+            }
+            
+            if (!orPredicates.isEmpty()) {
+                Predicate orfinalPredicate = cb.disjunction();
+                for (Predicate predicate : orPredicates) {
+                    orfinalPredicate = cb.or(orfinalPredicate, predicate);
+                }
+                finalPredicate = cb.and(finalPredicate,orfinalPredicate);
+            }
+            
             cq.select(from);
             cq.where(finalPredicate);
             cq.groupBy(from);
@@ -471,6 +517,7 @@ public class LogManager {
         try {
             em.getTransaction().begin();
             Entry entry = em.find(Entry.class, id);
+            if(entry==null) throw new OlogException(Response.Status.NOT_FOUND,"Null Entry: "+id.toString());
             Collection<Log> logs = entry.getLogs();
             Log result = removeLogsFromLogBooks(Collections.max(logs));
             result.setXmlAttachments(AttachmentManager.findAll(result.getEntryId()).getAttachments());
@@ -586,6 +633,7 @@ public class LogManager {
     public static Log create(Log log) throws OlogException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
+            if(log.getLevel()==null) throw new OlogException(Response.Status.BAD_REQUEST,"Log must have level");
             em.getTransaction().begin();
             Log newLog = new Log();
             newLog.setState(State.Active);
@@ -621,7 +669,9 @@ public class LogManager {
                 Iterator<Tag> iterator2 = log.getTags().iterator();
                 Set<Tag> tags = new HashSet<Tag>();
                 while (iterator2.hasNext()) {
-                    String tagName = iterator2.next().getName();
+                    Tag partialTag = iterator2.next();
+                    if(partialTag==null) throw new OlogException(Response.Status.BAD_REQUEST,"Log tag name null");
+                    String tagName = partialTag.getName();
                     Tag tag = TagManager.findTag(tagName);
                     if (tag != null) {
                         tag = em.merge(tag);

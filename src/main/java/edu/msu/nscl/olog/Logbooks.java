@@ -36,6 +36,10 @@ public class Logbooks {
     public Logbooks(Logbook logbook) {
         logbooks.add(logbook);
     }
+    
+    public Logbooks(Collection<Logbook> logbooks) {
+        this.logbooks.addAll(logbooks);
+    } 
 
     /**
      * Returns a collection of Logbook.

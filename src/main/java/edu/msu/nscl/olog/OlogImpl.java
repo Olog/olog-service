@@ -424,7 +424,7 @@ public class OlogImpl {
             tags.remove(tag);
         } else {
             throw new OlogException(Response.Status.BAD_REQUEST,
-                    "Log entry " + logId.toString() + " does not have logbook:" + tag.getName() + ".");
+                    "Log entry " + logId.toString() + " does not have tag:" + tag.getName() + ".");
         }
         log.setTags(tags);
         LogManager.create(log);
