@@ -55,6 +55,7 @@ public class LogManager {
             em.getTransaction().commit();
             return result;
         } catch (Exception e) {
+            em.getTransaction().rollback();
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
@@ -467,8 +468,10 @@ public class LogManager {
             em.getTransaction().commit();
             return result;
         } catch (OlogException e) {
+            em.getTransaction().rollback();
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR, "JPA exception: " + e);
         } catch (Exception e) {
+            em.getTransaction().rollback();
             throw new OlogException(Response.Status.BAD_REQUEST, "Bad Parameters Exception: " + e);
         } finally {
             try {
@@ -543,12 +546,15 @@ public class LogManager {
             em.getTransaction().commit();
             return result;
         } catch (ArrayIndexOutOfBoundsException e) {
+            em.getTransaction().rollback();
             throw new OlogException(Response.Status.NOT_FOUND,
                     "Exception: " + e);
         } catch (OlogException e) {
+            em.getTransaction().rollback();
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } catch (NumberFormatException e) {
+            em.getTransaction().rollback();
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
@@ -605,12 +611,15 @@ public class LogManager {
             em.getTransaction().commit();
             return result;
         } catch (ArrayIndexOutOfBoundsException e) {
+            em.getTransaction().rollback();
             throw new OlogException(Response.Status.NOT_FOUND,
                     "Exception: " + e);
         } catch (OlogException e) {
+            em.getTransaction().rollback();
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } catch (NumberFormatException e) {
+            em.getTransaction().rollback();
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
@@ -656,12 +665,14 @@ public class LogManager {
                         logbook.addLog(newLog);
                         logbooks.add(logbook);
                     } else {
+                        em.getTransaction().rollback();
                         throw new OlogException(Response.Status.NOT_FOUND,
                                 "Log entry " + log.getId() + " logbook:" + logbookName + " does not exists.");
                     }
                 }
                 newLog.setLogbooks(logbooks);
             } else {
+                em.getTransaction().rollback();
                 throw new OlogException(Response.Status.NOT_FOUND,
                         "Log entry " + log.getId() + " must be in at least one logbook.");
             }
@@ -678,6 +689,7 @@ public class LogManager {
                         tag.addLog(newLog);
                         tags.add(tag);
                     } else {
+                        em.getTransaction().rollback();
                         throw new OlogException(Response.Status.NOT_FOUND,
                                 "Log entry " + log.getId() + " tag:" + tagName + " does not exists.");
                     }
@@ -729,6 +741,7 @@ public class LogManager {
                                 em.persist(logattr);
                                 logattrs.add(logattr);
                             }else{
+                                em.getTransaction().rollback();
                                 throw new OlogException(Response.Status.NOT_FOUND,
                                         "Log entry " + log.getId() + " property attribute:" + prop.getName() + newAtt.getName() + " does not exists.");
                             }
@@ -736,6 +749,7 @@ public class LogManager {
                         newLog.setAttributes(logattrs);
                         i++;
                     } else {
+                        em.getTransaction().rollback();
                         throw new OlogException(Response.Status.NOT_FOUND,
                                 "Log entry " + log.getId() + " prop:" + prop.getName() + " does not exists.");
                     }
@@ -744,6 +758,7 @@ public class LogManager {
             em.getTransaction().commit();
             return newLog;
         } catch (OlogException e) {
+            em.getTransaction().rollback();
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
@@ -786,7 +801,7 @@ public class LogManager {
 
         } finally {
             try {
-                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
+                if (em.getTransaction() != null && em.getTransaction().isActive()) {
                     em.getTransaction().rollback();
                 }
             } catch (Exception e) {

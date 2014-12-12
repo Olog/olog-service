@@ -7,7 +7,6 @@ package edu.msu.nscl.olog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.eclipse.persistence.annotations.CacheType;
 
 import java.io.Serializable;
 import java.util.*;

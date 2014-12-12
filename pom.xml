@@ -14,7 +14,7 @@
     <description>Olog is a directory server, implemented as a REST style web service.</description>
     <url>http://olog.github.com/</url>
     <properties>
-        <eclipselink.version>2.5.2</eclipselink.version>
+        <datanucleus.version>4.0.3</datanucleus.version>
         <cxf.version>2.7.13</cxf.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <github.projectName>olog-service</github.projectName>
@@ -150,19 +150,62 @@
             <version>2.6.2</version>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>eclipselink</artifactId>
-            <version>${eclipselink.version}</version>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.4</version>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>org.eclipse.persistence.core</artifactId>
-            <version>${eclipselink.version}</version>
+            <groupId>javax.jdo</groupId>
+            <artifactId>jdo-api</artifactId>
+            <version>3.1-rc1</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>org.eclipse.persistence.jpa</artifactId>
-            <version>${eclipselink.version}</version>
+            <groupId>net.sf.dozer</groupId>
+            <artifactId>dozer</artifactId>
+            <version>5.5.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>javax.persistence</artifactId>
+            <version>2.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-core</artifactId>
+            <version>${datanucleus.version}</version>
+            <scope>provided</scope>
+        </dependency>
+<!--        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-java8</artifactId>
+            <version>${datanucleus.version}</version>
+            <scope>provided</scope>
+        </dependency>-->
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-jodatime</artifactId>
+            <version>${datanucleus.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-api-jpa</artifactId>
+            <version>${datanucleus.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-jpa-query</artifactId>
+            <version>${datanucleus.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-rdbms</artifactId>
+            <version>${datanucleus.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
@@ -205,6 +248,27 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.datanucleus</groupId>
+                <artifactId>datanucleus-maven-plugin</artifactId>
+                <version>4.0.0-release</version>
+                <configuration>
+                    <api>JPA</api>
+                    <props>${basedir}/datanucleus.properties</props>
+                    <persistenceUnitName>olog_prod</persistenceUnitName>
+                    <log4jConfiguration>${basedir}/log4j.properties</log4jConfiguration>
+                    <verbose>true</verbose>
+                  <fork>false</fork>    <!--  Solve windows line too long error -->
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>enhance</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

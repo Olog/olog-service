@@ -5,6 +5,7 @@
 package edu.msu.nscl.olog;
 
 import java.io.InputStream;
+import javax.ws.rs.core.MediaType;
 
 /**
  *
@@ -16,7 +17,7 @@ public class Attachment {
         }
         
         private InputStream content;
-        private String mimeType;
+        private MediaType mimeType;
         private String encoding;
         private String fileName;
         private Long fileSize;
@@ -29,11 +30,11 @@ public class Attachment {
             return content;
         }
         
-        public void setMimeType(String mimeType){
+        public void setMimeType(MediaType mimeType){
             this.mimeType = mimeType;
         }
         
-        public String getMimeType(){
+        public MediaType getMimeType(){
             return mimeType;
         }
         

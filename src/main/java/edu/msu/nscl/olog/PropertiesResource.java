@@ -149,12 +149,13 @@ public class PropertiesResource {
      * DELETE method for removing a property.
      *
      * @param String property property to be removed or that will contain attributes to be removed
-     * @param Property data payload containing attributes to be removed
+     * @param property data payload containing attributes to be removed
      * @return
      */
     @DELETE
     @Path("{propName}")
     public Response removeProperty(@PathParam("propName") String property) {
+        //TODO: remove data, it's not used and not needed
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {

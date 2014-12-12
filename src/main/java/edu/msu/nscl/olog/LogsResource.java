@@ -60,7 +60,6 @@ public class LogsResource {
      */
     @GET
     @Produces("application/xml")
-    @CrossOriginResourceSharing(allowAllOrigins = true)
     public Response query() throws RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
@@ -79,7 +78,6 @@ public class LogsResource {
     
     @GET
     @Produces("application/json")
-    @CrossOriginResourceSharing(allowAllOrigins = true)
     public Response queryjson() throws RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
@@ -106,7 +104,6 @@ public class LogsResource {
     @POST
     @Consumes("application/xml")
     @Produces("application/xml")
-    @CrossOriginResourceSharing(allowAllOrigins = true)
     public Response add(@Context HttpServletRequest req, @Context HttpHeaders headers, Logs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
@@ -143,7 +140,6 @@ public class LogsResource {
     @POST
     @Consumes("application/json")
     @Produces("application/json")
-    @CrossOriginResourceSharing(allowAllOrigins = true)
     public Response addjson(@Context HttpServletRequest req, @Context HttpHeaders headers, List<Log> data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
@@ -187,7 +183,6 @@ public class LogsResource {
     @GET
     @Path("{logId}")
     @Produces({"application/xml", "application/json"})
-    @CrossOriginResourceSharing(allowAllOrigins = true)
     public Response read(@PathParam("logId") Long logId) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
@@ -221,7 +216,6 @@ public class LogsResource {
     @PUT
     @Path("{logId}")
     @Consumes({"application/xml", "application/json"})
-    @CrossOriginResourceSharing(allowAllOrigins = true)
     public Response create(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, Log data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
@@ -260,7 +254,6 @@ public class LogsResource {
     @POST
     @Path("{logId}")
     @Consumes({"application/xml", "application/json"})
-    @CrossOriginResourceSharing(allowAllOrigins = true)
     public Response update(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, Log data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
@@ -297,7 +290,6 @@ public class LogsResource {
      */
     @DELETE
     @Path("{logId}")
-    @CrossOriginResourceSharing(allowAllOrigins = true)
     public Response remove(@PathParam("logId") Long logId) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         UserManager um = UserManager.getInstance();
         OlogImpl cm = OlogImpl.getInstance();

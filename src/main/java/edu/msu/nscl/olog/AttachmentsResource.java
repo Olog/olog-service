@@ -150,7 +150,7 @@ public class AttachmentsResource {
             }
             //TODO: Check PathParam fileName?
             attachment.setFileName(incommingAttachment.getContentDisposition().getParameter("filename"));
-            attachment.setMimeType(incommingAttachment.getContentType().toString());
+            attachment.setMimeType(incommingAttachment.getContentType());
             attachment.setContent(incommingAttachment.getObject(InputStream.class));
             //attachment.setFileSize(incommingAttachment.getContentDisposition().getParameter(null))); 
             attachment.setEncoding(nonNull(incommingAttachment.getHeaders().getFirst("Content-Transfer-Encoding")));
@@ -194,7 +194,7 @@ public class AttachmentsResource {
             }
             //TODO: Check PathParam fileName?
             attachment.setFileName(incommingAttachment.getContentDisposition().getParameter("filename"));
-            attachment.setMimeType(incommingAttachment.getContentType().toString());
+            attachment.setMimeType(incommingAttachment.getContentType());
             attachment.setContent(incommingAttachment.getObject(InputStream.class));
             //attachment.setFileSize(incommingAttachment.getContentDisposition().getParameter(null))); 
             attachment.setEncoding(nonNull(incommingAttachment.getHeaders().getFirst("Content-Transfer-Encoding")));

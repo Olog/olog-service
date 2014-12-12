@@ -11,6 +11,7 @@ import javax.jcr.*;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
 import net.coobird.thumbnailator.Thumbnails;
@@ -89,6 +90,7 @@ public class AttachmentManager {
     public static Attachment findAttachment(String filePath, String fileName) throws OlogException {
         InputStream content = null;
         String mimeType = null;
+        String[] arrayMimeType = null;
         try {
             Session session = JCRUtil.getSession();
             Node rn = session.getRootNode();
@@ -98,6 +100,7 @@ public class AttachmentManager {
             javax.jcr.Property mimeProperty = contentNode.getProperty(JcrConstants.JCR_MIMETYPE);
 
             mimeType = mimeProperty.getString();
+            arrayMimeType = mimeType.split("/");
 
             Binary bin = dataProperty.getBinary();
             content = bin.getStream();
@@ -112,7 +115,11 @@ public class AttachmentManager {
         }
         Attachment attachment = new Attachment();
         attachment.setContent(content);
-        attachment.setMimeType(mimeType);
+        if(arrayMimeType.length==2){
+            attachment.setMimeType(new MediaType(arrayMimeType[0],arrayMimeType[1]));
+        } else {
+            attachment.setMimeType(new MediaType("application","octet-stream"));
+        }
 
         return attachment;
     }
@@ -123,11 +130,9 @@ public class AttachmentManager {
             Session session = JCRUtil.getSession();
             ValueFactory valueFactory = session.getValueFactory();
             Node rn = session.getRootNode();
-            String mimeType = attachment.getMimeType();
+            MediaType mimeType = attachment.getMimeType();
             String fileName = attachment.getFileName();
             Long fileSize = attachment.getFileSize();
-            final int ndx = fileName.lastIndexOf(".");
-            final String extension = fileName.substring(ndx + 1);
             InputStream stream;
 
             if (attachment.getEncoding().equalsIgnoreCase("base64")) {
@@ -139,7 +144,7 @@ public class AttachmentManager {
             }
 
             if (mimeType == null) {
-                mimeType = "application/octet-stream";
+                mimeType = new MediaType("application","octet-stream");
             }
 
             Node folderNode;
@@ -154,19 +159,19 @@ public class AttachmentManager {
             }
             Node fileNode = folderNode.addNode(fileName, JcrConstants.NT_FILE);
             Node resNode = fileNode.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
-            resNode.setProperty(JcrConstants.JCR_MIMETYPE, mimeType);
+            resNode.setProperty(JcrConstants.JCR_MIMETYPE, mimeType.toString());
             resNode.setProperty(JcrConstants.JCR_ENCODING, "");
 
             Binary binFile = valueFactory.createBinary(stream);
             resNode.setProperty(JcrConstants.JCR_DATA, binFile);
 
             // Add thumbnail
-            if ((extension.equals("jpeg") || extension.equals("jpg")
-                    || extension.equals("gif")
-                    || extension.equals("png"))) {
+            if ((mimeType.getSubtype().equals("jpeg") || mimeType.getSubtype().equals("jpg")
+                    || mimeType.getSubtype().equals("gif")
+                    || mimeType.getSubtype().equals("png"))) {
                 Node tfolderNode;
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                Thumbnails.of(binFile.getStream()).size(80, 80).outputFormat(extension).toOutputStream(outputStream);
+                Thumbnails.of(binFile.getStream()).size(80, 80).outputFormat(mimeType.getSubtype()).toOutputStream(outputStream);
                 InputStream fis = new ByteArrayInputStream(outputStream.toByteArray());
                 Binary binThumbnail = valueFactory.createBinary(fis);
 
@@ -184,7 +189,7 @@ public class AttachmentManager {
                 }
                 Node tfileNode = tfolderNode.addNode(fileName, JcrConstants.NT_FILE);
                 Node tresNode = tfileNode.addNode(JcrConstants.JCR_CONTENT, JcrConstants.NT_RESOURCE);
-                tresNode.setProperty(JcrConstants.JCR_MIMETYPE, "image/" + extension);
+                tresNode.setProperty(JcrConstants.JCR_MIMETYPE, mimeType.toString());
                 tresNode.setProperty(JcrConstants.JCR_ENCODING, "");
                 tresNode.setProperty(JcrConstants.JCR_DATA, binThumbnail);
                 binThumbnail.dispose();
@@ -193,7 +198,7 @@ public class AttachmentManager {
             binFile.dispose();
 
             session.save();
-            result.setContentType(mimeType);
+            result.setContentType(mimeType.toString());
             result.setFileName(fileName);
             result.setFileSize(fileSize);
 

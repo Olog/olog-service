@@ -48,15 +48,16 @@ public class LogbookManager {
             em.getTransaction().commit();
             return result;
         } catch (Exception e) {
+            em.getTransaction().rollback();
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
             try {
                 if (em.getTransaction() != null && !em.getTransaction().isActive()) {
                     em.getTransaction().rollback();
-        }
+                }
             } catch (Exception e) {
-    }
+            }
             em.close();
         }
     }
@@ -92,6 +93,7 @@ public class LogbookManager {
             em.getTransaction().commit();
             return result;
         } catch (Exception e) {
+            em.getTransaction().rollback();
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
@@ -141,6 +143,7 @@ public class LogbookManager {
             em.getTransaction().commit();
             return result;
         } catch (Exception e) {
+            em.getTransaction().rollback();
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
@@ -182,6 +185,7 @@ public class LogbookManager {
                 return xmlLogbook;
             }
         } catch (Exception e) {
+            em.getTransaction().rollback();
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {
@@ -209,6 +213,7 @@ public class LogbookManager {
             em.merge(logbook);
             em.getTransaction().commit();
         } catch (Exception e) {
+            em.getTransaction().rollback();
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "JPA exception: " + e);
         } finally {

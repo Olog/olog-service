@@ -10,7 +10,7 @@
                 edu.msu.nscl.olog.LogbooksResource,
                 edu.msu.nscl.olog.LogsResource,
                 edu.msu.nscl.olog.PropertiesResource,
-                edu.msu.nscl.olog.TagsResource           
+                edu.msu.nscl.olog.TagsResource         
             </param-value>
         </init-param>
         <init-param>
@@ -129,6 +129,26 @@
         <auth-constraint>
             <description/>
             <role-name>LogbookMod</role-name>
+            <role-name>LogMod</role-name>
+            <role-name>Administrator</role-name>
+        </auth-constraint>
+        <user-data-constraint>
+            <description/>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+    <security-constraint>
+        <display-name>Add or Modify Propertites</display-name>
+        <web-resource-collection>
+            <web-resource-name>create / update / delete properties</web-resource-name>
+            <description/>
+            <url-pattern>/resources/properties/*</url-pattern>
+            <http-method>PUT</http-method>
+            <http-method>POST</http-method>
+            <http-method>DELETE</http-method>
+        </web-resource-collection>
+        <auth-constraint>
+            <description/>
             <role-name>LogMod</role-name>
             <role-name>Administrator</role-name>
         </auth-constraint>
