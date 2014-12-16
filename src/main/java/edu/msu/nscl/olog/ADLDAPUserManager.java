@@ -6,6 +6,7 @@
 
 package edu.msu.nscl.olog;
 
+import edu.msu.nscl.olog.UserManager;
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.regex.Pattern;

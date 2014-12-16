@@ -4,6 +4,9 @@
  */
 package edu.msu.nscl.olog;
 
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
@@ -49,5 +52,20 @@ public class DbConnection {
      */
     public DataSource getDataSource() throws OlogException {
         return ds;
+    }
+    
+    public void close() {
+        try {
+            if (ds.getConnection()!=null){
+                ds.getConnection().close();   
+            }
+            instance.remove();
+        } catch (SQLException ex) {
+            Logger.getLogger(DbConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void finalize() {
+        close();
     }
 }

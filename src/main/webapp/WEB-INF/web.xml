@@ -6,11 +6,11 @@
         <init-param>
             <param-name>jaxrs.serviceClasses</param-name>
             <param-value>
-                edu.msu.nscl.olog.AttachmentsResource,
-                edu.msu.nscl.olog.LogbooksResource,
-                edu.msu.nscl.olog.LogsResource,
-                edu.msu.nscl.olog.PropertiesResource,
-                edu.msu.nscl.olog.TagsResource         
+                edu.msu.nscl.olog.boundry.AttachmentsResource,
+                edu.msu.nscl.olog.boundry.LogbooksResource,
+                edu.msu.nscl.olog.boundry.LogsResource,
+                edu.msu.nscl.olog.boundry.PropertiesResource,
+                edu.msu.nscl.olog.boundry.TagsResource         
             </param-value>
         </init-param>
         <init-param>

@@ -1,6 +1,14 @@
 package edu.msu.nscl.olog;
 
 
+import edu.msu.nscl.olog.entity.Logbooks;
+import edu.msu.nscl.olog.entity.Property;
+import edu.msu.nscl.olog.entity.Tag;
+import edu.msu.nscl.olog.entity.Tags;
+import edu.msu.nscl.olog.entity.Logbook;
+import edu.msu.nscl.olog.entity.Logs;
+import edu.msu.nscl.olog.entity.LogAttribute;
+import edu.msu.nscl.olog.entity.Log;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.junit.*;
@@ -84,7 +92,7 @@ public class OlogPerformanceTest {
         logOld.setState(null);
         logOld.setState(null);
         logOld.setEntry(null);
-        logOld.getLogbooks().iterator().next().setLogs(new Logs());
+        logOld.getLogbooks().iterator().next().setLogs(new HashSet<Log>());
         logOld.getLogbooks().iterator().next().setOwner("testOwner");
         logOld.getLogbooks().iterator().next().setName("testLog");
 

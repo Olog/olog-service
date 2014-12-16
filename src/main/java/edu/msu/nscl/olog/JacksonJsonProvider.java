@@ -6,6 +6,7 @@
 
    package edu.msu.nscl.olog;
 
+import edu.msu.nscl.olog.entity.Log;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;

@@ -4,14 +4,16 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 
-
+import org.eclipse.persistence.config.SessionCustomizer;
+import org.eclipse.persistence.sessions.JNDIConnector;
+import org.eclipse.persistence.sessions.Session;
 
 /**
  * Tomcat requires java:/comp/env/ prefix for JNDI datasource but not Glassfish.
  * So this class, try to connect to given datasource, and if it doesn't work it
  * add the prefix to jndi lookup name.
  * 
-
+ */
 public class JPATomcatSessionCustomizer implements SessionCustomizer {
 
 	public void customize(Session session) throws Exception {
@@ -45,5 +47,3 @@ public class JPATomcatSessionCustomizer implements SessionCustomizer {
 		}
 	}
 }
-*  
-*/

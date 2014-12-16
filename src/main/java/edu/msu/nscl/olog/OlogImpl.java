@@ -5,6 +5,25 @@
  */
 package edu.msu.nscl.olog;
 
+import edu.msu.nscl.olog.control.LogbookManager;
+import edu.msu.nscl.olog.control.LogManager;
+import edu.msu.nscl.olog.control.PropertyManager;
+import edu.msu.nscl.olog.control.TagManager;
+import edu.msu.nscl.olog.entity.Tags;
+import edu.msu.nscl.olog.entity.Logbooks;
+import edu.msu.nscl.olog.entity.XmlProperty;
+import edu.msu.nscl.olog.entity.Logs;
+import edu.msu.nscl.olog.entity.Tag;
+import edu.msu.nscl.olog.entity.XmlAttachments;
+import edu.msu.nscl.olog.entity.XmlAttachment;
+import edu.msu.nscl.olog.control.AttachmentManager;
+import edu.msu.nscl.olog.control.AttributeManager;
+import edu.msu.nscl.olog.entity.Attachment;
+import edu.msu.nscl.olog.entity.XmlProperties;
+import edu.msu.nscl.olog.entity.Log;
+import edu.msu.nscl.olog.entity.Property;
+import edu.msu.nscl.olog.entity.Attribute;
+import edu.msu.nscl.olog.entity.Logbook;
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -180,7 +199,7 @@ public class OlogImpl {
     public Logbook createOrReplaceLogbook(String logbookName, Logbook data) throws OlogException {
         Logbook logbook = LogbookManager.create(logbookName, data.getOwner());
         List<Log> logsData = new ArrayList<Log>();
-        for (Log log : data.getLogs().getLogs()) {
+        for (Log log : data.getLogs()) {
             logsData.add(LogManager.findLog(log.getId()));
             if (log == null) {
                 throw new OlogException(Response.Status.BAD_REQUEST,
@@ -302,9 +321,9 @@ public class OlogImpl {
      */
     public Tag updateTag(String tagName, Tag data) throws OlogException {
         Tag tag = TagManager.create(tagName);
-        if (data.getLogs().getLogs().size() > 0) {
+        if (data.getLogs().size() > 0) {
             List<Log> logsData = new ArrayList<Log>();
-            for (Log log : data.getLogs().getLogs()) {
+            for (Log log : data.getLogs()) {
                 logsData.add(LogManager.findLog(log.getId()));
                 if (log == null) {
                     throw new OlogException(Response.Status.BAD_REQUEST,
@@ -332,12 +351,12 @@ public class OlogImpl {
      */
     public Tag createOrReplaceTag(String tagName, Tag data) throws OlogException {
         Tag tag = TagManager.create(tagName);
-        if (data.getLogs().getLogs().size() > 0) {
+        if (data.getLogs().size() > 0) {
             MultivaluedMap<String, String> map = new MetadataMap();
             map.add("tag", tagName);
             Logs logs = LogManager.findLog(map);
             List<Log> logsData = new ArrayList<Log>();
-            for (Log log : data.getLogs().getLogs()) {
+            for (Log log : data.getLogs()) {
                 logsData.add(LogManager.findLog(log.getId()));
                 if (log == null) {
                     throw new OlogException(Response.Status.BAD_REQUEST,
@@ -451,7 +470,7 @@ public class OlogImpl {
      * @param
      * @throws OlogException wrapping an SQLException
      */
-    XmlProperty listAttributes(String property) throws OlogException {
+    public XmlProperty listAttributes(String property) throws OlogException {
         return PropertyManager.findProperty(property).toXmlProperty();
     }
 
@@ -462,7 +481,7 @@ public class OlogImpl {
      * @param destructive boolean is this action to be destructive (true) or not
      * @throws OlogException wrapping an SQLException
      */
-    XmlProperty addProperty(XmlProperty data, boolean destructive) throws OlogException {
+    public XmlProperty addProperty(XmlProperty data, boolean destructive) throws OlogException {
         if (destructive) {
             Property property = PropertyManager.create(data.toProperty());
             for (Map.Entry<String, String> att : data.getAttributes().entrySet()) {
@@ -488,7 +507,7 @@ public class OlogImpl {
      * @param data Property  incoming payload
      * @throws OlogException wrapping an SQLException
      */
-    Log addAttribute(Long logId, XmlProperty data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Log addAttribute(Long logId, XmlProperty data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
 
         Log log = LogManager.findLog(logId);
         Collection<XmlProperty> currentProperties = log.getXmlProperties();
@@ -503,7 +522,7 @@ public class OlogImpl {
      * @param  propertyName String of the property to be removed
      * @throws OlogException wrapping an SQLException
      */
-    void removeProperty(String propertyName) throws OlogException {
+    public void removeProperty(String propertyName) throws OlogException {
         PropertyManager.remove(propertyName);
     }
 
@@ -514,7 +533,7 @@ public class OlogImpl {
      * @param  data Property incoming payload
      * @throws OlogException wrapping an SQLException
      */
-    Log removeAttribute(Long logId, XmlProperty data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Log removeAttribute(Long logId, XmlProperty data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
         Log log = LogManager.findLog(logId);
         if (log == null) {
             throw new OlogException(Response.Status.NOT_FOUND,
@@ -900,19 +919,19 @@ public class OlogImpl {
         }
     }
 
-    XmlAttachments findAttachmentsById(Long logId) throws OlogException {
+    public XmlAttachments findAttachmentsById(Long logId) throws OlogException {
         return AttachmentManager.findAll(logId);
     }
 
-    Attachment getAttachment(String filePath, String fileName) throws OlogException {
+    public Attachment getAttachment(String filePath, String fileName) throws OlogException {
         return AttachmentManager.findAttachment(filePath, fileName);
     }
 
-    XmlAttachment createAttachment(Attachment attachment, Long logId) throws OlogException {
+    public XmlAttachment createAttachment(Attachment attachment, Long logId) throws OlogException {
         return AttachmentManager.create(attachment, logId);
     }
 
-    void removeAttachment(String fileName, Long logId) throws OlogException {
+    public void removeAttachment(String fileName, Long logId) throws OlogException {
         AttachmentManager.remove(fileName, logId);
     }
 

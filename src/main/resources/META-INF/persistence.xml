@@ -1,20 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
   <persistence-unit name="olog_prod" transaction-type="RESOURCE_LOCAL">
-    <provider>org.datanucleus.api.jpa.PersistenceProviderImpl</provider>
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <non-jta-data-source>jdbc/olog</non-jta-data-source>
-    <class>edu.msu.nscl.olog.Logbook</class>
-    <class>edu.msu.nscl.olog.Tag</class>
-    <class>edu.msu.nscl.olog.Log</class>
-    <class>edu.msu.nscl.olog.Entry</class>
-    <class>edu.msu.nscl.olog.Property</class>
-    <class>edu.msu.nscl.olog.Attribute</class>
-    <class>edu.msu.nscl.olog.LogAttribute</class>
+    <class>edu.msu.nscl.olog.entity.Tag</class>
+    <class>edu.msu.nscl.olog.entity.Property</class>
+    <class>edu.msu.nscl.olog.entity.Logbook</class>
+    <class>edu.msu.nscl.olog.entity.Entry</class>
+    <class>edu.msu.nscl.olog.entity.LogAttribute</class>
+    <class>edu.msu.nscl.olog.entity.Attribute</class>
+    <class>edu.msu.nscl.olog.entity.Log</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
-            <property name="datanucleus.storeManagerType" value="rdbms"/>
-            <property name="datanucleus.ConnectionFactoryName" value="jdbc/olog"/>
-            <property name="datanucleus.rdbms.allowColumnReuse" value="true"/>
+      <property name="eclipselink.logging.logger" value="ServerLogger"/>
+      <property name="eclipselink.logging.level" value="WARNING"/>
+      <property name="eclipselink.session.customizer" value="edu.msu.nscl.olog.JPATomcatSessionCustomizer"/>
+      <property name="eclipselink.cache.shared.default" value="true"/>
+      <property name="eclipselink.query-cache" value="true"/>
+      <property name="eclipselink.cache-usage" value="CheckCacheThenDatabase "/>
+      <property name="javax.persistence.sharedCache.mode" value="ALL"/>
+      <property name="eclipselink.query-results-cache.ignore-null" value="true"/>
+      <property name="eclipselink.jdbc.cache-statements" value="true"/>
+      <property name="eclipselink.weaving" value="false"/>
     </properties>
   </persistence-unit>
 </persistence>

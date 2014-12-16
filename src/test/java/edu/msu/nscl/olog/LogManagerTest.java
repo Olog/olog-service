@@ -4,6 +4,23 @@
  */
 package edu.msu.nscl.olog;
 
+import edu.msu.nscl.olog.entity.State;
+import edu.msu.nscl.olog.entity.Attribute;
+import edu.msu.nscl.olog.entity.Tag_;
+import edu.msu.nscl.olog.entity.XmlProperty;
+import edu.msu.nscl.olog.entity.Entry_;
+import edu.msu.nscl.olog.entity.Logbook_;
+import edu.msu.nscl.olog.entity.Tag;
+import edu.msu.nscl.olog.entity.Logbook;
+import edu.msu.nscl.olog.entity.Logs;
+import edu.msu.nscl.olog.entity.LogAttribute;
+import edu.msu.nscl.olog.entity.Log;
+import edu.msu.nscl.olog.entity.Entry;
+import edu.msu.nscl.olog.entity.Property;
+import edu.msu.nscl.olog.entity.Log_;
+import edu.msu.nscl.olog.entity.Property_;
+import edu.msu.nscl.olog.entity.Attribute_;
+import edu.msu.nscl.olog.entity.LogAttribute_;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.*;

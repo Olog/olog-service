@@ -4,6 +4,7 @@
  */
 package edu.msu.nscl.olog;
 
+import java.sql.SQLException;
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -270,5 +271,15 @@ public class JPAUtil {
             // recursively copy fetches
             copyFetches(f, toFetch);
         }
+    }
+
+    public void close() {
+        if (factory != null) {
+            factory.close();
+        }
+    }
+
+    public void finalize() {
+        close();
     }
 }

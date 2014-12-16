@@ -8,6 +8,10 @@ package edu.msu.nscl.olog;
  *
  * @author berryman
  */
+import edu.msu.nscl.olog.entity.Logbooks;
+import edu.msu.nscl.olog.entity.XmlProperties;
+import edu.msu.nscl.olog.entity.XmlProperty;
+import edu.msu.nscl.olog.entity.Logbook;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,6 +31,7 @@ import org.apache.jackrabbit.core.RepositoryImpl;
 
 import com.googlecode.flyway.core.Flyway;
 import com.googlecode.flyway.core.api.MigrationVersion;
+import java.sql.SQLException;
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 
 public class OlogContextListener implements ServletContextListener {
@@ -123,6 +128,7 @@ public class OlogContextListener implements ServletContextListener {
             
             flyway.migrate();
             System.out.println("Database is up to date: ");
+            DbConnection.getInstance().close();
 
             repo = new JCRUtil();
             try {

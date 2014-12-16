@@ -4,6 +4,9 @@
  */
 package edu.msu.nscl.olog;
 
+import edu.msu.nscl.olog.entity.XmlAttachments;
+import edu.msu.nscl.olog.entity.Attachment;
+import edu.msu.nscl.olog.entity.XmlAttachment;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.JcrConstants;
