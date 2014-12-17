@@ -11,7 +11,7 @@ import edu.msu.nscl.olog.entity.Property;
 import edu.msu.nscl.olog.entity.Tag;
 import edu.msu.nscl.olog.entity.Tags;
 import edu.msu.nscl.olog.entity.Logbook;
-import edu.msu.nscl.olog.entity.Logs;
+import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.control.AttachmentManager;
 import edu.msu.nscl.olog.entity.Log;
 import org.apache.commons.lang.time.DateUtils;
@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 
@@ -101,10 +102,10 @@ public class OlogPerformanceTestAgainstCode {
         MultivaluedMap<String, String> map = new MetadataMap();
         map.add("sweep.crystal_name", "ECF_229");
         long startTime = System.nanoTime();
-        Logs logs = LogManager.findLog(map);
+        List<Log> logs = LogManager.findLog(map);
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
-        logId = logs.getLogs().size() > 0 ? logs.getLogs().get(0).getEntryId(): 1l;
+        logId = logs.size() > 0 ? logs.get(0).getId(): 1l;
         out.write(dbTypeText + " Time consume to find a log by attribute is: " + totalTime + "(s)");
         out.newLine();
     }
@@ -113,7 +114,7 @@ public class OlogPerformanceTestAgainstCode {
         MultivaluedMap<String, String> map = new MetadataMap();
         map.add("search", "Energy");
         long startTime = System.nanoTime();
-        Logs logs = LogManager.findLog(map);
+        List<Log> logs = LogManager.findLog(map);
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to find a log by description is: " + totalTime + "(s)");
@@ -124,10 +125,8 @@ public class OlogPerformanceTestAgainstCode {
     public void insertLog(String dbTypeText) throws RepositoryException, OlogException, IOException {
         Log logOld = LogManager.findLog(logId);
         logOld.setOwner("Log");
-        logOld.setEntryId(null);
         long startTime = System.nanoTime();
         Log log = LogManager.create(logOld);
-        logId = log.getEntryId();
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to insert a log  is: " + totalTime + "(s)");
@@ -137,10 +136,8 @@ public class OlogPerformanceTestAgainstCode {
     public void insertLog2(String dbTypeText) throws RepositoryException, OlogException, IOException {
         Log logOld = LogManager.findLog(logId);
         logOld.setOwner("Log2");
-        logOld.setEntryId(null);
         long startTime = System.nanoTime();
         Log log = LogManager.create(logOld);
-        logId = log.getEntryId();
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to insert a log2  is: " + totalTime + "(s)" );
@@ -152,7 +149,7 @@ public class OlogPerformanceTestAgainstCode {
         MultivaluedMap<String, String> map = new MetadataMap();
         map.add("start", String.valueOf(DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH).getTime() / 1000));
         long startTime = System.nanoTime();
-        Logs logs = LogManager.findLog(map);
+        List<Log> logs = LogManager.findLog(map);
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to find a log by date is: " + totalTime + "(s)");

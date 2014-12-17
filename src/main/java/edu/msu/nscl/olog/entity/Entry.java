@@ -4,11 +4,14 @@
  */
 package edu.msu.nscl.olog.entity;
 
+import edu.msu.nscl.olog.entity.bitemporal.WrappedBitemporalProperty;
+import edu.msu.nscl.olog.entity.bitemporal.WrappedValueAccessor;
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
+import java.util.LinkedList;
 import javax.persistence.*;
+import org.joda.time.Interval;
 
 /**
  *
@@ -16,7 +19,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "entries")
-public class Entry implements Serializable, Comparable<Entry> {
+public class Entry implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,12 +28,27 @@ public class Entry implements Serializable, Comparable<Entry> {
     @Column(name = "created", nullable = false, insertable = true, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
-    @OneToMany(mappedBy = "entry", fetch=FetchType.EAGER)
-    private List<Log> logs = new ArrayList<Log>();
+    @OneToMany(fetch=FetchType.LAZY)
+    @JoinColumn(name="log")
+    private Collection<BitemporalLog> logs = new LinkedList<BitemporalLog>();
 
     @PrePersist
     public void setUpdated() {
         this.setCreatedDate(new Date());
+    }
+    
+    public WrappedBitemporalProperty<Log, BitemporalLog> log() {
+        return new WrappedBitemporalProperty<Log, BitemporalLog>(logs,
+                new WrappedValueAccessor<Log, BitemporalLog>() {
+                    @Override
+                    public BitemporalLog wrapValue(Log value, Interval validityInterval) {
+                        return new BitemporalLog(value, validityInterval);
+                    }
+                });
+    }
+    
+    public void addLog(Log log){
+        this.log().set(log);
     }
 
     /**
@@ -73,34 +91,6 @@ public class Entry implements Serializable, Comparable<Entry> {
      */
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
-    }
-
-    /**
-     * @return the logs
-     */
-    public List<Log> getLogs() {
-        return logs;
-    }
-
-    /**
-     * @param logs the logs to set
-     */
-    public void setLogs(List<Log> logs) {
-        this.logs = logs;
-    }
-
-    /**
-     * Adds a log to the collection.
-     *
-     * @param log
-     */
-    public void addLog(Log log) {
-        this.logs.add(log);
-    }
-
-    public int compareTo(Entry num) {
-        int x = createdDate.compareTo(num.createdDate);
-        return x;
     }
 
     @Override

@@ -5,102 +5,55 @@
  */
 package edu.msu.nscl.olog.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serializable;
 import java.util.*;
-import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-
+import javax.xml.bind.annotation.*;
 
 /**
  * Log object that can be represented as XML/JSON in payload data.
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-@Entity
-@Table(name = "logs")
-public class Log implements Serializable, Comparable<Log> {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlType(propOrder = {"createdDate", "modifiedDate", "owner", "source", "version", "description", "logbooks", "tags", "xmlProperties", "xmlAttachments"})
+@XmlRootElement(name = "log")
+public class XmlLog implements Serializable, Comparable<XmlLog> {
+    
     private Long id;
 
-    @Column(name = "version", nullable = false, length = 50, insertable = true, updatable = false)
     private String version;
     
-    @Column(name = "owner", nullable = false, length = 50, insertable = true, updatable = false)
     private String owner;
     
-    @Column(name = "source", nullable = false, length = 50, insertable = true, updatable = false)
     private String source;
     
-    @Enumerated(EnumType.STRING)
-    @Column(name = "level")
     private Level level;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "state")
     private State state;
     
-    @Column(name = "modified", nullable = false, insertable = true, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
     private Date modifiedDate;
     
-    @Column(name = "description", nullable = false, insertable = true, updatable = false)
+    private Date createdDate;
+    
     private String description;
     
-    @OneToMany(mappedBy = "log", cascade = CascadeType.PERSIST)
-    private Set<LogAttribute> attributes = new HashSet<LogAttribute>();
+    private Collection<XmlProperty> properties = new ArrayList<XmlProperty>();
     
-    @ManyToMany(cascade = CascadeType.PERSIST)
-    @JoinTable(name = "logs_logbooks", 
-        joinColumns = {@JoinColumn(name = "log_id", unique = true)},
-        inverseJoinColumns = {@JoinColumn(name = "logbook_id", insertable = false, updatable = false)})
-    @NotNull
     private Set<Logbook> logbooks = new HashSet<Logbook>();
     
-    @ManyToMany(cascade = CascadeType.PERSIST)
-    @JoinTable(name = "logs_logbooks", 
-        joinColumns = {@JoinColumn(name = "log_id", unique = true)},
-        inverseJoinColumns = {@JoinColumn(name = "logbook_id", insertable = false, updatable = false)})
     private Set<Tag> tags = new HashSet<Tag>();
     
-    @ManyToOne
-    @JoinColumn(nullable = false, updatable = false)
-    private Entry entry;
-
-    @PrePersist
-    public void setUpdated() {
-        this.setModifiedDate(new Date());
-    }
+    private Collection<XmlAttachment> attachments = new ArrayList<XmlAttachment>();
 
     /**
      * Creates a new instance of Log
      */
-    public Log() {
+    public XmlLog() {
         // this.level = new Level();
-    }
-    
-    /**
-     * Creates a new instance of Log merged with Log
-     */
-    public Log(Log log1, Log log2){
-        this.description = (log1.description!=null)?log1.description:log2.description;
-        this.entry = (log1.entry!=null)?log1.entry:log2.entry;
-        this.id = (log1.id!=null)?log1.id:log2.id;
-        this.level = (log1.level!=null)?log1.level:log2.level;
-        this.modifiedDate = (log1.modifiedDate!=null)?log1.modifiedDate:log2.modifiedDate;
-        this.owner = (log1.owner!=null)?log1.owner:log2.owner;
-        this.source = (log1.source!=null)?log1.source:log2.source;
-        this.state = (log1.state!=null)?log1.state:log2.state;
-        this.version = (log1.version!=null)?log1.version:log2.version;
-        
-        this.tags.addAll(log1.tags);
-        this.tags.addAll(log2.tags);
-        this.logbooks.addAll(log1.logbooks);
-        this.logbooks.addAll(log2.logbooks);
-        this.attributes.addAll(log1.attributes);
-        this.attributes.addAll(log2.attributes);
     }
 
     /**
@@ -108,7 +61,7 @@ public class Log implements Serializable, Comparable<Log> {
      *
      * @param logId log id
      */
-    public Log(Long logId) {
+    public XmlLog(Long logId) {
         //      this.level = new Level();
         this.id = logId;
     }
@@ -119,7 +72,7 @@ public class Log implements Serializable, Comparable<Log> {
      * @param logId log id
      * @param owner log owner
      */
-    public Log(Long logId, String owner) {
+    public XmlLog(Long logId, String owner) {
         //    this.level = new Level();
         this.id = logId;
         this.owner = owner;
@@ -130,6 +83,7 @@ public class Log implements Serializable, Comparable<Log> {
      *
      * @return id
      */
+    @XmlAttribute
     public Long getId() {
         return id;
     }
@@ -146,6 +100,7 @@ public class Log implements Serializable, Comparable<Log> {
     /**
      * @return the status
      */
+    @XmlAttribute
     public State getState() {
         return state;
     }
@@ -162,6 +117,7 @@ public class Log implements Serializable, Comparable<Log> {
      *
      * @return versionId
      */
+    @XmlAttribute
     public String getVersion() {
         return version;
     }
@@ -180,6 +136,7 @@ public class Log implements Serializable, Comparable<Log> {
      *
      * @return owner
      */
+    @XmlAttribute
     public String getOwner() {
         return owner;
     }
@@ -198,6 +155,7 @@ public class Log implements Serializable, Comparable<Log> {
      *
      * @return level
      */
+    @XmlAttribute
     public Level getLevel() {
         return level;
     }
@@ -216,6 +174,7 @@ public class Log implements Serializable, Comparable<Log> {
      *
      * @return modifiedDate
      */
+    @XmlAttribute
     public Date getModifiedDate() {
         return modifiedDate;
     }
@@ -234,12 +193,18 @@ public class Log implements Serializable, Comparable<Log> {
      *
      * @return createdDate
      */
+    @XmlAttribute
     public Date getCreatedDate() {
-        if (entry != null) {
-            return entry.getCreatedDate();
-        } else {
-            return null;
-        }
+        return createdDate;
+    }
+    
+    /**
+     * Setter for log created date.
+     *
+     * @param modifiedDate
+     */
+    public void setCreatedDate(Date createdDate){
+        this.createdDate = createdDate;
     }
 
     /**
@@ -247,6 +212,7 @@ public class Log implements Serializable, Comparable<Log> {
      *
      * @return source IP
      */
+    @XmlAttribute
     public String getSource() {
         return source;
     }
@@ -265,6 +231,7 @@ public class Log implements Serializable, Comparable<Log> {
      *
      * @return description
      */
+    @XmlElement(name = "description")
     public String getDescription() {
         return description;
     }
@@ -279,10 +246,46 @@ public class Log implements Serializable, Comparable<Log> {
     }
 
     /**
+     * Getter for log's XmlProperties.
+     *
+     * @return properties XmlProperties
+     */
+    @XmlElementWrapper(name = "properties")
+    @XmlElement(name = "property")
+    @JsonProperty("properties")
+    public Collection<XmlProperty> getXmlProperties() {
+        return properties;
+    }
+
+    /**
+     * Setter for log's XmlProperties.
+     *
+     * @param properties XmlProperties
+     */
+    public void setXmlProperties(Collection<XmlProperty> properties) {
+        this.properties = properties;
+    }
+
+    /**
+     * Adds an Property to the log.
+     *
+     * @param property single Property
+     */
+    public void addXmlProperty(XmlProperty property) {
+        this.properties.add(property);
+    }
+    
+    public void removeXmlProperty(XmlProperty property) {
+        this.properties.remove(property);
+    }
+
+    /**
      * Getter for log's Logbooks.
      *
      * @return Logbooks
      */
+    @XmlElementWrapper(name = "logbooks")
+    @XmlElement(name = "logbook")
     public Set<Logbook> getLogbooks() {
         return logbooks;
     }
@@ -314,6 +317,8 @@ public class Log implements Serializable, Comparable<Log> {
      *
      * @return Tags for this log
      */
+    @XmlElementWrapper(name = "tags")
+    @XmlElement(name = "tag")
     public Set<Tag> getTags() {
         return tags;
     }
@@ -341,28 +346,40 @@ public class Log implements Serializable, Comparable<Log> {
     }
 
     /**
-     * @return the entry
+     * Getter for the log's XmlAttachments.
+     *
+     * @return XmlAttachments for this log
      */
-    public Entry getEntry() {
-        return entry;
+    @XmlElementWrapper(name = "attachments")
+    @XmlElement(name = "attachment")
+    @JsonProperty("attachments")
+    public Collection<XmlAttachment> getXmlAttachments() {
+        return attachments;
     }
 
     /**
-     * @param entry the entry to set
+     * Setter for the log's XmlAttachments.
+     *
+     * @param attachments XmlAttachments
      */
-    public void setEntry(Entry entry) {
-        this.entry = entry;
+    public void setXmlAttachments(Collection<XmlAttachment> attachments) {
+        this.attachments = attachments;
+    }
+
+    /**
+     * Adds an XmlAttachment to the collection.
+     *
+     * @param attachment
+     */
+    public void addXmlAttachment(XmlAttachment attachment) {
+        this.attachments.add(attachment);
     }
     
-    public Set<LogAttribute> getAttributes() {
-        return attributes;
+    public void removeXmlAttachment(XmlAttachment attachment) {
+        this.attachments.remove(attachment);
     }
 
-    public void setAttributes(Set<LogAttribute> attributes) {
-        this.attributes = attributes;
-    }
-
-    public int compareTo(Log num) {
+    public int compareTo(XmlLog num) {
         int x = modifiedDate.compareTo(num.modifiedDate);
         return x;
     }
@@ -373,7 +390,7 @@ public class Log implements Serializable, Comparable<Log> {
      * @param data Log to create the string representation for
      * @return string representation
      */
-    public static String toLogger(Log data) {
+    public static String toLogger(XmlLog data) {
         Logbooks xl = new Logbooks(data.getLogbooks());
         Tags xt = new Tags(data.getTags());
 
@@ -386,9 +403,9 @@ public class Log implements Serializable, Comparable<Log> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Log)) return false;
+        if (!(o instanceof XmlLog)) return false;
 
-        Log log = (Log) o;
+        XmlLog log = (XmlLog) o;
 
         if (description != null ? !description.equals(log.description) : log.description != null) return false;
         if (!id.equals(log.id)) return false;

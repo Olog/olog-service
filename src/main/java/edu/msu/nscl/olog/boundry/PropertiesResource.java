@@ -6,6 +6,8 @@ package edu.msu.nscl.olog.boundry;
 import edu.msu.nscl.olog.entity.Log;
 import edu.msu.nscl.olog.OlogException;
 import edu.msu.nscl.olog.OlogImpl;
+import edu.msu.nscl.olog.entity.LogAttribute;
+import edu.msu.nscl.olog.entity.XmlLog;
 import edu.msu.nscl.olog.entity.XmlProperties;
 import edu.msu.nscl.olog.entity.XmlProperty;
 import java.io.UnsupportedEncodingException;
@@ -27,6 +29,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
+import org.dozer.DozerBeanMapperSingletonWrapper;
 
 /**
  * Top level Jersey HTTP methods for the .../properties URL
@@ -191,11 +194,12 @@ public class PropertiesResource {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
-        Log result = null;
         try {
             cm.checkPropertyName(property, data);
-            result = cm.addAttribute(logId, data);
-            Response r = Response.ok(result).build();
+            LogAttribute logAttribute = DozerBeanMapperSingletonWrapper.getInstance().map(data, LogAttribute.class, "v1");
+            Log result = cm.addAttribute(logId, logAttribute);
+            XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class, "v1");
+            Response r = Response.ok(xmlresult).build();
             audit.info(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
@@ -223,8 +227,10 @@ public class PropertiesResource {
         Log result = null;
         try {
             cm.checkPropertyName(property, data);
-            result = cm.removeAttribute(logId, data);
-            Response r = Response.ok(result).build();
+            LogAttribute logAttribute = DozerBeanMapperSingletonWrapper.getInstance().map(data, LogAttribute.class, "v1");
+            result = cm.removeAttribute(logId, logAttribute);
+            XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class, "v1");
+            Response r = Response.ok(xmlresult).build();
             audit.info(user + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {

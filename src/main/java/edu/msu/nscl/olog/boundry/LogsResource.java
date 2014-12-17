@@ -7,13 +7,15 @@
 package edu.msu.nscl.olog.boundry;
 
 import edu.msu.nscl.olog.entity.Log;
-import edu.msu.nscl.olog.entity.Logs;
+import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.OlogException;
 import edu.msu.nscl.olog.OlogImpl;
 import edu.msu.nscl.olog.UserManager;
+import edu.msu.nscl.olog.entity.XmlLog;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.jcr.RepositoryException;
@@ -34,6 +36,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
+import org.dozer.DozerBeanMapperSingletonWrapper;
 
 /**
  * Top level Jersey HTTP methods for the .../logs URL
@@ -70,10 +73,11 @@ public class LogsResource {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
-            Logs result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
-            Response r = Response.ok(result).build();
+            List<Log> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
+            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class, "v1");
+            Response r = Response.ok(xmlresult).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
-                    + "|returns " + result.getLogs().size() + " logs");
+                    + "|returns " + result.size() + " logs");
             return r;
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
@@ -88,10 +92,11 @@ public class LogsResource {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
-            Logs result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
-            Response r = Response.ok(result.getLogs()).build();
+            List<Log> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
+            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class, "v1");
+            Response r = Response.ok(xmlresult).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
-                    + "|returns " + result.getLogs().size() + " logs");
+                    + "|returns " + result.size() + " logs");
             return r;
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
@@ -110,7 +115,7 @@ public class LogsResource {
     @POST
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
-    public Response add(@Context HttpServletRequest req, @Context HttpHeaders headers, Logs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
+    public Response add(@Context HttpServletRequest req, @Context HttpHeaders headers, XmlLogs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
@@ -118,27 +123,29 @@ public class LogsResource {
         um.setHostAddress(hostAddress);
 
         try {
-            Logs data_temp = new Logs();
-            for(Log datum : data.getLogs()){
-                datum.setOwner(um.getUserName());
-                data_temp.addLog(datum);
-            }
-            data = data_temp;
-            cm.checkValid(data);
-            if (!um.userHasAdminRole()) {
-                cm.checkUserBelongsToGroup(um.getUserName(), data);
+            List<Log> log_data = new ArrayList<Log>();
+            for(XmlLog datum : data.getLogs()){
+                Log result = DozerBeanMapperSingletonWrapper.getInstance().map(datum, Log.class, "v1");
+                result.setOwner(um.getUserName());
+                log_data.add(result);
             }
             
-            Logs result = cm.createOrReplaceLogs(data);
+            cm.checkValid(log_data);
+            if (!um.userHasAdminRole()) {
+                cm.checkUserBelongsToGroup(um.getUserName(), log_data);
+            }
+            
+            List<Log> result = cm.createOrReplaceLogs(log_data);
+            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class, "v1");
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
-                    + "|data=" + Logs.toLogger(data.getLogs()));
-            Response r = Response.ok(result).build();
+                    + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
+            Response r = Response.ok(xmlresult).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
-                    + "|data=" + Logs.toLogger(data.getLogs()));
+                    + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + Logs.toLogger(data.getLogs()) + "|cause=" + e);
+                    + "|data=" + XmlLogs.toLogger(data.getLogs()) + "|cause=" + e);
             return e.toResponse();
         }
     }
@@ -146,36 +153,36 @@ public class LogsResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addjson(@Context HttpServletRequest req, @Context HttpHeaders headers, List<Log> data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
+    public Response addjson(@Context HttpServletRequest req, @Context HttpHeaders headers, List<XmlLog> data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(hostAddress);
-        Logs logsData = new Logs();
-        logsData.setLogs(data);
         try {
-            Logs data_temp = new Logs();
-            for(Log datum : logsData.getLogs()){
-                datum.setOwner(um.getUserName());
-                data_temp.addLog(datum);
-            }
-            logsData = data_temp;
-            cm.checkValid(logsData);
-            if (!um.userHasAdminRole()) {
-                cm.checkUserBelongsToGroup(um.getUserName(), logsData);
+            List<Log> log_data = new ArrayList<Log>();
+            for(XmlLog datum : data){
+                Log result = DozerBeanMapperSingletonWrapper.getInstance().map(datum, Log.class, "v1");
+                result.setOwner(um.getUserName());
+                log_data.add(result);
             }
             
-            Logs result = cm.createOrReplaceLogs(logsData);
+            cm.checkValid(log_data);
+            if (!um.userHasAdminRole()) {
+                cm.checkUserBelongsToGroup(um.getUserName(), log_data);
+            }
+            
+            List<Log> result = cm.createOrReplaceLogs(log_data);
+            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class, "v1");
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
-                    + "|data=" + Logs.toLogger(logsData.getLogs()));
-            Response r = Response.ok(result).build();
+                    + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
+            Response r = Response.ok(xmlresult).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
-                    + "|data=" + Logs.toLogger(logsData.getLogs()));
+                    + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + Logs.toLogger(logsData.getLogs()) + "|cause=" + e);
+                    + "|data=" + XmlLogs.toLogger(data) + "|cause=" + e);
             return e.toResponse();
         }
     }
@@ -199,7 +206,8 @@ public class LogsResource {
             if (result == null) {
                 r = Response.status(Response.Status.NOT_FOUND).build();
             } else {
-                r = Response.ok(result).build();
+                XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class, "v1");
+                r = Response.ok(xmlresult).build();
             }
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
@@ -222,29 +230,30 @@ public class LogsResource {
     @PUT
     @Path("{logId}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public Response create(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, Log data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Response create(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, XmlLog data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(hostAddress);
-        Log result = null;
         try {
-            data.setOwner(um.getUserName());
-            cm.checkValid(data);
-            cm.checkIdMatchesPayload(logId, data);
+            Log log_data = DozerBeanMapperSingletonWrapper.getInstance().map(data, Log.class, "v1");
+            log_data.setOwner(um.getUserName());
+            cm.checkValid(log_data);
+            cm.checkIdMatchesPayload(logId, log_data);
             if (!um.userHasAdminRole()) {
-                cm.checkUserBelongsToGroup(um.getUserName(), data);
+                cm.checkUserBelongsToGroup(um.getUserName(), log_data);
             }
             
-            result = cm.createOrReplaceLog(logId, data);
-            Response r = Response.ok(result).build();
+            Log result = cm.createOrReplaceLog(logId, log_data);
+            XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class, "v1");
+            Response r = Response.ok(xmlresult).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
-                    + "|data=" + Log.toLogger(data));
+                    + "|data=" + XmlLog.toLogger(xmlresult));
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + Log.toLogger(data) + "|cause=" + e);
+                    + "|data=" + XmlLog.toLogger(data) + "|cause=" + e);
             return e.toResponse();
         }
     }
@@ -260,7 +269,7 @@ public class LogsResource {
     @POST
     @Path("{logId}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public Response update(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, Log data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Response update(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, XmlLog data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
@@ -268,21 +277,24 @@ public class LogsResource {
         um.setHostAddress(hostAddress);
         Log result = null;
         try {
-            data.setOwner(um.getUserName());
-            cm.checkValid(data);
+           Log log_data = DozerBeanMapperSingletonWrapper.getInstance().map(data, Log.class, "v1");
+            log_data.setOwner(um.getUserName());
+            cm.checkValid(log_data);
+            cm.checkIdMatchesPayload(logId, log_data);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroupOfLog(um.getUserName(), logId);
-                cm.checkUserBelongsToGroup(um.getUserName(), data);
+                cm.checkUserBelongsToGroup(um.getUserName(), log_data);
             }
             
-            result = cm.updateLog(logId, data);
-            Response r = Response.ok(result).build();
+            result = cm.updateLog(logId, log_data);
+            XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class, "v1");
+            Response r = Response.ok(xmlresult).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
-                    + "|data=" + Log.toLogger(data));
+                    + "|data=" + XmlLog.toLogger(xmlresult));
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
-                    + "|data=" + Log.toLogger(data) + "|cause=" + e);
+                    + "|data=" + XmlLog.toLogger(data) + "|cause=" + e);
             return e.toResponse();
         }
     }

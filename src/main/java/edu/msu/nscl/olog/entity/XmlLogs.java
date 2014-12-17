@@ -21,15 +21,15 @@ import javax.xml.bind.annotation.XmlElementRef;
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 @XmlRootElement(name = "logs")
-public class Logs {
+public class XmlLogs {
 
     private Long count;
-    private List<Log> logs = new ArrayList<Log>();
+    private List<XmlLog> logs = new ArrayList<XmlLog>();
     
     /**
      * Creates a new instance of Logs.
      */
-    public Logs() {
+    public XmlLogs() {
     }
 
     /**
@@ -37,11 +37,11 @@ public class Logs {
      *
      * @param log Log initial element
      */
-    public Logs(Log log) {
+    public XmlLogs(XmlLog log) {
         logs.add(log);
     }
 
-    public Logs(List<Log> logs) {
+    public XmlLogs(List<XmlLog> logs) {
         if (!CollectionUtils.isEmpty(logs)) {
             this.logs.addAll(logs);
         }
@@ -63,7 +63,7 @@ public class Logs {
      */
     @XmlElementRef(type = Log.class, name = "log")
     @JsonProperty("log")
-    public List<Log> getLogs() {
+    public List<XmlLog> getLogs() {
         return logs;
     }
     
@@ -73,7 +73,7 @@ public class Logs {
      *
      * @param items new log collection
      */
-    public void setLogs(List<Log> items) {
+    public void setLogs(List<XmlLog> items) {
         logs.clear();
         logs.addAll(items);
     }
@@ -83,7 +83,7 @@ public class Logs {
      *
      * @param item the Log to add
      */
-    public void addLog(Log item) {
+    public void addLog(XmlLog item) {
         logs.add(item);
     }
 
@@ -93,14 +93,14 @@ public class Logs {
      * @param data Log to create the string representation for
      * @return string representation
      */
-    public static String toLogger(Collection<Log> data) {
+    public static String toLogger(Collection<XmlLog> data) {
         if (data.isEmpty()) {
             return "[None]";
         } else {
             StringBuilder s = new StringBuilder();
             s.append("[");
-            for (Log c : data) {
-                s.append(Log.toLogger(c) + ",");
+            for (XmlLog c : data) {
+                s.append(XmlLog.toLogger(c) + ",");
             }
             s.delete(s.length() - 1, s.length());
             s.append("]");
@@ -111,10 +111,10 @@ public class Logs {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Logs)) return false;
+        if (!(o instanceof XmlLogs)) return false;
         if (!super.equals(o)) return false;
 
-        Logs logs = (Logs) o;
+        XmlLogs logs = (XmlLogs) o;
 
         if (count != null ? !count.equals(logs.count) : logs.count != null) return false;
 

@@ -11,21 +11,20 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  *
  * @author berryman
  */
-public class XmlLogAdapter extends XmlAdapter<HashSet<Log>, HashSet<Log>> {
+public class XmlLogAdapter extends XmlAdapter<HashSet<XmlLog>, HashSet<XmlLog>> {
 
     @Override
-    public HashSet<Log> marshal(HashSet<Log> logs) throws Exception {
+    public HashSet<XmlLog> marshal(HashSet<XmlLog> logs) throws Exception {
 
         return null;
     }
 
     @Override
-    public HashSet<Log> unmarshal(HashSet<Log> logs) throws Exception {
-        HashSet<Log> newLogs = new HashSet<Log>(logs);
-        for(Log log :logs){
+    public HashSet<XmlLog> unmarshal(HashSet<XmlLog> logs) throws Exception {
+        HashSet<XmlLog> newLogs = new HashSet<XmlLog>(logs);
+        for(XmlLog log :logs){
             newLogs.remove(log);
-            log.setId(log.getEntryId());
-            log.setEntry(null);
+            log.setId(log.getId());
             newLogs.add(log);
         }
         return newLogs;

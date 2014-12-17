@@ -12,7 +12,7 @@ import edu.msu.nscl.olog.control.TagManager;
 import edu.msu.nscl.olog.entity.Tags;
 import edu.msu.nscl.olog.entity.Logbooks;
 import edu.msu.nscl.olog.entity.XmlProperty;
-import edu.msu.nscl.olog.entity.Logs;
+import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.entity.Tag;
 import edu.msu.nscl.olog.entity.XmlAttachments;
 import edu.msu.nscl.olog.entity.XmlAttachment;
@@ -23,7 +23,9 @@ import edu.msu.nscl.olog.entity.XmlProperties;
 import edu.msu.nscl.olog.entity.Log;
 import edu.msu.nscl.olog.entity.Property;
 import edu.msu.nscl.olog.entity.Attribute;
+import edu.msu.nscl.olog.entity.LogAttribute;
 import edu.msu.nscl.olog.entity.Logbook;
+import edu.msu.nscl.olog.entity.XmlLog;
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -62,7 +64,7 @@ public class OlogImpl {
      * @param dest destination log
      * @param src source log
      */
-    public static void mergeXmlLogs(Log dest, Log src) {
+    public static void mergeXmlLogs(XmlLog dest, XmlLog src) {
 //        if(src.getSubject() != null)
 //            dest.setSubject(src.getSubject());
         if (src.getDescription() != null) {
@@ -136,7 +138,7 @@ public class OlogImpl {
      * @return Logs container with all found logs and their logbooks
      * @throws OlogException wrapping an SQLException
      */
-    public Logs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws OlogException, RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public List<Log> findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws OlogException, RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
         //return FindLogsQuery.findLogsByMultiMatch(matches);
         return LogManager.findLog(matches);
     }
@@ -354,7 +356,7 @@ public class OlogImpl {
         if (data.getLogs().size() > 0) {
             MultivaluedMap<String, String> map = new MetadataMap();
             map.add("tag", tagName);
-            Logs logs = LogManager.findLog(map);
+            List<Log> logs = LogManager.findLog(map);
             List<Log> logsData = new ArrayList<Log>();
             for (Log log : data.getLogs()) {
                 logsData.add(LogManager.findLog(log.getId()));
@@ -363,7 +365,7 @@ public class OlogImpl {
                             "Log entry " + log.getId() + " does not exists.");
                 }
             }
-            for (Log log : logs.getLogs()) {
+            for (Log log : logs) {
                 log.removeTag(tag);
                 LogManager.create(log);
             }
@@ -507,12 +509,16 @@ public class OlogImpl {
      * @param data Property  incoming payload
      * @throws OlogException wrapping an SQLException
      */
-    public Log addAttribute(Long logId, XmlProperty data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Log addAttribute(Long logId, LogAttribute data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
 
         Log log = LogManager.findLog(logId);
-        Collection<XmlProperty> currentProperties = log.getXmlProperties();
-        currentProperties.add(data);
-        log.setXmlProperties(currentProperties);
+        Set<LogAttribute> currentLogAttributes = log.getAttributes();
+        data.setLog(log);
+        data.setAttributeId(data.getId());
+        data.setLogId(log.getId());
+        currentLogAttributes.add(data);
+        log.setAttributes(currentLogAttributes);
+        
         return LogManager.create(log);
     }
 
@@ -533,32 +539,14 @@ public class OlogImpl {
      * @param  data Property incoming payload
      * @throws OlogException wrapping an SQLException
      */
-    public Log removeAttribute(Long logId, XmlProperty data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public Log removeAttribute(Long logId, LogAttribute data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
         Log log = LogManager.findLog(logId);
-        if (log == null) {
-            throw new OlogException(Response.Status.NOT_FOUND,
-                    "Log entry " + logId.toString() + " does not exists.");
-        }
-        Collection<XmlProperty> currentProperties = log.getXmlProperties();
-        Collection<XmlProperty> newProperties = new HashSet<XmlProperty>();
-        int exists = 0;
-        for (XmlProperty xmlProperty : currentProperties) {
-            if (xmlProperty.getName().equals(data.getName())) {
-                exists = 1;
-                Map<String, String> currentAtt = xmlProperty.getAttributes();
-                Map<String, String> dataAtt = data.getAttributes();
-                currentAtt.keySet().removeAll(dataAtt.keySet());
-                if (currentAtt.size() > 0) {
-                    xmlProperty.setAttributes(currentAtt);
-                    newProperties.add(xmlProperty);
-                }
-            }
-        }
-        if (exists != 1) {
-            throw new OlogException(Response.Status.NOT_FOUND,
-                    "Log entry " + logId.toString() + " does not have property " + data.getName() + ".");
-        }
-        log.setXmlProperties(newProperties);
+        Set<LogAttribute> currentLogAttributes = log.getAttributes();
+        data.setLog(log);
+        data.setAttributeId(data.getId());
+        data.setLogId(log.getId());
+        currentLogAttributes.remove(data);
+        log.setAttributes(currentLogAttributes);
         return LogManager.create(log);
     }
 
@@ -585,13 +573,13 @@ public class OlogImpl {
      * @param logs Logs data
      * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
-    public Logs createOrReplaceLogs(Logs logs) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        ListIterator<Log> iterator = logs.getLogs().listIterator();
+    public List<Log> createOrReplaceLogs(List<Log> logs) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        ListIterator<Log> iterator = logs.listIterator();
         while (iterator.hasNext()) {
             Log log = iterator.next();
             iterator.set(createOneLog(log));
         }
-        return (Logs) logs;
+        return logs;
     }
 
     /**
@@ -622,10 +610,7 @@ public class OlogImpl {
             throw new OlogException(Response.Status.NOT_FOUND,
                     "Log entry " + logId + " could not be updated: Does not exists");
         }
-        dest.setId(data.getId());
-        dest.setOwner(data.getOwner());
-        mergeXmlLogs(dest, data);
-        return createOrReplaceLog(logId, dest);
+        return createOrReplaceLog(logId, new Log(dest,data));
     }
 
     /**
@@ -658,17 +643,15 @@ public class OlogImpl {
         } else if (data.getLogbooks().isEmpty()) {
             throw new OlogException(Response.Status.BAD_REQUEST,
                     "Log entry " + data.getId() + " does not have a logbook.");
-        } else if (!data.getXmlProperties().isEmpty()) {
-            for (XmlProperty xmlProperty : data.getXmlProperties()) {
-                if (xmlProperty.getAttributes().isEmpty()) {
+        } else if (!data.getAttributes().isEmpty()) {
+            for (LogAttribute logAttribute : data.getAttributes()) {
+                if (logAttribute.getAttribute().getName().isEmpty()) {
                     throw new OlogException(Response.Status.BAD_REQUEST,
                             "Log entry " + data.getId() + " property does not have an attribute.");
                 } else {
-                    for (Map.Entry<String, String> att : xmlProperty.getAttributes().entrySet()) {
-                        if (att.getValue().isEmpty() || att.getKey().isEmpty()) {
-                            throw new OlogException(Response.Status.BAD_REQUEST,
-                                    "Log entry " + data.getId() + " property:" + xmlProperty.getName() + " attribute does not have a key or value.");
-                        }
+                    if (logAttribute.getValue().isEmpty() || logAttribute.getAttribute().getName().isEmpty()) {
+                        throw new OlogException(Response.Status.BAD_REQUEST,
+                                "Log entry " + data.getId() + " property:" + logAttribute.getAttribute().getProperty().getName() + " attribute does not have a key or value.");
                     }
                 }
             }
@@ -681,11 +664,11 @@ public class OlogImpl {
      * @param data Logs data to check
      * @throws OlogException on error
      */
-    public void checkValid(Logs data) throws OlogException {
-        if (data == null || data.getLogs() == null) {
+    public void checkValid(List<Log> data) throws OlogException {
+        if (data == null) {
             return;
         }
-        for (Log c : data.getLogs()) {
+        for (Log c : data) {
             checkValid(c);
         }
     }
@@ -872,11 +855,11 @@ public class OlogImpl {
      * @param data Logs data to check ownership for
      * @throws OlogException on name mismatch
      */
-    public void checkUserBelongsToGroup(String user, Logs data) throws OlogException {
-        if (data == null || data.getLogs() == null) {
+    public void checkUserBelongsToGroup(String user, List<Log> data) throws OlogException {
+        if (data == null) {
             return;
         }
-        for (Log log : data.getLogs()) {
+        for (Log log : data) {
             checkUserBelongsToGroup(user, log);
         }
     }
@@ -935,7 +918,7 @@ public class OlogImpl {
         AttachmentManager.remove(fileName, logId);
     }
 
-    Logs findLogsTest() throws OlogException {
+    List<Log> findLogsTest() throws OlogException {
         return LogManager.findAll();
     }
 }

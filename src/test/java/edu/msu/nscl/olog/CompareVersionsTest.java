@@ -2,7 +2,7 @@ package edu.msu.nscl.olog;
 
 import edu.msu.nscl.olog.control.LogManager;
 import edu.msu.nscl.olog.entity.XmlAttachments;
-import edu.msu.nscl.olog.entity.Logs;
+import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.control.AttachmentManager;
 import edu.msu.nscl.olog.entity.Log;
 import org.apache.commons.lang.time.DateUtils;
@@ -21,6 +21,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 
 import static org.junit.Assert.assertEquals;
@@ -57,11 +58,11 @@ public class CompareVersionsTest {
         map.add("sweep.crystal_name", "ECF_229");
         map.add("limit", "20");
         map.add("page", "1");
-        Logs newLogs = LogManager.findLog(map);
-        Logs oldLogs = LogManagerTest.findLog(map);
-        assertEquals(newLogs.getLogs().size(), oldLogs.getLogs().size());
-        for(int i =0 ; i< newLogs.getLogs().size() ; i++) {
-            compareLogs(newLogs.getLogs().get(i), oldLogs.getLogs().get(i));
+        List<Log> newLogs = LogManager.findLog(map);
+        List<Log> oldLogs = LogManagerTest.findLog(map);
+        assertEquals(newLogs.size(), oldLogs.size());
+        for(int i =0 ; i< newLogs.size() ; i++) {
+            compareLogs(newLogs.get(i), oldLogs.get(i));
         }
     }
 
@@ -70,7 +71,6 @@ public class CompareVersionsTest {
         Log log = LogManager.findLog(2006252l);
         log.setId(null);
         log.setEntry(null);
-        log.setEntryId(null);
         log.setVersion(null);
         log.setOwner("testLog");
         Log newLog = LogManager.create(log);
@@ -85,18 +85,17 @@ public class CompareVersionsTest {
     public void findLogByDate() throws OlogException {
         MultivaluedMap<String, String> map = new MetadataMap();
         map.add("start", String.valueOf(DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH).getTime() / 1000));
-        Logs newLogs = LogManager.findLog(map);
-        Logs oldLogs = LogManagerTest.findLog(map);
-        assertEquals(newLogs.getLogs().size(), oldLogs.getLogs().size());
-        for(int i =0 ; i< newLogs.getLogs().size() ; i++) {
-            compareLogs(newLogs.getLogs().get(i), oldLogs.getLogs().get(i));
+        List<Log> newLogs = LogManager.findLog(map);
+        List<Log> oldLogs = LogManagerTest.findLog(map);
+        assertEquals(newLogs.size(), oldLogs.size());
+        for(int i =0 ; i< newLogs.size() ; i++) {
+            compareLogs(newLogs.get(i), oldLogs.get(i));
         }
     }
 
     private void compareLogs(final Log firstLog, final Log secondLog) {
         assertEquals(firstLog, secondLog);
         assertEquals(firstLog.getAttributes(), secondLog.getAttributes());
-        assertEquals(firstLog.getXmlProperties(), secondLog.getXmlProperties());
     }
 
     private void mockPersistance() {

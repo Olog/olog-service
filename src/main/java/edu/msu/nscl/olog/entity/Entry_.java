@@ -7,5 +7,5 @@ public class Entry_
 {
     public static volatile SingularAttribute<Entry, java.lang.Long> id;
     public static volatile SingularAttribute<Entry, java.util.Date> createdDate;
-    public static volatile ListAttribute<Entry, edu.msu.nscl.olog.entity.Log> logs;
+    public static volatile CollectionAttribute<Entry, edu.msu.nscl.olog.entity.BitemporalLog> bitemporalLog;
 }

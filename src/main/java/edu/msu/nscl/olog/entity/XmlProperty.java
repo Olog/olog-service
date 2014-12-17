@@ -27,7 +27,7 @@ public class XmlProperty {
     private int groupingNum;
     private String name = null;
     private Map<String, String> attributes = new HashMap<String, String>();;
-    private HashSet<Log> logs = new HashSet<Log>();
+    private HashSet<XmlLog> logs = new HashSet<XmlLog>();
 
     /**
      * Creates a new instance of XmlProperty.
@@ -133,7 +133,7 @@ public class XmlProperty {
      */
     @XmlJavaTypeAdapter(XmlLogAdapter.class)
     @JsonIgnore
-    public HashSet<Log> getLogs() {
+    public HashSet<XmlLog> getLogs() {
         return logs;
     }
 
@@ -142,7 +142,7 @@ public class XmlProperty {
      *
      * @param logs Logs object
      */
-    public void setLogs(HashSet<Log> logs) {
+    public void setLogs(HashSet<XmlLog> logs) {
         this.logs = logs;
     }
 
@@ -170,7 +170,7 @@ public class XmlProperty {
             return data.getName() + "(" + data.getAttributes().toString() + ")";
         } else {
             return data.getName() + "(" + data.getAttributes().toString() + ")"
-                    + Logs.toLogger(data.logs);
+                    + XmlLogs.toLogger(data.logs);
         }
     }
 
