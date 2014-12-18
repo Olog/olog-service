@@ -65,7 +65,7 @@ public class Log implements Serializable, Comparable<Log> {
         inverseJoinColumns = {@JoinColumn(name = "logbook_id", insertable = false, updatable = false)})
     private Set<Tag> tags = new HashSet<Tag>();
     
-    @ManyToOne
+    @ManyToOne(targetEntity = Entry.class)
     @JoinColumn(nullable = false, updatable = false)
     private Entry entry;
 

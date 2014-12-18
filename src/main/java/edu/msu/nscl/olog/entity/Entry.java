@@ -28,7 +28,7 @@ public class Entry implements Serializable {
     @Column(name = "created", nullable = false, insertable = true, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
-    @OneToMany(fetch=FetchType.LAZY)
+    @OneToMany(fetch=FetchType.LAZY, cascade = CascadeType.ALL , orphanRemoval=true)
     @JoinColumn(name="log")
     private Collection<BitemporalLog> logs = new LinkedList<BitemporalLog>();
 

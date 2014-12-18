@@ -27,6 +27,7 @@ import edu.msu.nscl.olog.control.AttachmentManager;
 import edu.msu.nscl.olog.control.LogbookManager;
 import edu.msu.nscl.olog.control.TagManager;
 import edu.msu.nscl.olog.entity.BitemporalLog;
+import edu.msu.nscl.olog.entity.BitemporalLog_;
 import java.util.*;
 import javax.persistence.EntityManager;
 import javax.persistence.Tuple;
@@ -118,7 +119,8 @@ public class LogManagerTest {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
             Root<Entry> from = cq.from(Entry.class);
-            Join<Entry,Log> logs = from.join(Entry_.logs, JoinType.INNER);
+            Join<Entry,BitemporalLog> bitemporalLog = from.join(Entry_.bitemporalLog, JoinType.LEFT);
+            Join<BitemporalLog,Log> logs = bitemporalLog.join(BitemporalLog_.log, JoinType.LEFT);
             Join<Log, LogAttribute> logAttribute = null;
             Join<LogAttribute, Attribute> attribute = null;
             Join<Attribute, Property> property = null;

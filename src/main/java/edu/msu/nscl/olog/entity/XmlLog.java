@@ -41,7 +41,7 @@ public class XmlLog implements Serializable, Comparable<XmlLog> {
     
     private String description;
     
-    private Collection<XmlProperty> properties = new ArrayList<XmlProperty>();
+    private Collection<XmlProperty> xmlProperties = new ArrayList<XmlProperty>();
     
     private Set<Logbook> logbooks = new HashSet<Logbook>();
     
@@ -254,7 +254,7 @@ public class XmlLog implements Serializable, Comparable<XmlLog> {
     @XmlElement(name = "property")
     @JsonProperty("properties")
     public Collection<XmlProperty> getXmlProperties() {
-        return properties;
+        return xmlProperties;
     }
 
     /**
@@ -263,7 +263,7 @@ public class XmlLog implements Serializable, Comparable<XmlLog> {
      * @param properties XmlProperties
      */
     public void setXmlProperties(Collection<XmlProperty> properties) {
-        this.properties = properties;
+        this.xmlProperties = properties;
     }
 
     /**
@@ -272,11 +272,11 @@ public class XmlLog implements Serializable, Comparable<XmlLog> {
      * @param property single Property
      */
     public void addXmlProperty(XmlProperty property) {
-        this.properties.add(property);
+        this.xmlProperties.add(property);
     }
     
     public void removeXmlProperty(XmlProperty property) {
-        this.properties.remove(property);
+        this.xmlProperties.remove(property);
     }
 
     /**

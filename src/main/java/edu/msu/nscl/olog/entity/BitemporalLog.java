@@ -9,6 +9,8 @@ import edu.msu.nscl.olog.entity.bitemporal.Bitemporal;
 import edu.msu.nscl.olog.entity.bitemporal.BitemporalWrapper;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -23,6 +25,7 @@ import org.joda.time.Interval;
 public class BitemporalLog extends BitemporalWrapper<Log> {
     
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     @ManyToOne(targetEntity = Log.class, cascade = { CascadeType.PERSIST, CascadeType.MERGE })

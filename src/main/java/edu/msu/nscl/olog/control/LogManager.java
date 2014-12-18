@@ -25,6 +25,7 @@ import com.google.common.collect.Multimap;
 import edu.msu.nscl.olog.JPAUtil;
 import edu.msu.nscl.olog.OlogException;
 import edu.msu.nscl.olog.entity.BitemporalLog;
+import edu.msu.nscl.olog.entity.BitemporalLog_;
 import edu.msu.nscl.olog.entity.State;
 import edu.msu.nscl.olog.entity.XmlLog;
 import java.util.*;
@@ -117,7 +118,7 @@ public class LogManager {
             CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
             Root<Entry> from = cq.from(Entry.class);
             Join<Entry,BitemporalLog> bitemporalLog = from.join(Entry_.bitemporalLog, JoinType.LEFT);
-            Join<BitemporalLog,Log> logs = from.join(BitemporalLog_.logs, JoinType.LEFT);
+            Join<BitemporalLog,Log> logs = bitemporalLog.join(BitemporalLog_.log, JoinType.LEFT);
             Join<Log, LogAttribute> logAttribute = null;
             Join<LogAttribute, Attribute> attribute = null;
             Join<Attribute, Property> property = null;
@@ -581,7 +582,7 @@ public class LogManager {
                 throw new OlogException(Response.Status.BAD_REQUEST, "Log must have level");
             }
             if (log.getLogbooks().isEmpty()){
-                throw new OlogException(Response.Status.BAD_REQUEST, "Log entry " + log.getId() + " must be in at least one logbook.");
+                throw new OlogException(Response.Status.BAD_REQUEST, "Log entry " + log.getEntry().getId() + " must be in at least one logbook.");
             }
             em.getTransaction().begin();
             Log newLog = new Log();
@@ -607,7 +608,7 @@ public class LogManager {
                     } else {
                         em.getTransaction().rollback();
                         throw new OlogException(Response.Status.NOT_FOUND,
-                                "Log entry " + log.getId() + " logbook:" + logbookName + " does not exists.");
+                                "Log entry " + log.getEntry().getId() + " logbook:" + logbookName + " does not exists.");
                     }
                 }
                 newLog.setLogbooks(logbooks);
@@ -629,20 +630,22 @@ public class LogManager {
                     } else {
                         em.getTransaction().rollback();
                         throw new OlogException(Response.Status.NOT_FOUND,
-                                "Log entry " + log.getId() + " tag:" + tagName + " does not exists.");
+                                "Log entry " + log.getEntry().getId() + " tag:" + tagName + " does not exists.");
                     }
                 }
                 newLog.setTags(tags);
             }
-            if (log.getId() != null) {
-                Entry entry = (Entry) em.find(Entry.class, log.getId());
+            if (log.getEntry().getId() != null) {
+                Entry entry = (Entry) em.find(Entry.class, log.getEntry().getId());
                 entry.addLog(newLog);
                 newLog.setVersion(String.valueOf(entry.log().getHistory().size()));
                 em.merge(entry);
             } else {
                 Entry entry = new Entry();
                 newLog.setState(State.Active);
-                entry.addLog(newLog);
+                entry.log().set(newLog);
+                //entry.addLog(newLog);
+                newLog.setEntry(entry);
                 newLog.setVersion("1");
                 em.persist(entry);
             }
