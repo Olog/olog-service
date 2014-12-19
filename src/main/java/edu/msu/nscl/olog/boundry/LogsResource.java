@@ -173,7 +173,7 @@ public class LogsResource {
             }
             
             List<Log> result = cm.createOrReplaceLogs(log_data);
-            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class, "v1");
+            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class);
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
                     + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
             Response r = Response.ok(xmlresult).build();

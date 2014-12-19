@@ -637,18 +637,19 @@ public class LogManager {
             }
             if (log.getEntry().getId() != null) {
                 Entry entry = (Entry) em.find(Entry.class, log.getEntry().getId());
-                entry.addLog(newLog);
-                newLog.setVersion(String.valueOf(entry.log().getHistory().size()));
+                newLog.setState(State.Active);
+                newLog.setEntry(entry);
+                newLog.setVersion(String.valueOf(entry.log().getEvolution().size()));
                 em.merge(entry);
             } else {
                 Entry entry = new Entry();
                 newLog.setState(State.Active);
-                entry.log().set(newLog);
-                //entry.addLog(newLog);
+                entry.addLog(newLog);
                 newLog.setEntry(entry);
                 newLog.setVersion("1");
                 em.persist(entry);
             }
+            em.flush();
             em.getTransaction().commit();
             return newLog;
         } catch (OlogException e) {
@@ -656,7 +657,7 @@ public class LogManager {
                     "JPA exception: " + e);
         } finally {
             try {
-                if (em.getTransaction() != null && em.getTransaction().isActive()) {
+                if (em.getTransaction() != null && !em.getTransaction().isActive()) {
                     em.getTransaction().rollback();
                 }
             } catch (Exception e) {

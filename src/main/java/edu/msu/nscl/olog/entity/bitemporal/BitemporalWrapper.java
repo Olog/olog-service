@@ -5,7 +5,7 @@
 package edu.msu.nscl.olog.entity.bitemporal;
 
 import java.io.Serializable;
-import java.sql.Time;
+import java.sql.Timestamp;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.FetchType;
@@ -53,8 +53,6 @@ import org.joda.time.Interval;
  */
 @MappedSuperclass
 public abstract class BitemporalWrapper<V> implements Bitemporal, Serializable {
-
-    private Long id;
     
     @Transformation(fetch = FetchType.LAZY)
     @ReadTransformer(method = "readValidityInterval")
@@ -78,17 +76,19 @@ public abstract class BitemporalWrapper<V> implements Bitemporal, Serializable {
          * This conversion allows for the database type not to match, i.e. may
          * be a Timestamp or String.
          */
-        Time start = (Time) session.getDatasourcePlatform().convertObject(row.get("validityinterval_0"), java.sql.Time.class);
-        Time end = (Time) session.getDatasourcePlatform().convertObject(row.get("validityinterval"), java.sql.Time.class);
+        Timestamp start = (Timestamp) session.getDatasourcePlatform().convertObject(row.get("validityinterval_0"), java.sql.Timestamp.class);
+        Timestamp end = (Timestamp) session.getDatasourcePlatform().convertObject(row.get("validityinterval"), java.sql.Timestamp.class);
         return new Interval(start.getTime(), end.getTime());
     }
 
-    public java.sql.Time writeValidityIntervalStart() {
-        return new java.sql.Time(recordInterval.getStart().getMillis());
+    public java.sql.Timestamp writeValidityIntervalStart() {
+        if(validityInterval==null) return null;
+        return new java.sql.Timestamp(validityInterval.getStartMillis());
     }
 
-    public java.sql.Time writeValidityIntervalEnd() {
-        return new java.sql.Time(recordInterval.getEnd().getMillis());
+    public java.sql.Timestamp writeValidityIntervalEnd() {
+        if(validityInterval==null) return null;
+        return new java.sql.Timestamp(validityInterval.getEndMillis());
     }
 
     
@@ -97,17 +97,19 @@ public abstract class BitemporalWrapper<V> implements Bitemporal, Serializable {
          * This conversion allows for the database type not to match, i.e. may
          * be a Timestamp or String.
          */
-        Time start = (Time) session.getDatasourcePlatform().convertObject(row.get("recordinterval_0"), java.sql.Time.class);
-        Time end = (Time) session.getDatasourcePlatform().convertObject(row.get("recordinterval"), java.sql.Time.class);
+        Timestamp start = (Timestamp) session.getDatasourcePlatform().convertObject(row.get("recordinterval_0"), java.sql.Timestamp.class);
+        Timestamp end = (Timestamp) session.getDatasourcePlatform().convertObject(row.get("recordinterval"), java.sql.Timestamp.class);
         return new Interval(start.getTime(), end.getTime());
     }
 
-    public java.sql.Time writeRecordIntervalStart() {
-        return new java.sql.Time(recordInterval.getStart().getMillis());
+    public java.sql.Timestamp writeRecordIntervalStart() {
+        if(recordInterval==null) return null;
+        return new java.sql.Timestamp(recordInterval.getStartMillis());
     }
 
-    public java.sql.Time writeRecordIntervalEnd() {
-        return new java.sql.Time(recordInterval.getEnd().getMillis());
+    public java.sql.Timestamp writeRecordIntervalEnd() {
+        if(recordInterval==null) return null;
+        return new java.sql.Timestamp(recordInterval.getEndMillis());
     }
 
     protected BitemporalWrapper() {

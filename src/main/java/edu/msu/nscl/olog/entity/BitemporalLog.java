@@ -37,14 +37,6 @@ public class BitemporalLog extends BitemporalWrapper<Log> {
     protected BitemporalLog(Log log, Interval validityInterval){
         super(log,validityInterval);
     }
-
-    public Long getId(){
-        return id;
-    }
-    
-    public void setId(Long id){
-        this.id = id;
-    }
     
     public Log getLog() {
         return log;
