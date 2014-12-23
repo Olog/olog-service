@@ -6,7 +6,6 @@
 package edu.msu.nscl.olog.boundry;
 
 import edu.msu.nscl.olog.entity.Logbook;
-import edu.msu.nscl.olog.control.LogbookManager;
 import edu.msu.nscl.olog.entity.Logbooks;
 import edu.msu.nscl.olog.OlogException;
 import edu.msu.nscl.olog.OlogImpl;

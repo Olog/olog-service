@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://dozer.sourceforge.net
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
 
-    <mapping map-id="v1">
+    <mapping>
         <class-a>edu.msu.nscl.olog.entity.Log</class-a>
         <class-b>edu.msu.nscl.olog.entity.XmlLog</class-b>
         <field>
@@ -14,25 +14,10 @@
             <a>entry.createdDate</a>
             <b>createdDate</b>
         </field>
-        <field>
+        <field custom-converter=
+         "edu.msu.nscl.olog.control.XmlPropertyConverter">
             <a>attributes</a>
             <b>xmlProperties</b>
-        </field>
-    </mapping>
-    <mapping>
-        <class-a>edu.msu.nscl.olog.entity.LogAttribute</class-a>
-        <class-b>edu.msu.nscl.olog.entity.XmlProperty</class-b>
-        <field>
-            <a>attribute.property.id</a>
-            <b>id</b>
-        </field>
-        <field>
-            <a>attribute.property.name</a>
-            <b>name</b>
-        </field>
-        <field>
-            <a>value</a>
-            <b key="attribute.name">attributes</b>
         </field>
     </mapping>
     <mapping>
@@ -41,6 +26,8 @@
         <field>
             <a>this</a>
             <b>logs</b>
+            <a-hint>edu.msu.nscl.olog.entity.Log</a-hint>
+            <b-hint>edu.msu.nscl.olog.entity.XmlLog</b-hint>
         </field>
     </mapping>
 

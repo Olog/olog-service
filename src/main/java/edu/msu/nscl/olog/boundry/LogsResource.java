@@ -74,7 +74,7 @@ public class LogsResource {
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
             List<Log> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
-            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class, "v1");
+            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class);
             Response r = Response.ok(xmlresult).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.size() + " logs");
@@ -93,7 +93,7 @@ public class LogsResource {
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
             List<Log> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
-            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class, "v1");
+            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class);
             Response r = Response.ok(xmlresult).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.size() + " logs");
@@ -125,7 +125,7 @@ public class LogsResource {
         try {
             List<Log> log_data = new ArrayList<Log>();
             for(XmlLog datum : data.getLogs()){
-                Log result = DozerBeanMapperSingletonWrapper.getInstance().map(datum, Log.class, "v1");
+                Log result = DozerBeanMapperSingletonWrapper.getInstance().map(datum, Log.class);
                 result.setOwner(um.getUserName());
                 log_data.add(result);
             }
@@ -136,7 +136,7 @@ public class LogsResource {
             }
             
             List<Log> result = cm.createOrReplaceLogs(log_data);
-            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class, "v1");
+            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class);
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
                     + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
             Response r = Response.ok(xmlresult).build();
@@ -162,7 +162,7 @@ public class LogsResource {
         try {
             List<Log> log_data = new ArrayList<Log>();
             for(XmlLog datum : data){
-                Log result = DozerBeanMapperSingletonWrapper.getInstance().map(datum, Log.class, "v1");
+                Log result = DozerBeanMapperSingletonWrapper.getInstance().map(datum, Log.class);
                 result.setOwner(um.getUserName());
                 log_data.add(result);
             }
@@ -206,7 +206,7 @@ public class LogsResource {
             if (result == null) {
                 r = Response.status(Response.Status.NOT_FOUND).build();
             } else {
-                XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class, "v1");
+                XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class);
                 r = Response.ok(xmlresult).build();
             }
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
@@ -237,7 +237,7 @@ public class LogsResource {
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(hostAddress);
         try {
-            Log log_data = DozerBeanMapperSingletonWrapper.getInstance().map(data, Log.class, "v1");
+            Log log_data = DozerBeanMapperSingletonWrapper.getInstance().map(data, Log.class);
             log_data.setOwner(um.getUserName());
             cm.checkValid(log_data);
             cm.checkIdMatchesPayload(logId, log_data);
@@ -246,7 +246,7 @@ public class LogsResource {
             }
             
             Log result = cm.createOrReplaceLog(logId, log_data);
-            XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class, "v1");
+            XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class);
             Response r = Response.ok(xmlresult).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + XmlLog.toLogger(xmlresult));
@@ -277,7 +277,7 @@ public class LogsResource {
         um.setHostAddress(hostAddress);
         Log result = null;
         try {
-           Log log_data = DozerBeanMapperSingletonWrapper.getInstance().map(data, Log.class, "v1");
+           Log log_data = DozerBeanMapperSingletonWrapper.getInstance().map(data, Log.class);
             log_data.setOwner(um.getUserName());
             cm.checkValid(log_data);
             cm.checkIdMatchesPayload(logId, log_data);
@@ -287,7 +287,7 @@ public class LogsResource {
             }
             
             result = cm.updateLog(logId, log_data);
-            XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class, "v1");
+            XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class);
             Response r = Response.ok(xmlresult).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLog.toLogger(xmlresult));

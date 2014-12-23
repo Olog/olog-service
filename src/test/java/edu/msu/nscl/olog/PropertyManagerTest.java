@@ -6,7 +6,7 @@ package edu.msu.nscl.olog;
 
 import edu.msu.nscl.olog.entity.State;
 import edu.msu.nscl.olog.entity.Attribute;
-import edu.msu.nscl.olog.control.AttributeManager;
+import edu.msu.nscl.olog.boundry.AttributeManager;
 import edu.msu.nscl.olog.entity.Property;
 import edu.msu.nscl.olog.entity.Property_;
 import javax.persistence.EntityManager;

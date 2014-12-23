@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.msu.nscl.olog.control;
+package edu.msu.nscl.olog.boundry;
 
 import edu.msu.nscl.olog.JCRUtil;
 import edu.msu.nscl.olog.OlogException;

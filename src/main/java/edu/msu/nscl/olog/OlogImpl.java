@@ -5,10 +5,10 @@
  */
 package edu.msu.nscl.olog;
 
-import edu.msu.nscl.olog.control.LogbookManager;
-import edu.msu.nscl.olog.control.LogManager;
-import edu.msu.nscl.olog.control.PropertyManager;
-import edu.msu.nscl.olog.control.TagManager;
+import edu.msu.nscl.olog.boundry.LogbookManager;
+import edu.msu.nscl.olog.boundry.LogManager;
+import edu.msu.nscl.olog.boundry.PropertyManager;
+import edu.msu.nscl.olog.boundry.TagManager;
 import edu.msu.nscl.olog.entity.Tags;
 import edu.msu.nscl.olog.entity.Logbooks;
 import edu.msu.nscl.olog.entity.XmlProperty;
@@ -16,8 +16,8 @@ import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.entity.Tag;
 import edu.msu.nscl.olog.entity.XmlAttachments;
 import edu.msu.nscl.olog.entity.XmlAttachment;
-import edu.msu.nscl.olog.control.AttachmentManager;
-import edu.msu.nscl.olog.control.AttributeManager;
+import edu.msu.nscl.olog.boundry.AttachmentManager;
+import edu.msu.nscl.olog.boundry.AttributeManager;
 import edu.msu.nscl.olog.entity.Attachment;
 import edu.msu.nscl.olog.entity.XmlProperties;
 import edu.msu.nscl.olog.entity.Log;

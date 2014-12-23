@@ -1,9 +1,9 @@
 package edu.msu.nscl.olog;
 
-import edu.msu.nscl.olog.control.LogManager;
+import edu.msu.nscl.olog.boundry.LogManager;
 import edu.msu.nscl.olog.entity.XmlAttachments;
 import edu.msu.nscl.olog.entity.XmlLogs;
-import edu.msu.nscl.olog.control.AttachmentManager;
+import edu.msu.nscl.olog.boundry.AttachmentManager;
 import edu.msu.nscl.olog.entity.Log;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.AfterClass;

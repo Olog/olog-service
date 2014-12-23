@@ -5,7 +5,7 @@
 package edu.msu.nscl.olog;
 
 import edu.msu.nscl.olog.entity.State;
-import edu.msu.nscl.olog.control.PropertyManager;
+import edu.msu.nscl.olog.boundry.PropertyManager;
 import edu.msu.nscl.olog.entity.Attribute;
 import edu.msu.nscl.olog.entity.Property;
 import edu.msu.nscl.olog.entity.Property_;

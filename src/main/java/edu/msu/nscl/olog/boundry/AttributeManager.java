@@ -2,11 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.msu.nscl.olog.control;
+package edu.msu.nscl.olog.boundry;
 
 import edu.msu.nscl.olog.JPAUtil;
 import edu.msu.nscl.olog.OlogException;
-import edu.msu.nscl.olog.control.PropertyManager;
+import edu.msu.nscl.olog.boundry.PropertyManager;
 import edu.msu.nscl.olog.entity.State;
 import edu.msu.nscl.olog.entity.Attribute;
 import edu.msu.nscl.olog.entity.Attribute_;

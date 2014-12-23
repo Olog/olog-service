@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.msu.nscl.olog.control;
+package edu.msu.nscl.olog.boundry;
 
 import edu.msu.nscl.olog.entity.Logbook_;
 import edu.msu.nscl.olog.entity.XmlProperty;
@@ -117,12 +117,12 @@ public class LogManager {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
             Root<Entry> from = cq.from(Entry.class);
-            Join<Entry,BitemporalLog> bitemporalLog = from.join(Entry_.bitemporalLog, JoinType.LEFT);
-            Join<BitemporalLog,Log> logs = bitemporalLog.join(BitemporalLog_.log, JoinType.LEFT);
+            Join<Entry, BitemporalLog> bitemporalLog = from.join(Entry_.bitemporalLog, JoinType.LEFT);
+            Join<BitemporalLog, Log> logs = bitemporalLog.join(BitemporalLog_.log, JoinType.LEFT);
             Join<Log, LogAttribute> logAttribute = null;
             Join<LogAttribute, Attribute> attribute = null;
             Join<Attribute, Property> property = null;
-            
+
             for (Map.Entry<String, List<String>> match : matches.entrySet()) {
                 String key = match.getKey().toLowerCase();
                 Collection<String> matchesValues = match.getValue();
@@ -462,7 +462,6 @@ public class LogManager {
 
             //result.setCount(JPAUtil.count(em, cq));
             //result.setCount(0L);
-
             if (empty) {
                 em.getTransaction().commit();
                 return result;
@@ -581,7 +580,7 @@ public class LogManager {
             if (log.getLevel() == null) {
                 throw new OlogException(Response.Status.BAD_REQUEST, "Log must have level");
             }
-            if (log.getLogbooks().isEmpty()){
+            if (log.getLogbooks().isEmpty()) {
                 throw new OlogException(Response.Status.BAD_REQUEST, "Log entry " + log.getEntry().getId() + " must be in at least one logbook.");
             }
             em.getTransaction().begin();
@@ -638,6 +637,7 @@ public class LogManager {
             if (log.getEntry().getId() != null) {
                 Entry entry = (Entry) em.find(Entry.class, log.getEntry().getId());
                 newLog.setState(State.Active);
+                entry.addLog(newLog);
                 newLog.setEntry(entry);
                 newLog.setVersion(String.valueOf(entry.log().getEvolution().size()));
                 em.merge(entry);
@@ -650,6 +650,16 @@ public class LogManager {
                 em.persist(entry);
             }
             em.flush();
+            if (log.getAttributes() != null) {
+                Set<LogAttribute> logattrs = new HashSet<LogAttribute>();
+                for (LogAttribute logattr : log.getAttributes()) {
+                    logattr.setLog(newLog);
+                    logattr.setLogId(newLog.getId());
+                    em.persist(logattr);
+                    logattrs.add(logattr);
+                }
+                newLog.setAttributes(logattrs);
+            }
             em.getTransaction().commit();
             return newLog;
         } catch (OlogException e) {
