@@ -32,6 +32,7 @@ import java.util.*;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
+import javax.persistence.metamodel.EntityType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
@@ -117,7 +118,8 @@ public class LogManager {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
             Root<Entry> from = cq.from(Entry.class);
-            Join<Entry, BitemporalLog> bitemporalLog = from.join(Entry_.bitemporalLog, JoinType.LEFT);
+            EntityType<Entry> EntryT_ = from.getModel();
+            Join<Entry, BitemporalLog> bitemporalLog = from.join(Entry_.logs, JoinType.LEFT);
             Join<BitemporalLog, Log> logs = bitemporalLog.join(BitemporalLog_.log, JoinType.LEFT);
             Join<Log, LogAttribute> logAttribute = null;
             Join<LogAttribute, Attribute> attribute = null;

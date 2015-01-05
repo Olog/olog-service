@@ -131,7 +131,8 @@ public class XmlProperty {
      *
      * @return XmlChannels object
      */
-    @XmlJavaTypeAdapter(XmlLogAdapter.class)
+    //@XmlJavaTypeAdapter(XmlLogAdapter.class)
+    @XmlTransient
     @JsonIgnore
     public HashSet<XmlLog> getLogs() {
         return logs;

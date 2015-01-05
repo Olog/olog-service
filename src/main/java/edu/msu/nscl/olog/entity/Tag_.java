@@ -3,7 +3,7 @@ package edu.msu.nscl.olog.entity;
 import javax.persistence.metamodel.*;
 
 @StaticMetamodel(Tag.class)
-public class Tag_
+public abstract class Tag_
 {
     public static volatile SingularAttribute<Tag, java.lang.Long> id;
     public static volatile SingularAttribute<Tag, java.lang.String> name;

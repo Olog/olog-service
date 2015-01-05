@@ -29,7 +29,7 @@ public class Entry implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
     @OneToMany(fetch=FetchType.LAZY, cascade = CascadeType.ALL , orphanRemoval=true)
-    @JoinColumn(name="log")
+    @JoinColumn(name="entry_id")
     private Collection<BitemporalLog> logs = new LinkedList<BitemporalLog>();
 
     @PrePersist

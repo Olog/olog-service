@@ -3,7 +3,7 @@ package edu.msu.nscl.olog.entity;
 import javax.persistence.metamodel.*;
 
 @StaticMetamodel(LogAttribute.class)
-public class LogAttribute_
+public abstract class LogAttribute_
 {
     public static volatile SingularAttribute<LogAttribute, java.lang.Long> id;
     public static volatile SingularAttribute<LogAttribute, java.lang.Long> logId;

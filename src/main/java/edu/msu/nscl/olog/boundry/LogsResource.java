@@ -93,7 +93,10 @@ public class LogsResource {
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
             List<Log> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
-            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class);
+            List<XmlLog> xmlresult = new ArrayList<XmlLog>();
+            for(Log l:result){
+                xmlresult.add(DozerBeanMapperSingletonWrapper.getInstance().map(l, XmlLog.class));
+            }
             Response r = Response.ok(xmlresult).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.size() + " logs");

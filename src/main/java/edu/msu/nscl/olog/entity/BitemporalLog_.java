@@ -5,7 +5,7 @@
  */
 package edu.msu.nscl.olog.entity;
 
-import javax.persistence.metamodel.CollectionAttribute;
+import edu.msu.nscl.olog.entity.bitemporal.BitemporalWrapper_;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
@@ -14,7 +14,7 @@ import javax.persistence.metamodel.StaticMetamodel;
  * @author berryman
  */
 @StaticMetamodel(BitemporalLog.class)
-public class BitemporalLog_ {
+public abstract class BitemporalLog_ extends BitemporalWrapper_<Log>{
     public static volatile SingularAttribute<BitemporalLog, java.lang.Long> id;
     public static volatile SingularAttribute<BitemporalLog, edu.msu.nscl.olog.entity.Log> log;
 }

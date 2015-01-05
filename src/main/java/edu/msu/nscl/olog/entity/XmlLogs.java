@@ -61,7 +61,7 @@ public class XmlLogs {
      *
      * @return logs a collection of Log
      */
-    @XmlElementRef(type = Log.class, name = "log")
+    @XmlElementRef(type = XmlLog.class, name = "log")
     @JsonProperty("log")
     public List<XmlLog> getLogs() {
         return logs;
