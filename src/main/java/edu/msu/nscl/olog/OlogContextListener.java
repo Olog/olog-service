@@ -8,6 +8,7 @@ package edu.msu.nscl.olog;
  *
  * @author berryman
  */
+import edu.msu.nscl.olog.control.OlogImpl;
 import edu.msu.nscl.olog.entity.Logbooks;
 import edu.msu.nscl.olog.entity.XmlProperties;
 import edu.msu.nscl.olog.entity.XmlProperty;

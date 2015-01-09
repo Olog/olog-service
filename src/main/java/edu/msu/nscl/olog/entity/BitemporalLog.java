@@ -61,4 +61,4 @@ public class BitemporalLog extends BitemporalWrapper<Log> {
         return new BitemporalLog(log,validityInterval);
     }
     
-}
+    }

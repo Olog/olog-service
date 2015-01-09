@@ -5,10 +5,8 @@
 package edu.msu.nscl.olog.boundry;
 
 import edu.msu.nscl.olog.entity.Logbook_;
-import edu.msu.nscl.olog.entity.XmlProperty;
 import edu.msu.nscl.olog.entity.Log_;
 import edu.msu.nscl.olog.entity.Tag_;
-import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.entity.Tag;
 import edu.msu.nscl.olog.entity.Entry_;
 import edu.msu.nscl.olog.entity.LogAttribute;
@@ -27,14 +25,17 @@ import edu.msu.nscl.olog.OlogException;
 import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.BitemporalLog_;
 import edu.msu.nscl.olog.entity.State;
-import edu.msu.nscl.olog.entity.XmlLog;
+import edu.msu.nscl.olog.entity.bitemporal.TimeUtils;
 import java.util.*;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.SingularAttribute;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import org.eclipse.persistence.jpa.JpaQuery;
+import org.joda.time.Interval;
 
 /**
  *
@@ -92,7 +93,7 @@ public class LogManager {
         }
     }
 
-    public static List<Log> findLog(MultivaluedMap<String, String> matches) throws OlogException {
+    public static List<BitemporalLog> findLog(MultivaluedMap<String, String> matches) throws OlogException {
 
         // XXX: should mandate a limit for it, since for big db it can run out of memory
         List<Predicate> andPredicates = new ArrayList<Predicate>();
@@ -112,14 +113,14 @@ public class LogManager {
         Multimap<String, String> value_patterns = ArrayListMultimap.create();
         Boolean empty = false;
         Boolean history = false;
+        Boolean evolution = false;
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
             em.getTransaction().begin();
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
             Root<Entry> from = cq.from(Entry.class);
-            EntityType<Entry> EntryT_ = from.getModel();
-            Join<Entry, BitemporalLog> bitemporalLog = from.join(Entry_.logs, JoinType.LEFT);
+            Join<Entry, BitemporalLog> bitemporalLog = from.join(Entry_.logs, JoinType.INNER);
             Join<BitemporalLog, Log> logs = bitemporalLog.join(BitemporalLog_.log, JoinType.LEFT);
             Join<Log, LogAttribute> logAttribute = null;
             Join<LogAttribute, Attribute> attribute = null;
@@ -255,6 +256,8 @@ public class LogManager {
                     empty = true;
                 } else if (key.equals("history")) {
                     history = true;
+                } else if (key.equals("evolution")) {
+                    evolution = true;
                 } else {
                     Collection<String> cleanedMatchesValues = new HashSet<String>();
                     for (String m : matchesValues) {
@@ -405,14 +408,9 @@ public class LogManager {
             }
 
             cq.distinct(true);
-
-            if (history) {
-                Predicate statusPredicate = cb.or(cb.equal(logs.get(Log_.state), State.Active), cb.equal(logs.get(Log_.state), State.Inactive));
-                orPredicates.add(statusPredicate);
-            } else {
-                Predicate statusPredicate = cb.equal(logs.get(Log_.state), State.Active);
-                andPredicates.add(statusPredicate);
-            }
+            
+            Predicate statusPredicate = cb.equal(from.get(Entry_.state), State.Active);
+            andPredicates.add(statusPredicate);
 
             Predicate finalPredicate = cb.conjunction();
 
@@ -435,7 +433,7 @@ public class LogManager {
             cq.select(from);
             cq.where(finalPredicate);
             cq.groupBy(from);
-            cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
+            cq.orderBy(cb.desc(from.get(Entry_.createdDate)));           
             TypedQuery<Entry> typedQuery = em.createQuery(cq);
             if (!paginate_matches.isEmpty()) {
                 String page = null, limit = null;
@@ -460,10 +458,8 @@ public class LogManager {
 
             }
 
-            List<Log> result = new ArrayList<Log>();
+            List<BitemporalLog> result = new ArrayList<BitemporalLog>();
 
-            //result.setCount(JPAUtil.count(em, cq));
-            //result.setCount(0L);
             if (empty) {
                 em.getTransaction().commit();
                 return result;
@@ -473,13 +469,19 @@ public class LogManager {
                 Iterator<Entry> iterator = rs.iterator();
                 while (iterator.hasNext()) {
                     Entry e = iterator.next();
-                    if (history) {
+                    if (history && !evolution) {
                         List<BitemporalLog> all = ((Entry) em.find(Entry.class, e.getId())).log().getHistory();
                         for (BitemporalLog log : all) {
-                            result.add(log.getLog());
+                            result.add(log);
+                        }
+                    }
+                    else if (evolution && !history) {
+                        List<BitemporalLog> all = ((Entry) em.find(Entry.class, e.getId())).log().getEvolution();
+                        for (BitemporalLog log : all) {
+                            result.add(log);
                         }
                     } else {
-                        result.add(e.log().now());
+                        result.add(e.log().get());
                     }
                 }
             }
@@ -689,6 +691,7 @@ public class LogManager {
         try {
             em.getTransaction().begin();
             Entry entry = em.find(Entry.class, id);
+            entry.setState(State.Inactive);
             entry.log().end();
             em.getTransaction().commit();
         } catch (Exception e) {

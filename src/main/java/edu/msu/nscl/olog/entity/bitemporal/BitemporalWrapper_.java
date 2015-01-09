@@ -6,6 +6,6 @@ import org.joda.time.Interval;
 
 @StaticMetamodel(BitemporalWrapper.class)
 public abstract class BitemporalWrapper_<V> implements Bitemporal{
-    public static volatile SingularAttribute<BitemporalWrapper_, Interval>  validityInterval;    
-    public static volatile SingularAttribute<BitemporalWrapper_, Interval> recordInterval;
+    public static volatile SingularAttribute<BitemporalWrapper, org.joda.time.Interval> validityInterval;    
+    public static volatile SingularAttribute<BitemporalWrapper, org.joda.time.Interval> recordInterval;
 }

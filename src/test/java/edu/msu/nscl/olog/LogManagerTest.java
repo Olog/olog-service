@@ -93,7 +93,7 @@ public class LogManagerTest {
         }
     }
 
-    public static List<Log> findLog(MultivaluedMap<String, String> matches) throws OlogException {
+    public static List<BitemporalLog> findLog(MultivaluedMap<String, String> matches) throws OlogException {
 
         // XXX: should mandate a limit for it, since for big db it can run out of memory
         List<Predicate> andPredicates = new ArrayList<Predicate>();
@@ -113,18 +113,19 @@ public class LogManagerTest {
         Multimap<String, String> value_patterns = ArrayListMultimap.create();
         Boolean empty = false;
         Boolean history = false;
+        Boolean evolution = false;
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
             em.getTransaction().begin();
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
             Root<Entry> from = cq.from(Entry.class);
-            Join<Entry,BitemporalLog> bitemporalLog = from.join(Entry_.logs, JoinType.LEFT);
-            Join<BitemporalLog,Log> logs = bitemporalLog.join(BitemporalLog_.log, JoinType.LEFT);
+            Join<Entry, BitemporalLog> bitemporalLog = from.join(Entry_.logs, JoinType.INNER);
+            Join<BitemporalLog, Log> logs = bitemporalLog.join(BitemporalLog_.log, JoinType.LEFT);
             Join<Log, LogAttribute> logAttribute = null;
             Join<LogAttribute, Attribute> attribute = null;
             Join<Attribute, Property> property = null;
-            
+
             for (Map.Entry<String, List<String>> match : matches.entrySet()) {
                 String key = match.getKey().toLowerCase();
                 Collection<String> matchesValues = match.getValue();
@@ -255,6 +256,8 @@ public class LogManagerTest {
                     empty = true;
                 } else if (key.equals("history")) {
                     history = true;
+                } else if (key.equals("evolution")) {
+                    evolution = true;
                 } else {
                     Collection<String> cleanedMatchesValues = new HashSet<String>();
                     for (String m : matchesValues) {
@@ -405,14 +408,9 @@ public class LogManagerTest {
             }
 
             cq.distinct(true);
-
-            if (history) {
-                Predicate statusPredicate = cb.or(cb.equal(logs.get(Log_.state), State.Active), cb.equal(logs.get(Log_.state), State.Inactive));
-                orPredicates.add(statusPredicate);
-            } else {
-                Predicate statusPredicate = cb.equal(logs.get(Log_.state), State.Active);
-                andPredicates.add(statusPredicate);
-            }
+            
+            Predicate statusPredicate = cb.equal(from.get(Entry_.state), State.Active);
+            andPredicates.add(statusPredicate);
 
             Predicate finalPredicate = cb.conjunction();
 
@@ -435,7 +433,7 @@ public class LogManagerTest {
             cq.select(from);
             cq.where(finalPredicate);
             cq.groupBy(from);
-            cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
+            cq.orderBy(cb.desc(from.get(Entry_.createdDate)));           
             TypedQuery<Entry> typedQuery = em.createQuery(cq);
             if (!paginate_matches.isEmpty()) {
                 String page = null, limit = null;
@@ -460,10 +458,7 @@ public class LogManagerTest {
 
             }
 
-            List<Log> result = new ArrayList<Log>();
-
-            //result.setCount(JPAUtil.count(em, cq));
-            //result.setCount(0L);
+            List<BitemporalLog> result = new ArrayList<BitemporalLog>();
 
             if (empty) {
                 em.getTransaction().commit();
@@ -474,13 +469,19 @@ public class LogManagerTest {
                 Iterator<Entry> iterator = rs.iterator();
                 while (iterator.hasNext()) {
                     Entry e = iterator.next();
-                    if (history) {
+                    if (history && !evolution) {
                         List<BitemporalLog> all = ((Entry) em.find(Entry.class, e.getId())).log().getHistory();
                         for (BitemporalLog log : all) {
-                            result.add(log.getLog());
+                            result.add(log);
+                        }
+                    }
+                    else if (evolution && !history) {
+                        List<BitemporalLog> all = ((Entry) em.find(Entry.class, e.getId())).log().getEvolution();
+                        for (BitemporalLog log : all) {
+                            result.add(log);
                         }
                     } else {
-                        result.add(e.log().now());
+                        result.add(e.log().get());
                     }
                 }
             }

@@ -4,10 +4,11 @@
  */
 package edu.msu.nscl.olog.entity.bitemporal;
 
+import edu.msu.nscl.olog.entity.bitemporal.Bitemporal;
+import edu.msu.nscl.olog.entity.bitemporal.TimeUtils;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.FetchType;
 import javax.persistence.MappedSuperclass;
 import org.eclipse.persistence.annotations.ReadTransformer;
@@ -71,7 +72,7 @@ public abstract class BitemporalWrapper<V> implements Bitemporal, Serializable {
     private Interval recordInterval;
 
     
-    public Interval readValidityInterval(Record row, Session session) {
+    private Interval readValidityInterval(Record row, Session session) {
         /**
          * This conversion allows for the database type not to match, i.e. may
          * be a Timestamp or String.
@@ -81,18 +82,18 @@ public abstract class BitemporalWrapper<V> implements Bitemporal, Serializable {
         return new Interval(start.getTime(), end.getTime());
     }
 
-    public java.sql.Timestamp writeValidityIntervalStart() {
+    private java.sql.Timestamp writeValidityIntervalStart() {
         if(validityInterval==null) return null;
         return new java.sql.Timestamp(validityInterval.getStartMillis());
     }
 
-    public java.sql.Timestamp writeValidityIntervalEnd() {
+    private java.sql.Timestamp writeValidityIntervalEnd() {
         if(validityInterval==null) return null;
         return new java.sql.Timestamp(validityInterval.getEndMillis());
     }
 
     
-    public Interval readRecordInterval(Record row, Session session) {
+    private Interval readRecordInterval(Record row, Session session) {
         /**
          * This conversion allows for the database type not to match, i.e. may
          * be a Timestamp or String.
@@ -102,12 +103,12 @@ public abstract class BitemporalWrapper<V> implements Bitemporal, Serializable {
         return new Interval(start.getTime(), end.getTime());
     }
 
-    public java.sql.Timestamp writeRecordIntervalStart() {
+    private java.sql.Timestamp writeRecordIntervalStart() {
         if(recordInterval==null) return null;
         return new java.sql.Timestamp(recordInterval.getStartMillis());
     }
 
-    public java.sql.Timestamp writeRecordIntervalEnd() {
+    private java.sql.Timestamp writeRecordIntervalEnd() {
         if(recordInterval==null) return null;
         return new java.sql.Timestamp(recordInterval.getEndMillis());
     }

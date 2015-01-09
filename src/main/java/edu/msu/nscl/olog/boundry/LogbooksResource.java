@@ -8,7 +8,7 @@ package edu.msu.nscl.olog.boundry;
 import edu.msu.nscl.olog.entity.Logbook;
 import edu.msu.nscl.olog.entity.Logbooks;
 import edu.msu.nscl.olog.OlogException;
-import edu.msu.nscl.olog.OlogImpl;
+import edu.msu.nscl.olog.control.OlogImpl;
 import edu.msu.nscl.olog.UserManager;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -94,7 +94,7 @@ public class LogbooksResource {
             }
             result = cm.createOrReplaceLogbooks(data);
             Response r = Response.ok(result).build();
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
+            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + Logbooks.toLogger(data));
             return r;
         } catch (OlogException e) {
@@ -162,7 +162,7 @@ public class LogbooksResource {
             }
             result = cm.createOrReplaceLogbook(logbookName, data);
             Response r = Response.ok(result).build();
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
+            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + Logbook.toLogger(data));
             return r;
         } catch (OlogException e) {
@@ -197,7 +197,7 @@ public class LogbooksResource {
             }
             result = cm.createOrReplaceLogbook(logbook, data);
             Response r = Response.ok(result).build();
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
+            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + Logbook.toLogger(data));
             return r;
         } catch (OlogException e) {
@@ -226,7 +226,7 @@ public class LogbooksResource {
             }
             cm.removeExistingLogbook(logbook);
             Response r = Response.ok().build();
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
+            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()
@@ -260,7 +260,7 @@ public class LogbooksResource {
             }
             result = cm.addSingleLogbook(logbook, logId);
             Response r = Response.ok(result).build();
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
+            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + Logbook.toLogger(data));
             return r;
         } catch (OlogException e) {
@@ -290,7 +290,7 @@ public class LogbooksResource {
             }
             cm.removeSingleLogbook(logbook, logId);
             Response r = Response.ok().build();
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
+            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()

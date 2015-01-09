@@ -1,6 +1,7 @@
 package edu.msu.nscl.olog;
 
 
+import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.Logbooks;
 import edu.msu.nscl.olog.entity.Property;
 import edu.msu.nscl.olog.entity.Tag;
@@ -76,9 +77,9 @@ public class OlogPerformanceTest {
         MultivaluedMap<String, String> map = new MetadataMap();
         map.add("sweep.crystal_name", "ECF_229");
         long startTime = System.nanoTime();
-        List<Log> logs = LogManagerTest.findLog(map);
+        List<BitemporalLog> logs = LogManagerTest.findLog(map);
         long endTime = System.nanoTime();
-        logId = logs.size() > 0 ? logs.get(0).getId(): 1l;
+        logId = logs.size() > 0 ? logs.get(0).getLog().getId(): 1l;
          double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to find a log by attribute is: " + totalTime + "(s)");
         out.newLine();
@@ -122,7 +123,7 @@ public class OlogPerformanceTest {
         MultivaluedMap<String, String> map = new MetadataMap();
         map.add("start", String.valueOf(DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH).getTime() / 1000));
         long startTime = System.nanoTime();
-        List<Log> logs = LogManagerTest.findLog(map);
+        List<BitemporalLog> logs = LogManagerTest.findLog(map);
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to find a log by date is: " + totalTime + "(s)");

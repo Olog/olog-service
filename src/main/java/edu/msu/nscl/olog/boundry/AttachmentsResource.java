@@ -4,7 +4,7 @@
 package edu.msu.nscl.olog.boundry;
 
 import edu.msu.nscl.olog.OlogException;
-import edu.msu.nscl.olog.OlogImpl;
+import edu.msu.nscl.olog.control.OlogImpl;
 import edu.msu.nscl.olog.UserManager;
 import edu.msu.nscl.olog.entity.XmlAttachment;
 import edu.msu.nscl.olog.entity.XmlAttachments;
@@ -91,7 +91,7 @@ public class AttachmentsResource {
             } else {
                 r = Response.ok((Object)result.getContent()).type(result.getMimeType()).build();
             }
-            audit.info( user+"|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
+            audit.fine( user+"|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             
@@ -120,7 +120,7 @@ public class AttachmentsResource {
             } else {
                 r = Response.ok((Object)result.getContent()).type(result.getMimeType()).build();
             }
-            audit.info( user+"|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
+            audit.fine( user+"|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             
@@ -210,7 +210,7 @@ public class AttachmentsResource {
             String output = "File uploaded to : " + logId.toString()+"/"+incommingAttachment.getContentDisposition().getParameter("filename");
             Response r = Response.status(200).entity(output).build();
             
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus() + " | " + output);
+            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus() + " | " + output);
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|"
@@ -242,7 +242,7 @@ public class AttachmentsResource {
             }
             cm.removeAttachment(fileName,logId);
             Response r = Response.ok().build();
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
+            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()

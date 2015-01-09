@@ -7,5 +7,6 @@ public abstract class Entry_
 {
     public static volatile SingularAttribute<Entry, java.lang.Long> id;
     public static volatile SingularAttribute<Entry, java.util.Date> createdDate;
+    public static volatile SingularAttribute<Entry, edu.msu.nscl.olog.entity.State> state;
     public static volatile CollectionAttribute<Entry, edu.msu.nscl.olog.entity.BitemporalLog> logs;
 }

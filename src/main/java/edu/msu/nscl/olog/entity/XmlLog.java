@@ -5,12 +5,10 @@
  */
 package edu.msu.nscl.olog.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 import java.util.*;
-import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.*;
 
 /**
@@ -39,6 +37,10 @@ public class XmlLog implements Serializable, Comparable<XmlLog> {
     
     private Date createdDate;
     
+    private Date eventStart;
+    
+    private Date eventEnd;
+    
     private String description;
     
     private Collection<XmlProperty> xmlProperties = new ArrayList<XmlProperty>();
@@ -47,7 +49,7 @@ public class XmlLog implements Serializable, Comparable<XmlLog> {
     
     private Set<Tag> tags = new HashSet<Tag>();
     
-    private Collection<XmlAttachment> attachments = new ArrayList<XmlAttachment>();
+    private Collection<XmlAttachment> xmlAttachments = new ArrayList<XmlAttachment>();
 
     /**
      * Creates a new instance of Log
@@ -208,6 +210,44 @@ public class XmlLog implements Serializable, Comparable<XmlLog> {
     }
 
     /**
+     * Getter for log event start date.
+     *
+     * @return eventStart
+     */
+    @XmlAttribute
+    public Date getEventStart() {
+        return eventStart;
+    }
+
+    /**
+     * Setter for log event start date.
+     *
+     * @param eventStart
+     */
+    public void setEventStart(Date eventStart) {
+        this.eventStart = eventStart;
+    }
+    
+    /**
+     * Getter for log event end date.
+     *
+     * @return eventEnd
+     */
+    @XmlAttribute
+    public Date getEventEnd() {
+        return eventEnd;
+    }
+    
+    /**
+     * Setter for log event end date.
+     *
+     * @param eventEnd
+     */
+    public void setEventEnd(Date eventEnd) {
+        this.eventEnd = eventEnd;
+    }
+    
+    /**
      * Getter for log source IP.
      *
      * @return source IP
@@ -354,7 +394,7 @@ public class XmlLog implements Serializable, Comparable<XmlLog> {
     @XmlElement(name = "attachment")
     @JsonProperty("attachments")
     public Collection<XmlAttachment> getXmlAttachments() {
-        return attachments;
+        return xmlAttachments;
     }
 
     /**
@@ -362,8 +402,8 @@ public class XmlLog implements Serializable, Comparable<XmlLog> {
      *
      * @param attachments XmlAttachments
      */
-    public void setXmlAttachments(Collection<XmlAttachment> attachments) {
-        this.attachments = attachments;
+    public void setXmlAttachments(Collection<XmlAttachment> xmlAttachments) {
+        this.xmlAttachments = xmlAttachments;
     }
 
     /**
@@ -371,12 +411,12 @@ public class XmlLog implements Serializable, Comparable<XmlLog> {
      *
      * @param attachment
      */
-    public void addXmlAttachment(XmlAttachment attachment) {
-        this.attachments.add(attachment);
+    public void addXmlAttachment(XmlAttachment xmlAttachments) {
+        this.xmlAttachments.add(xmlAttachments);
     }
     
-    public void removeXmlAttachment(XmlAttachment attachment) {
-        this.attachments.remove(attachment);
+    public void removeXmlAttachment(XmlAttachment xmlAttachments) {
+        this.xmlAttachments.remove(xmlAttachments);
     }
 
     public int compareTo(XmlLog num) {

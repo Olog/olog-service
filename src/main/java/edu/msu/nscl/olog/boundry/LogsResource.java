@@ -9,8 +9,9 @@ package edu.msu.nscl.olog.boundry;
 import edu.msu.nscl.olog.entity.Log;
 import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.OlogException;
-import edu.msu.nscl.olog.OlogImpl;
+import edu.msu.nscl.olog.control.OlogImpl;
 import edu.msu.nscl.olog.UserManager;
+import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.XmlLog;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -73,7 +74,7 @@ public class LogsResource {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
-            List<Log> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
+            List<BitemporalLog> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
             XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class);
             Response r = Response.ok(xmlresult).build();
             log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
@@ -92,9 +93,10 @@ public class LogsResource {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
-            List<Log> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
+            List<BitemporalLog> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
             List<XmlLog> xmlresult = new ArrayList<XmlLog>();
-            for(Log l:result){
+            // should be a faster map
+            for(BitemporalLog l:result){
                 xmlresult.add(DozerBeanMapperSingletonWrapper.getInstance().map(l, XmlLog.class));
             }
             Response r = Response.ok(xmlresult).build();
@@ -140,10 +142,10 @@ public class LogsResource {
             
             List<Log> result = cm.createOrReplaceLogs(log_data);
             XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class);
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
+            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
                     + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
             Response r = Response.ok(xmlresult).build();
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
+            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
             return r;
         } catch (OlogException e) {
@@ -177,10 +179,10 @@ public class LogsResource {
             
             List<Log> result = cm.createOrReplaceLogs(log_data);
             XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class);
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
+            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
                     + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
             Response r = Response.ok(xmlresult).build();
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
+            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
             return r;
         } catch (OlogException e) {
@@ -251,7 +253,7 @@ public class LogsResource {
             Log result = cm.createOrReplaceLog(logId, log_data);
             XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class);
             Response r = Response.ok(xmlresult).build();
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
+            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + XmlLog.toLogger(xmlresult));
             return r;
         } catch (OlogException e) {
@@ -292,7 +294,7 @@ public class LogsResource {
             result = cm.updateLog(logId, log_data);
             XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class);
             Response r = Response.ok(xmlresult).build();
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
+            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLog.toLogger(xmlresult));
             return r;
         } catch (OlogException e) {
@@ -321,7 +323,7 @@ public class LogsResource {
             }
             cm.removeLog(logId);
             Response r = Response.ok().build();
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
+            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()

@@ -19,6 +19,11 @@
             <a>attributes</a>
             <b>xmlProperties</b>
         </field>
+        <field type="one-way" custom-converter=
+         "edu.msu.nscl.olog.control.XmlAttachmentConverter">
+            <a>entry.id</a>
+            <b>xmlAttachments</b>
+        </field>
     </mapping>
     <mapping>
         <class-a>java.util.ArrayList</class-a>
@@ -29,5 +34,69 @@
             <a-hint>edu.msu.nscl.olog.entity.Log</a-hint>
             <b-hint>edu.msu.nscl.olog.entity.XmlLog</b-hint>
         </field>
+    </mapping>
+    <mapping>
+        <class-a>edu.msu.nscl.olog.entity.BitemporalLog</class-a>
+        <class-b>edu.msu.nscl.olog.entity.XmlLog</class-b>
+        <field>
+            <a>log.entry.id</a>
+            <b>id</b>
+        </field>
+        <field>
+            <a>log.version</a>
+            <b>version</b>
+        </field>
+        <field>
+            <a>log.owner</a>
+            <b>owner</b>
+        </field>
+        <field>
+            <a>log.source</a>
+            <b>source</b>
+        </field>
+        <field>
+            <a>log.level</a>
+            <b>level</b>
+        </field>
+        <field>
+            <a>log.entry.state</a>
+            <b>state</b>
+        </field>
+        <field>
+            <a>log.modifiedDate</a>
+            <b>modifiedDate</b>
+        </field>
+        <field>
+            <a>log.entry.createdDate</a>
+            <b>createdDate</b>
+        </field>
+        <field>
+            <a>log.description</a>
+            <b>description</b>
+        </field>
+        <field>
+            <a>log.logbooks</a>
+            <b>logbooks</b>
+        </field>
+        <field type="one-way" custom-converter=
+                "edu.msu.nscl.olog.control.IntervalConverter"
+                custom-converter-param="validitystart">
+            <a>this</a>
+            <b>eventStart</b>
+        </field>
+        <field>
+            <a>log.tags</a>
+            <b>tags</b>
+        </field>
+        <field custom-converter=
+         "edu.msu.nscl.olog.control.XmlPropertyConverter">
+            <a>log.attributes</a>
+            <b>xmlProperties</b>
+        </field>
+        <field type="one-way" custom-converter=
+         "edu.msu.nscl.olog.control.XmlAttachmentConverter">
+            <a>log.entry.id</a>
+            <b>xmlAttachments</b>
+        </field>   
     </mapping>
 </mappings>

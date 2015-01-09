@@ -26,6 +26,10 @@ public class XmlAttachments {
     public XmlAttachments(XmlAttachment attachment) {
         attachments.add(attachment);
     }
+    
+    public void XmlAttachments(Collection<XmlAttachment> items) {
+        this.attachments = items;
+    }
 
     /**
      * Returns a collection of XmlAttachment.
@@ -36,7 +40,7 @@ public class XmlAttachments {
     public Collection<XmlAttachment> getAttachments() {
         return attachments;
     }
-
+    
     /**
      * Sets the collection of attachments.
      *

@@ -25,9 +25,15 @@ public class Entry implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+    
     @Column(name = "created", nullable = false, insertable = true, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "state", columnDefinition="default 'Active'")
+    private State state = State.Active;
+        
     @OneToMany(fetch=FetchType.LAZY, cascade = CascadeType.ALL , orphanRemoval=true)
     @JoinColumn(name="entry_id")
     private Collection<BitemporalLog> logs = new LinkedList<BitemporalLog>();
@@ -93,6 +99,14 @@ public class Entry implements Serializable {
         this.createdDate = createdDate;
     }
 
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

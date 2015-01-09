@@ -11,7 +11,7 @@
     <class>edu.msu.nscl.olog.entity.Attribute</class>
     <class>edu.msu.nscl.olog.entity.Log</class>
     <class>edu.msu.nscl.olog.entity.BitemporalLog</class>
-    <exclude-unlisted-classes>true</exclude-unlisted-classes>
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.logger" value="ServerLogger"/>
       <property name="eclipselink.logging.level" value="FINE"/>

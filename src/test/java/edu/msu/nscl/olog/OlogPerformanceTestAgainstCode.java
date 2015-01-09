@@ -13,6 +13,7 @@ import edu.msu.nscl.olog.entity.Tags;
 import edu.msu.nscl.olog.entity.Logbook;
 import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.boundry.AttachmentManager;
+import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.Log;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.*;
@@ -102,10 +103,10 @@ public class OlogPerformanceTestAgainstCode {
         MultivaluedMap<String, String> map = new MetadataMap();
         map.add("sweep.crystal_name", "ECF_229");
         long startTime = System.nanoTime();
-        List<Log> logs = LogManager.findLog(map);
+        List<BitemporalLog> logs = LogManager.findLog(map);
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
-        logId = logs.size() > 0 ? logs.get(0).getId(): 1l;
+        logId = logs.size() > 0 ? logs.get(0).getLog().getId(): 1l;
         out.write(dbTypeText + " Time consume to find a log by attribute is: " + totalTime + "(s)");
         out.newLine();
     }
@@ -114,7 +115,7 @@ public class OlogPerformanceTestAgainstCode {
         MultivaluedMap<String, String> map = new MetadataMap();
         map.add("search", "Energy");
         long startTime = System.nanoTime();
-        List<Log> logs = LogManager.findLog(map);
+        List<BitemporalLog> logs = LogManager.findLog(map);
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to find a log by description is: " + totalTime + "(s)");
@@ -149,7 +150,7 @@ public class OlogPerformanceTestAgainstCode {
         MultivaluedMap<String, String> map = new MetadataMap();
         map.add("start", String.valueOf(DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH).getTime() / 1000));
         long startTime = System.nanoTime();
-        List<Log> logs = LogManager.findLog(map);
+        List<BitemporalLog> logs = LogManager.findLog(map);
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to find a log by date is: " + totalTime + "(s)");

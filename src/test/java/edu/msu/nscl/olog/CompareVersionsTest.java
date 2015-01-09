@@ -4,6 +4,7 @@ import edu.msu.nscl.olog.boundry.LogManager;
 import edu.msu.nscl.olog.entity.XmlAttachments;
 import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.boundry.AttachmentManager;
+import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.Log;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.AfterClass;
@@ -58,8 +59,8 @@ public class CompareVersionsTest {
         map.add("sweep.crystal_name", "ECF_229");
         map.add("limit", "20");
         map.add("page", "1");
-        List<Log> newLogs = LogManager.findLog(map);
-        List<Log> oldLogs = LogManagerTest.findLog(map);
+        List<BitemporalLog> newLogs = LogManager.findLog(map);
+        List<BitemporalLog> oldLogs = LogManagerTest.findLog(map);
         assertEquals(newLogs.size(), oldLogs.size());
         for(int i =0 ; i< newLogs.size() ; i++) {
             compareLogs(newLogs.get(i), oldLogs.get(i));
@@ -85,17 +86,17 @@ public class CompareVersionsTest {
     public void findLogByDate() throws OlogException {
         MultivaluedMap<String, String> map = new MetadataMap();
         map.add("start", String.valueOf(DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH).getTime() / 1000));
-        List<Log> newLogs = LogManager.findLog(map);
-        List<Log> oldLogs = LogManagerTest.findLog(map);
+        List<BitemporalLog> newLogs = LogManager.findLog(map);
+        List<BitemporalLog> oldLogs = LogManagerTest.findLog(map);
         assertEquals(newLogs.size(), oldLogs.size());
         for(int i =0 ; i< newLogs.size() ; i++) {
             compareLogs(newLogs.get(i), oldLogs.get(i));
         }
     }
 
-    private void compareLogs(final Log firstLog, final Log secondLog) {
+    private void compareLogs(final BitemporalLog firstLog, final BitemporalLog secondLog) {
         assertEquals(firstLog, secondLog);
-        assertEquals(firstLog.getAttributes(), secondLog.getAttributes());
+        assertEquals(firstLog.getLog().getAttributes(), secondLog.getLog().getAttributes());
     }
 
     private void mockPersistance() {

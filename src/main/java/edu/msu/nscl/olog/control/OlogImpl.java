@@ -3,8 +3,10 @@
  * Copyright (c) 2010 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
-package edu.msu.nscl.olog;
+package edu.msu.nscl.olog.control;
 
+import edu.msu.nscl.olog.OlogException;
+import edu.msu.nscl.olog.UserManager;
 import edu.msu.nscl.olog.boundry.LogbookManager;
 import edu.msu.nscl.olog.boundry.LogManager;
 import edu.msu.nscl.olog.boundry.PropertyManager;
@@ -23,6 +25,7 @@ import edu.msu.nscl.olog.entity.XmlProperties;
 import edu.msu.nscl.olog.entity.Log;
 import edu.msu.nscl.olog.entity.Property;
 import edu.msu.nscl.olog.entity.Attribute;
+import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.LogAttribute;
 import edu.msu.nscl.olog.entity.Logbook;
 import edu.msu.nscl.olog.entity.XmlLog;
@@ -138,8 +141,7 @@ public class OlogImpl {
      * @return Logs container with all found logs and their logbooks
      * @throws OlogException wrapping an SQLException
      */
-    public List<Log> findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws OlogException, RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        //return FindLogsQuery.findLogsByMultiMatch(matches);
+    public List<BitemporalLog> findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws OlogException, RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
         return LogManager.findLog(matches);
     }
 
@@ -356,7 +358,7 @@ public class OlogImpl {
         if (data.getLogs().size() > 0) {
             MultivaluedMap<String, String> map = new MetadataMap();
             map.add("tag", tagName);
-            List<Log> logs = LogManager.findLog(map);
+            List<BitemporalLog> logs = LogManager.findLog(map);
             List<Log> logsData = new ArrayList<Log>();
             for (Log log : data.getLogs()) {
                 logsData.add(LogManager.findLog(log.getId()));
@@ -365,9 +367,9 @@ public class OlogImpl {
                             "Log entry " + log.getId() + " does not exists.");
                 }
             }
-            for (Log log : logs) {
-                log.removeTag(tag);
-                LogManager.create(log);
+            for (BitemporalLog log : logs) {
+                log.getLog().removeTag(tag);
+                LogManager.create(log.getLog());
             }
             for (Log log : logsData) {
                 log.addTag(tag);
