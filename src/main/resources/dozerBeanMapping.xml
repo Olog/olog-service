@@ -84,6 +84,12 @@
             <a>this</a>
             <b>eventStart</b>
         </field>
+        <field type="one-way" custom-converter=
+                "edu.msu.nscl.olog.control.IntervalConverter"
+                custom-converter-param="validityend">
+            <a>this</a>
+            <b>eventEnd</b>
+        </field>
         <field>
             <a>log.tags</a>
             <b>tags</b>

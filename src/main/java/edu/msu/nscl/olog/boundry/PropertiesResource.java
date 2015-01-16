@@ -137,6 +137,7 @@ public class PropertiesResource {
     @POST
     @Path("{propName}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response appendProperty(@PathParam("propName") String newProperty, XmlProperty data) {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
@@ -190,13 +191,14 @@ public class PropertiesResource {
     @PUT
     @Path("{propName}/{logId}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response addAttribute(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("propName") String property, @PathParam("logId") Long logId, XmlProperty data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         try {
             cm.checkPropertyName(property, data);
-            LogAttribute logAttribute = DozerBeanMapperSingletonWrapper.getInstance().map(data, LogAttribute.class, "v1");
+            LogAttribute logAttribute = DozerBeanMapperSingletonWrapper.getInstance().map(data, LogAttribute.class);
             Log result = cm.addAttribute(logId, logAttribute);
             XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class, "v1");
             Response r = Response.ok(xmlresult).build();

@@ -5,17 +5,9 @@
  */
 package edu.msu.nscl.olog.control;
 
-import edu.msu.nscl.olog.OlogException;
-import edu.msu.nscl.olog.boundry.AttachmentManager;
 import edu.msu.nscl.olog.entity.BitemporalLog;
-import edu.msu.nscl.olog.entity.XmlAttachments;
-import java.util.Collection;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dozer.DozerConverter;
-import org.dozer.Mapper;
-import org.dozer.MapperAware;
 
 /**
  *
@@ -29,7 +21,17 @@ public class IntervalConverter extends DozerConverter<BitemporalLog, Date> {
 
     @Override
     public Date convertTo(BitemporalLog source, Date destination) {
-       return source.getRecordInterval().getStart().toDate();
+       String param = this.getParameter();
+       switch(param){
+           case "validitystart":
+               return source.getRecordInterval().getStart().toDate();
+           case "validityend":
+               return source.getRecordInterval().getEnd().toDate();
+           default:
+               throw new UnsupportedOperationException("Not supported yet.");
+       }
+       
+       
     }
 
     @Override
