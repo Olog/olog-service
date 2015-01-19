@@ -17,15 +17,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ws.rs.core.Response;
 import org.dozer.DozerConverter;
 import org.dozer.Mapper;
 import org.dozer.MapperAware;
+import org.dozer.MappingException;
 
 /**
  *
@@ -65,16 +63,16 @@ public class XmlPropertyConverter extends DozerConverter<Collection, Set> implem
                             logattrs.add(logattr);
                         } else {
                             throw new OlogException(Response.Status.NOT_FOUND,
-                                    "Log entry  property attribute:" + prop.getName() + newAtt.getName() + " does not exists.");
+                                    "Log entry  property attribute:" + prop.getName() + att.getKey() + " does not exists.");
                         }
                     }
                     i++;
                 } else {
                     throw new OlogException(Response.Status.NOT_FOUND,
-                            "Log entry prop:" + prop.getName() + " does not exists.");
+                            "Log entry prop:" + p.getName() + " does not exists.");
                 }
-            } catch (OlogException ex) {
-                Logger.getLogger(XmlPropertyConverter.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception ex) {
+                throw new MappingException(ex.getMessage());
             }
         }
         return logattrs;

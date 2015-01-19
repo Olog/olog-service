@@ -65,7 +65,7 @@ public class PropertiesResource {
         try {
             result = cm.listProperties();
             Response r = Response.ok(result).build();
-            audit.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
+            audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.getProperties().size() + " properties");
             return r;
         } catch (OlogException e) {
@@ -94,7 +94,7 @@ public class PropertiesResource {
             cm.checkPropertyName(newProperty, data);
             result = cm.addProperty(data, true);
             Response r = Response.ok(result).build();
-            audit.fine(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
+            audit.info(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|PUT|ERROR|"
@@ -118,7 +118,7 @@ public class PropertiesResource {
         try {
             result = cm.listAttributes(property);
             Response r = Response.ok(result).build();
-            audit.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
+            audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
@@ -146,7 +146,7 @@ public class PropertiesResource {
             cm.checkPropertyName(newProperty, data);
             result = cm.addProperty(data, false);
             Response r = Response.ok(result).build();
-            audit.fine(user + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus());
+            audit.info(user + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|POST|ERROR|"
@@ -171,7 +171,7 @@ public class PropertiesResource {
         try {
             cm.removeProperty(property);
             Response r = Response.ok().build();
-            audit.fine(user + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
+            audit.info(user + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|DELETE|ERROR|"
@@ -202,7 +202,7 @@ public class PropertiesResource {
             Log result = cm.addAttribute(logId, logAttribute);
             XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class, "v1");
             Response r = Response.ok(xmlresult).build();
-            audit.fine(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
+            audit.info(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|PUT|ERROR|"
@@ -233,7 +233,7 @@ public class PropertiesResource {
             result = cm.removeAttribute(logId, logAttribute);
             XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class, "v1");
             Response r = Response.ok(xmlresult).build();
-            audit.fine(user + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
+            audit.info(user + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|DELETE|ERROR|"

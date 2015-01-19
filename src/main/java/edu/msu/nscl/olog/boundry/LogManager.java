@@ -35,6 +35,7 @@ import javax.persistence.metamodel.SingularAttribute;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import org.eclipse.persistence.jpa.JpaQuery;
+import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
 /**
@@ -579,6 +580,14 @@ public class LogManager {
      * @throws OlogException wrapping an SQLException
      */
     public static Log create(Log log) throws OlogException {
+         return create(log, TimeUtils.fromNow());
+    }
+    
+    public static Log create(Log log, DateTime start) throws OlogException {
+        return create(log, TimeUtils.from(start));
+    }
+    
+    public static Log create(Log log, Interval validity) throws OlogException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
             if (log.getLevel() == null) {
@@ -641,14 +650,14 @@ public class LogManager {
             if (log.getEntry().getId() != null) {
                 Entry entry = (Entry) em.find(Entry.class, log.getEntry().getId());
                 newLog.setState(State.Active);
-                entry.addLog(newLog);
+                entry.log().set(log, validity);
                 newLog.setEntry(entry);
                 newLog.setVersion(String.valueOf(entry.log().getEvolution().size()));
                 em.merge(entry);
             } else {
                 Entry entry = new Entry();
                 newLog.setState(State.Active);
-                entry.addLog(newLog);
+                entry.log().set(newLog, validity);
                 newLog.setEntry(entry);
                 newLog.setVersion("1");
                 em.persist(entry);

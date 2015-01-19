@@ -62,7 +62,7 @@ public class TagsResource {
         try {
             result = cm.listTags();
             Response r = Response.ok(result).build();
-            log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
+            audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.getTags().size() + " tags");
             return r;
         } catch (OlogException e) {
@@ -90,7 +90,7 @@ public class TagsResource {
             cm.checkValidNameAndOwner(data);
             result = cm.createOrReplaceTags(data);
             Response r = Response.ok(result).build();
-            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + Tags.toLogger(data));
             return r;
         } catch (OlogException e) {
@@ -122,7 +122,7 @@ public class TagsResource {
             } else {
                 r = Response.ok(result).build();
             }
-            log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
+            audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
@@ -154,7 +154,7 @@ public class TagsResource {
             cm.checkNameMatchesPayload(tag, data);
             result = cm.createOrReplaceTag(tag, data);
             Response r = Response.ok(result).build();
-            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + Tag.toLogger(data));
             return r;
         } catch (OlogException e) {
@@ -185,7 +185,7 @@ public class TagsResource {
         try {
             result = cm.updateTag(tag, data);
             Response r = Response.ok(result).build();
-            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + Tag.toLogger(data));
             return r;
         } catch (OlogException e) {
@@ -211,7 +211,7 @@ public class TagsResource {
         try {
             cm.removeExistingTag(tag);
             Response r = Response.ok().build();
-            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()
@@ -240,7 +240,7 @@ public class TagsResource {
         try {
             result = cm.addSingleTag(tag, logId);
             Response r = Response.ok(result).build();
-            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
@@ -266,7 +266,7 @@ public class TagsResource {
         try {
             cm.removeSingleTag(tag, logId);
             Response r = Response.ok().build();
-            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()

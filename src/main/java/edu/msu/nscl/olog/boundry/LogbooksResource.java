@@ -63,7 +63,7 @@ public class LogbooksResource {
         try {
             result = cm.listLogbooks();
             Response r = Response.ok(result).build();
-            log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
+            log.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.getLogbooks().size() + " logbooks");
             return r;
         } catch (OlogException e) {
@@ -94,7 +94,7 @@ public class LogbooksResource {
             }
             result = cm.createOrReplaceLogbooks(data);
             Response r = Response.ok(result).build();
-            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + Logbooks.toLogger(data));
             return r;
         } catch (OlogException e) {
@@ -126,7 +126,7 @@ public class LogbooksResource {
             } else {
                 r = Response.ok(result).build();
             }
-            log.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
+            log.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
@@ -162,7 +162,7 @@ public class LogbooksResource {
             }
             result = cm.createOrReplaceLogbook(logbookName, data);
             Response r = Response.ok(result).build();
-            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + Logbook.toLogger(data));
             return r;
         } catch (OlogException e) {
@@ -197,7 +197,7 @@ public class LogbooksResource {
             }
             result = cm.createOrReplaceLogbook(logbook, data);
             Response r = Response.ok(result).build();
-            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + Logbook.toLogger(data));
             return r;
         } catch (OlogException e) {
@@ -226,7 +226,7 @@ public class LogbooksResource {
             }
             cm.removeExistingLogbook(logbook);
             Response r = Response.ok().build();
-            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()
@@ -260,7 +260,7 @@ public class LogbooksResource {
             }
             result = cm.addSingleLogbook(logbook, logId);
             Response r = Response.ok(result).build();
-            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + Logbook.toLogger(data));
             return r;
         } catch (OlogException e) {
@@ -290,7 +290,7 @@ public class LogbooksResource {
             }
             cm.removeSingleLogbook(logbook, logId);
             Response r = Response.ok().build();
-            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()

@@ -61,7 +61,7 @@ public class AttachmentsResource {
         try {
             result = cm.findAttachmentsById(logId);
             Response r = Response.ok(result).build();
-            audit.fine(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
+            audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
 
             return r;
         } catch (OlogException e) {
@@ -91,7 +91,7 @@ public class AttachmentsResource {
             } else {
                 r = Response.ok((Object)result.getContent()).type(result.getMimeType()).build();
             }
-            audit.fine( user+"|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
+            audit.info( user+"|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             
@@ -120,7 +120,7 @@ public class AttachmentsResource {
             } else {
                 r = Response.ok((Object)result.getContent()).type(result.getMimeType()).build();
             }
-            audit.fine( user+"|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
+            audit.info( user+"|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             
@@ -162,7 +162,7 @@ public class AttachmentsResource {
             result = cm.createAttachment(attachment, logId);
 
             Response r = Response.ok(result).build();
-            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus());
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus());
             
             return r;
         } catch (OlogException e) {
@@ -210,7 +210,7 @@ public class AttachmentsResource {
             String output = "File uploaded to : " + logId.toString()+"/"+incommingAttachment.getContentDisposition().getParameter("filename");
             Response r = Response.status(200).entity(output).build();
             
-            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus() + " | " + output);
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus() + " | " + output);
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|"
@@ -242,7 +242,7 @@ public class AttachmentsResource {
             }
             cm.removeAttachment(fileName,logId);
             Response r = Response.ok().build();
-            audit.fine(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()

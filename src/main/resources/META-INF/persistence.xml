@@ -14,7 +14,7 @@
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.logger" value="ServerLogger"/>
-      <property name="eclipselink.logging.level" value="FINE"/>
+      <property name="eclipselink.logging.level" value="INFO"/>
       <property name="eclipselink.session.customizer" value="edu.msu.nscl.olog.JPATomcatSessionCustomizer"/>
       <property name="eclipselink.cache.shared.default" value="true"/>
       <property name="eclipselink.query-cache" value="true"/>
