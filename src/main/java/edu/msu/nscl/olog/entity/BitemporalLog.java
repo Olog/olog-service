@@ -57,7 +57,7 @@ public class BitemporalLog extends BitemporalWrapper<Log> {
     }
 
     @Override
-    public Bitemporal copyWith(Interval validityInterval) {
+    public BitemporalLog copyWith(Interval validityInterval) {
         return new BitemporalLog(log,validityInterval);
     }
     

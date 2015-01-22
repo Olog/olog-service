@@ -31,7 +31,7 @@ import org.joda.time.Interval;
  * @author Erwin Vervaet
  * @author Christophe Vanfleteren
  */
-public interface Bitemporal {
+public interface Bitemporal<T extends Bitemporal<T>> {
 
         /**
          * Returns the interval in which this bitemporal object is valid.
@@ -56,6 +56,6 @@ public interface Bitemporal {
          * @param validityInterval Validity interval of the new object.
          * @return New bitemporal object with the given validity and its value retained from its original.
          */
-        public Bitemporal copyWith(Interval validityInterval);
+        public T copyWith(Interval validityInterval);
 
 }

@@ -30,7 +30,7 @@ import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
  */
 @Path("/attachments/")
 @CrossOriginResourceSharing(allowAllOrigins = true, allowCredentials = true)
-public class AttachmentsResource {
+public class AttachmentResource {
 
     @Context
     private UriInfo uriInfo;
@@ -41,7 +41,7 @@ public class AttachmentsResource {
     private Logger log = Logger.getLogger(this.getClass().getName());
 
     /** Creates a new instance of AttachmentsResource */
-    public AttachmentsResource() {
+    public AttachmentResource() {
     }
     
     

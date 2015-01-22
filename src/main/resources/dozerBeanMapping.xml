@@ -82,13 +82,13 @@
                 "edu.msu.nscl.olog.control.IntervalConverter"
                 custom-converter-param="validitystart">
             <a>this</a>
-            <b>eventStart</b>
+            <b>this</b>
         </field>
         <field type="one-way" custom-converter=
                 "edu.msu.nscl.olog.control.IntervalConverter"
                 custom-converter-param="validityend">
             <a>this</a>
-            <b>eventEnd</b>
+            <b>this</b>
         </field>
         <field>
             <a>log.tags</a>

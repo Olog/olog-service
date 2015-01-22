@@ -4,8 +4,6 @@
  */
 package edu.msu.nscl.olog.entity.bitemporal;
 
-import edu.msu.nscl.olog.entity.bitemporal.Bitemporal;
-import edu.msu.nscl.olog.entity.bitemporal.TimeUtils;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import javax.persistence.Column;

@@ -69,17 +69,19 @@ public class CompareVersionsTest {
 
 
     public void createLogTest() throws OlogException {
-        Log log = LogManager.findLog(2006252l);
+        BitemporalLog bitemporalLog = LogManager.findLog(2006252l);
+        Log log = bitemporalLog.getLog();
         log.setId(null);
         log.setEntry(null);
         log.setVersion(null);
         log.setOwner("testLog");
-        Log newLog = LogManager.create(log);
-        Log oldLog = LogManager.create(log);
-        assertEquals(newLog.getAttributes(), oldLog.getAttributes());
-        assertEquals(newLog.getDescription(), oldLog.getDescription());
-        assertEquals(newLog.getOwner(), oldLog.getOwner());
-        assertEquals(newLog.getSource(), oldLog.getSource());
+        bitemporalLog.setLog(log);
+        BitemporalLog newLog = LogManager.create(bitemporalLog);
+        BitemporalLog oldLog = LogManager.create(bitemporalLog);
+        assertEquals(newLog.getLog().getAttributes(), oldLog.getLog().getAttributes());
+        assertEquals(newLog.getLog().getDescription(), oldLog.getLog().getDescription());
+        assertEquals(newLog.getLog().getOwner(), oldLog.getLog().getOwner());
+        assertEquals(newLog.getLog().getSource(), oldLog.getLog().getSource());
     }
 
 

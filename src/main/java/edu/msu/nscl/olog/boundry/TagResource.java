@@ -34,7 +34,7 @@ import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
  */
 @Path("/tags/")
 @CrossOriginResourceSharing(allowAllOrigins = true, allowCredentials = true)
-public class TagsResource {
+public class TagResource {
     @Context
     private UriInfo uriInfo;
     @Context
@@ -44,7 +44,7 @@ public class TagsResource {
     private Logger log = Logger.getLogger(this.getClass().getName());
 
     /** Creates a new instance of TagsResource */
-    public TagsResource() {
+    public TagResource() {
     }
 
     /**

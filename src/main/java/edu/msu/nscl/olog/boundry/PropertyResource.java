@@ -6,6 +6,7 @@ package edu.msu.nscl.olog.boundry;
 import edu.msu.nscl.olog.entity.Log;
 import edu.msu.nscl.olog.OlogException;
 import edu.msu.nscl.olog.control.OlogImpl;
+import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.LogAttribute;
 import edu.msu.nscl.olog.entity.XmlLog;
 import edu.msu.nscl.olog.entity.XmlProperties;
@@ -38,7 +39,7 @@ import org.dozer.DozerBeanMapperSingletonWrapper;
  */
 @Path("/properties/")
 @CrossOriginResourceSharing(allowAllOrigins = true, allowCredentials = true)
-public class PropertiesResource {
+public class PropertyResource {
 
     @Context
     private UriInfo uriInfo;
@@ -48,7 +49,7 @@ public class PropertiesResource {
     private Logger log = Logger.getLogger(this.getClass().getName());
 
     /** Creates a new instance of PropertiesResource */
-    public PropertiesResource() {
+    public PropertyResource() {
     }
 
     /**
@@ -199,7 +200,7 @@ public class PropertiesResource {
         try {
             cm.checkPropertyName(property, data);
             LogAttribute logAttribute = DozerBeanMapperSingletonWrapper.getInstance().map(data, LogAttribute.class);
-            Log result = cm.addAttribute(logId, logAttribute);
+            BitemporalLog result = cm.addAttribute(logId, logAttribute);
             XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class, "v1");
             Response r = Response.ok(xmlresult).build();
             audit.info(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
@@ -226,7 +227,7 @@ public class PropertiesResource {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
-        Log result = null;
+        BitemporalLog result = null;
         try {
             cm.checkPropertyName(property, data);
             LogAttribute logAttribute = DozerBeanMapperSingletonWrapper.getInstance().map(data, LogAttribute.class, "v1");

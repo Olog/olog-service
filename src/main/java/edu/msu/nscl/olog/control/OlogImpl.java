@@ -14,7 +14,6 @@ import edu.msu.nscl.olog.boundry.TagManager;
 import edu.msu.nscl.olog.entity.Tags;
 import edu.msu.nscl.olog.entity.Logbooks;
 import edu.msu.nscl.olog.entity.XmlProperty;
-import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.entity.Tag;
 import edu.msu.nscl.olog.entity.XmlAttachments;
 import edu.msu.nscl.olog.entity.XmlAttachment;
@@ -29,6 +28,7 @@ import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.LogAttribute;
 import edu.msu.nscl.olog.entity.Logbook;
 import edu.msu.nscl.olog.entity.XmlLog;
+import edu.msu.nscl.olog.entity.bitemporal.TimeUtils;
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -36,6 +36,8 @@ import javax.jcr.*;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.impl.MetadataMap;
+import org.joda.time.DateTime;
+import org.joda.time.Interval;
 
 /**
  * Central business logic layer that implements all directory operations.
@@ -114,7 +116,7 @@ public class OlogImpl {
      * @return Log with found log and its logbooks
      * @throws OlogException on SQLException
      */
-    public Log findLogById(Long logId) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public BitemporalLog findLogById(Long logId) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
         return LogManager.findLog(logId);
     }
 
@@ -125,7 +127,7 @@ public class OlogImpl {
      * @return Log with found log and its logbooks
      * @throws OlogException on SQLException
      */
-    public Log findLogById(Long logId, MultivaluedMap<String, String> matches) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public BitemporalLog findLogById(Long logId, MultivaluedMap<String, String> matches) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
         if (matches != null && matches.containsKey("version") && !matches.get("version").isEmpty()) {
             return LogManager.findLogWithVersion(logId, matches.get("version").iterator().next());
         } else {
@@ -152,7 +154,7 @@ public class OlogImpl {
      * @throws OlogException wrapping an SQLException
      */
     public void removeLog(Long logId) throws OlogException {
-        Log log = LogManager.findLog(logId);
+        BitemporalLog log = LogManager.findLog(logId);
         if (log != null) {
             LogManager.remove(logId);
         } else {
@@ -202,7 +204,7 @@ public class OlogImpl {
      */
     public Logbook createOrReplaceLogbook(String logbookName, Logbook data) throws OlogException {
         Logbook logbook = LogbookManager.create(logbookName, data.getOwner());
-        List<Log> logsData = new ArrayList<Log>();
+        List<BitemporalLog> logsData = new ArrayList<BitemporalLog>();
         for (Log log : data.getLogs()) {
             logsData.add(LogManager.findLog(log.getId()));
             if (log == null) {
@@ -210,8 +212,8 @@ public class OlogImpl {
                         "Log entry " + log.getId() + " does not exists.");
             }
         }
-        for (Log log : logsData) {
-            log.addLogbook(logbook);
+        for (BitemporalLog log : logsData) {
+            log.getLog().addLogbook(logbook);
             LogManager.create(log);
         }
         return logbook;
@@ -244,11 +246,11 @@ public class OlogImpl {
      * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
     public Logbook addSingleLogbook(String logbookName, Long logId) throws OlogException {
-        Log log = LogManager.findLog(logId);
-        Set<Logbook> logbooks = log.getLogbooks();
+        BitemporalLog log = LogManager.findLog(logId);
+        Set<Logbook> logbooks = log.getLog().getLogbooks();
         Logbook logbook = LogbookManager.findLogbook(logbookName);
         logbooks.add(logbook);
-        log.setLogbooks(logbooks);
+        log.getLog().setLogbooks(logbooks);
         LogManager.create(log);
         return logbook;
     }
@@ -282,8 +284,8 @@ public class OlogImpl {
      * @throws OlogException wrapping an SQLException
      */
     public void removeSingleLogbook(String logbookName, Long logId) throws OlogException {
-        Log log = LogManager.findLog(logId);
-        Set<Logbook> logbooks = log.getLogbooks();
+        BitemporalLog log = LogManager.findLog(logId);
+        Set<Logbook> logbooks = log.getLog().getLogbooks();
         Logbook logbook = LogbookManager.findLogbook(logbookName);
         if (logbooks.contains(logbook) && logbooks.size() > 1) {
             logbooks.remove(logbook);
@@ -291,7 +293,7 @@ public class OlogImpl {
             throw new OlogException(Response.Status.BAD_REQUEST,
                     "Log entry " + logId.toString() + " does not have logbook:" + logbook.getName() + ".");
         }
-        log.setLogbooks(logbooks);
+        log.getLog().setLogbooks(logbooks);
         LogManager.create(log);
     }
 
@@ -326,7 +328,7 @@ public class OlogImpl {
     public Tag updateTag(String tagName, Tag data) throws OlogException {
         Tag tag = TagManager.create(tagName);
         if (data.getLogs().size() > 0) {
-            List<Log> logsData = new ArrayList<Log>();
+            List<BitemporalLog> logsData = new ArrayList<BitemporalLog>();
             for (Log log : data.getLogs()) {
                 logsData.add(LogManager.findLog(log.getId()));
                 if (log == null) {
@@ -334,8 +336,8 @@ public class OlogImpl {
                             "Log entry " + log.getId() + " does not exists.");
                 }
             }
-            for (Log log : logsData) {
-                log.addTag(tag);
+            for (BitemporalLog log : logsData) {
+                log.getLog().addTag(tag);
                 LogManager.create(log);
             }
         }
@@ -359,7 +361,7 @@ public class OlogImpl {
             MultivaluedMap<String, String> map = new MetadataMap();
             map.add("tag", tagName);
             List<BitemporalLog> logs = LogManager.findLog(map);
-            List<Log> logsData = new ArrayList<Log>();
+            List<BitemporalLog> logsData = new ArrayList<BitemporalLog>();
             for (Log log : data.getLogs()) {
                 logsData.add(LogManager.findLog(log.getId()));
                 if (log == null) {
@@ -369,10 +371,10 @@ public class OlogImpl {
             }
             for (BitemporalLog log : logs) {
                 log.getLog().removeTag(tag);
-                LogManager.create(log.getLog());
+                LogManager.create(log);
             }
-            for (Log log : logsData) {
-                log.addTag(tag);
+            for (BitemporalLog log : logsData) {
+                log.getLog().addTag(tag);
                 LogManager.create(log);
             }
         }
@@ -413,11 +415,11 @@ public class OlogImpl {
      * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
     public Tag addSingleTag(String tagName, Long logId) throws OlogException {
-        Log log = LogManager.findLog(logId);
-        Set<Tag> tags = log.getTags();
+        BitemporalLog log = LogManager.findLog(logId);
+        Set<Tag> tags = log.getLog().getTags();
         Tag tag = TagManager.findTag(tagName);
         tags.add(tag);
-        log.setTags(tags);
+        log.getLog().setTags(tags);
         LogManager.create(log);
         return tag;
     }
@@ -440,8 +442,8 @@ public class OlogImpl {
      * @throws OlogException wrapping an SQLException
      */
     public void removeSingleTag(String tagName, Long logId) throws OlogException {
-        Log log = LogManager.findLog(logId);
-        Set<Tag> tags = log.getTags();
+        BitemporalLog log = LogManager.findLog(logId);
+        Set<Tag> tags = log.getLog().getTags();
         Tag tag = TagManager.findTag(tagName);
         if (tags.contains(tag)) {
             tags.remove(tag);
@@ -449,7 +451,7 @@ public class OlogImpl {
             throw new OlogException(Response.Status.BAD_REQUEST,
                     "Log entry " + logId.toString() + " does not have tag:" + tag.getName() + ".");
         }
-        log.setTags(tags);
+        log.getLog().setTags(tags);
         LogManager.create(log);
     }
 
@@ -507,27 +509,27 @@ public class OlogImpl {
     /**
      * Adds a new property attribute to a log entry.
      *
-     * @param logId Long  log that the property attribute will be associated with
-     * @param data Property  incoming payload
+     * @param logId Long log that the property attribute will be associated with
+     * @param data Property incoming payload
      * @throws OlogException wrapping an SQLException
      */
-    public Log addAttribute(Long logId, LogAttribute data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public BitemporalLog addAttribute(Long logId, LogAttribute data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
 
-        Log log = LogManager.findLog(logId);
-        Set<LogAttribute> currentLogAttributes = log.getAttributes();
-        data.setLog(log);
+        BitemporalLog log = LogManager.findLog(logId);
+        Set<LogAttribute> currentLogAttributes = log.getLog().getAttributes();
+        data.setLog(log.getLog());
         data.setAttributeId(data.getId());
-        data.setLogId(log.getId());
+        data.setLogId(log.getLog().getId());
         currentLogAttributes.add(data);
-        log.setAttributes(currentLogAttributes);
-        
+        log.getLog().setAttributes(currentLogAttributes);
+
         return LogManager.create(log);
     }
 
     /**
      * Remove a property.
      *
-     * @param  propertyName String of the property to be removed
+     * @param propertyName String of the property to be removed
      * @throws OlogException wrapping an SQLException
      */
     public void removeProperty(String propertyName) throws OlogException {
@@ -538,17 +540,17 @@ public class OlogImpl {
      * Removes a properties attribute from a log entry.
      *
      * @param logId Long log that the property attribute will be removed
-     * @param  data Property incoming payload
+     * @param data Property incoming payload
      * @throws OlogException wrapping an SQLException
      */
-    public Log removeAttribute(Long logId, LogAttribute data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        Log log = LogManager.findLog(logId);
-        Set<LogAttribute> currentLogAttributes = log.getAttributes();
-        data.setLog(log);
+    public BitemporalLog removeAttribute(Long logId, LogAttribute data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        BitemporalLog log = LogManager.findLog(logId);
+        Set<LogAttribute> currentLogAttributes = log.getLog().getAttributes();
+        data.setLog(log.getLog());
         data.setAttributeId(data.getId());
-        data.setLogId(log.getId());
+        data.setLogId(log.getLog().getId());
         currentLogAttributes.remove(data);
-        log.setAttributes(currentLogAttributes);
+        log.getLog().setAttributes(currentLogAttributes);
         return LogManager.create(log);
     }
 
@@ -562,10 +564,10 @@ public class OlogImpl {
      * @throws OlogException on ownership or name mismatch, or wrapping an
      * SQLException
      */
-    public Log createOrReplaceLog(Long logId, Log data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public BitemporalLog createOrReplaceLog(Long logId, BitemporalLog data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
         UserManager um = UserManager.getInstance();
-        data.setSource(um.getHostAddress());
-        data.setOwner(um.getUserName());
+        data.getLog().setSource(um.getHostAddress());
+        data.getLog().setOwner(um.getUserName());
         return LogManager.create(data);
     }
 
@@ -575,10 +577,10 @@ public class OlogImpl {
      * @param logs Logs data
      * @throws OlogException on ownership mismatch, or wrapping an SQLException
      */
-    public List<Log> createOrReplaceLogs(List<Log> logs) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        ListIterator<Log> iterator = logs.listIterator();
+    public List<BitemporalLog> createOrReplaceLogs(List<BitemporalLog> logs) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        ListIterator<BitemporalLog> iterator = logs.listIterator();
         while (iterator.hasNext()) {
-            Log log = iterator.next();
+            BitemporalLog log = iterator.next();
             iterator.set(createOneLog(log));
         }
         return logs;
@@ -591,10 +593,10 @@ public class OlogImpl {
      * @throws OlogException on ownership or name mismatch, or wrapping an
      * SQLException
      */
-    private Log createOneLog(Log data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    private BitemporalLog createOneLog(BitemporalLog data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
         UserManager um = UserManager.getInstance();
-        data.setSource(um.getHostAddress());
-        data.setOwner(um.getUserName());
+        data.getLog().setSource(um.getHostAddress());
+        data.getLog().setOwner(um.getUserName());
         return LogManager.create(data);
     }
 
@@ -606,13 +608,15 @@ public class OlogImpl {
      * @throws OlogException on name or owner mismatch, or wrapping an
      * SQLException
      */
-    public Log updateLog(Long logId, Log data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        Log dest = findLogById(logId, null);
+    public BitemporalLog updateLog(Long logId, BitemporalLog data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        BitemporalLog dest = findLogById(logId, null);
         if (dest == null) {
             throw new OlogException(Response.Status.NOT_FOUND,
                     "Log entry " + logId + " could not be updated: Does not exists");
         }
-        return createOrReplaceLog(logId, new Log(dest,data));
+        
+        data.setLog(new Log(dest.getLog(), data.getLog()));
+        return createOrReplaceLog(logId, data);
     }
 
     /**
@@ -623,7 +627,7 @@ public class OlogImpl {
      * @throws OlogException on name mismatch
      */
     //TODO: fix this
-    public void checkIdMatchesPayload(Long logId, Log data) throws OlogException {
+    public void checkIdMatchesPayload(Long logId, BitemporalLog data) throws OlogException {
         //    if (!logId.equals(data.getId())) {
         //        throw new CFException(Response.Status.BAD_REQUEST,
         //                "Specified log id '" + logId
@@ -637,23 +641,23 @@ public class OlogImpl {
      * @param data Log data to check
      * @throws OlogException on error
      */
-    public void checkValid(Log data) throws OlogException {
-
-        if (data.getOwner() == null || data.getOwner().equals("")) {
+    public void checkValid(BitemporalLog data) throws OlogException {
+        Log log = data.getLog();
+        if (log.getOwner() == null || log.getOwner().equals("")) {
             throw new OlogException(Response.Status.BAD_REQUEST,
-                    "Log entry " + data.getId() + " does not have an owner.");
-        } else if (data.getLogbooks().isEmpty()) {
+                    "Log entry " + log.getId() + " does not have an owner.");
+        } else if (log.getLogbooks().isEmpty()) {
             throw new OlogException(Response.Status.BAD_REQUEST,
-                    "Log entry " + data.getId() + " does not have a logbook.");
-        } else if (!data.getAttributes().isEmpty()) {
-            for (LogAttribute logAttribute : data.getAttributes()) {
+                    "Log entry " + log.getId() + " does not have a logbook.");
+        } else if (!log.getAttributes().isEmpty()) {
+            for (LogAttribute logAttribute : log.getAttributes()) {
                 if (logAttribute.getAttribute().getName().isEmpty()) {
                     throw new OlogException(Response.Status.BAD_REQUEST,
-                            "Log entry " + data.getId() + " property does not have an attribute.");
+                            "Log entry " + log.getId() + " property does not have an attribute.");
                 } else {
                     if (logAttribute.getValue().isEmpty() || logAttribute.getAttribute().getName().isEmpty()) {
                         throw new OlogException(Response.Status.BAD_REQUEST,
-                                "Log entry " + data.getId() + " property:" + logAttribute.getAttribute().getProperty().getName() + " attribute does not have a key or value.");
+                                "Log entry " + log.getId() + " property:" + logAttribute.getAttribute().getProperty().getName() + " attribute does not have a key or value.");
                     }
                 }
             }
@@ -666,11 +670,11 @@ public class OlogImpl {
      * @param data Logs data to check
      * @throws OlogException on error
      */
-    public void checkValid(List<Log> data) throws OlogException {
+    public void checkValid(List<BitemporalLog> data) throws OlogException {
         if (data == null) {
             return;
         }
-        for (Log c : data) {
+        for (BitemporalLog c : data) {
             checkValid(c);
         }
     }
@@ -840,11 +844,11 @@ public class OlogImpl {
      * @param data Log data to check ownership for
      * @throws OlogException on name mismatch
      */
-    public void checkUserBelongsToGroup(String user, Log data) throws OlogException {
+    public void checkUserBelongsToGroup(String user, BitemporalLog data) throws OlogException {
         if (data == null) {
             return;
         }
-        for (Logbook logbook : data.getLogbooks()) {
+        for (Logbook logbook : data.getLog().getLogbooks()) {
             checkUserBelongsToGroup(user, LogbookManager.findLogbook(logbook.getName()));
         }
     }
@@ -857,11 +861,11 @@ public class OlogImpl {
      * @param data Logs data to check ownership for
      * @throws OlogException on name mismatch
      */
-    public void checkUserBelongsToGroup(String user, List<Log> data) throws OlogException {
+    public void checkUserBelongsToGroup(String user, List<BitemporalLog> data) throws OlogException {
         if (data == null) {
             return;
         }
-        for (Log log : data) {
+        for (BitemporalLog log : data) {
             checkUserBelongsToGroup(user, log);
         }
     }
@@ -920,7 +924,31 @@ public class OlogImpl {
         AttachmentManager.remove(fileName, logId);
     }
 
-    List<Log> findLogsTest() throws OlogException {
-        return LogManager.findAll();
+    public Interval getValidityInterval(XmlLog source) {
+        Interval interval;
+        if (source.getEventStart() != null && source.getEventEnd() != null) {
+            interval = new Interval(source.getEventStart().getTime(), source.getEventEnd().getTime());
+        } else if (source.getEventStart() != null && source.getEventEnd() == null) {
+            interval = TimeUtils.from(new DateTime(source.getEventStart()));
+        } else {
+            interval = TimeUtils.fromNow();
+        }
+        return interval;
+    }
+    public Interval getValidityIntervalMerge(Long logId, XmlLog source) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        BitemporalLog dest = findLogById(logId, null);
+        if (dest == null) {
+            throw new OlogException(Response.Status.NOT_FOUND,
+                    "Log entry " + logId + " could not be updated: Does not exists");
+        }
+        Interval interval;
+        if (source.getEventStart() != null && source.getEventEnd() != null) {
+            interval = new Interval(source.getEventStart().getTime(), source.getEventEnd().getTime());
+        } else if (source.getEventStart() != null && source.getEventEnd() == null) {
+            interval = TimeUtils.from(new DateTime(source.getEventStart()));
+        } else {
+            interval = dest.getValidityInterval();
+        }
+        return interval;
     }
 }

@@ -32,8 +32,11 @@ import org.apache.jackrabbit.core.RepositoryImpl;
 
 import com.googlecode.flyway.core.Flyway;
 import com.googlecode.flyway.core.api.MigrationVersion;
+import edu.msu.nscl.olog.entity.BitemporalLog;
+import edu.msu.nscl.olog.entity.XmlLog;
 import java.sql.SQLException;
 import org.apache.cxf.jaxrs.impl.MetadataMap;
+import org.dozer.DozerBeanMapperSingletonWrapper;
 
 public class OlogContextListener implements ServletContextListener {
 
@@ -134,6 +137,8 @@ public class OlogContextListener implements ServletContextListener {
             repo = new JCRUtil();
             try {
                 preCache();
+                // start Dozer singleton
+                BitemporalLog result = DozerBeanMapperSingletonWrapper.getInstance().map(new XmlLog(), BitemporalLog.class);
             } catch (Exception e) {
                 Logger.getLogger(OlogContextListener.class.getName()).log(Level.SEVERE, null, e);
 

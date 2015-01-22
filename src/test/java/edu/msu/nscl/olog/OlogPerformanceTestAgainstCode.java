@@ -124,10 +124,10 @@ public class OlogPerformanceTestAgainstCode {
 
 
     public void insertLog(String dbTypeText) throws RepositoryException, OlogException, IOException {
-        Log logOld = LogManager.findLog(logId);
-        logOld.setOwner("Log");
+        BitemporalLog logOld = LogManager.findLog(logId);
+        logOld.getLog().setOwner("Log");
         long startTime = System.nanoTime();
-        Log log = LogManager.create(logOld);
+        BitemporalLog log = LogManager.create(logOld);
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to insert a log  is: " + totalTime + "(s)");
@@ -135,10 +135,10 @@ public class OlogPerformanceTestAgainstCode {
     }
 
     public void insertLog2(String dbTypeText) throws RepositoryException, OlogException, IOException {
-        Log logOld = LogManager.findLog(logId);
-        logOld.setOwner("Log2");
+        BitemporalLog logOld = LogManager.findLog(logId);
+        logOld.getLog().setOwner("Log2");
         long startTime = System.nanoTime();
-        Log log = LogManager.create(logOld);
+        BitemporalLog log = LogManager.create(logOld);
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to insert a log2  is: " + totalTime + "(s)" );
@@ -159,7 +159,7 @@ public class OlogPerformanceTestAgainstCode {
 
     public void findLogById(String dbTypeText) throws OlogException, IOException {
         long startTime = System.nanoTime();
-        Log log = LogManager.findLog(logId);
+        BitemporalLog log = LogManager.findLog(logId);
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to find a log by id is: " + totalTime + "(s)");
