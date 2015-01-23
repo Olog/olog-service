@@ -6,9 +6,12 @@ package edu.msu.nscl.olog.entity.bitemporal;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.FetchType;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import org.eclipse.persistence.annotations.ReadTransformer;
 import org.eclipse.persistence.annotations.Transformation;
 import org.eclipse.persistence.annotations.WriteTransformer;
@@ -60,6 +63,11 @@ public abstract class BitemporalWrapper<V> implements Bitemporal, Serializable {
         @WriteTransformer(method = "writeValidityIntervalEnd", column = @Column(name = "validityinterval"))
     })
     private Interval validityInterval;
+    
+    // This was made for sorting, criteria JPA and transformers are not working for me
+    @Column(name = "validityinterval_0", nullable = false, insertable = false, updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date validityStart;
     
     @Transformation(fetch = FetchType.LAZY)
     @ReadTransformer(method = "readRecordInterval")

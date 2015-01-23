@@ -3,7 +3,6 @@
  * Copyright (c) 2010 Helmholtz-Zentrum Berlin für Materialien und Energie GmbH
  * Subject to license terms and conditions.
  */
-
 package edu.msu.nscl.olog.boundry;
 
 import edu.msu.nscl.olog.entity.Log;
@@ -44,15 +43,16 @@ import org.dozer.MappingException;
 
 /**
  * Top level Jersey HTTP methods for the .../logs URL
- * 
+ *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
-
 @Path("/logs/")
 @CrossOriginResourceSharing(allowAllOrigins = true, allowCredentials = true)
 public class LogResource {
+
     //@Resource
     //private WebServiceContext wsContext
+
     @Context
     private UriInfo uriInfo;
     @Context
@@ -60,14 +60,17 @@ public class LogResource {
 
     private Logger audit = Logger.getLogger(this.getClass().getPackage().getName() + ".audit");
     private Logger log = Logger.getLogger(this.getClass().getName());
-  
-    /** Creates a new instance of LogsResource */
+
+    /**
+     * Creates a new instance of LogsResource
+     */
     public LogResource() {
     }
 
     /**
-     * GET method for retrieving a collection of Log instances,
-     * based on a multi-parameter query specifying patterns for tag and logbook details to match against.
+     * GET method for retrieving a collection of Log instances, based on a
+     * multi-parameter query specifying patterns for tag and logbook details to
+     * match against.
      *
      * @return HTTP Response
      */
@@ -83,17 +86,17 @@ public class LogResource {
             audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.size() + " logs");
             return r;
-        } catch (MappingException e){
+        } catch (MappingException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
-                    + Response.Status.NOT_FOUND +  "|cause=" + e.getMessage());
-            return new OlogException(Response.Status.NOT_FOUND,e.getMessage()).toResponse();
+                    + Response.Status.NOT_FOUND + "|cause=" + e.getMessage());
+            return new OlogException(Response.Status.NOT_FOUND, e.getMessage()).toResponse();
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
-                    + e.getResponseStatusCode() +  "|cause=" + e);
+                    + e.getResponseStatusCode() + "|cause=" + e);
             return e.toResponse();
-        } 
+        }
     }
-    
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response queryjson() throws RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
@@ -103,22 +106,22 @@ public class LogResource {
             List<BitemporalLog> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
             List<XmlLog> xmlresult = new ArrayList<XmlLog>();
             // should be a faster map
-            for(BitemporalLog l:result){
+            for (BitemporalLog l : result) {
                 xmlresult.add(DozerBeanMapperSingletonWrapper.getInstance().map(l, XmlLog.class));
             }
             Response r = Response.ok(xmlresult).build();
             audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.size() + " logs");
             return r;
-        } catch (MappingException e){
+        } catch (MappingException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
-                    + Response.Status.NOT_FOUND +  "|cause=" + e.getMessage());
-            return new OlogException(Response.Status.NOT_FOUND,e.getMessage()).toResponse();
+                    + Response.Status.NOT_FOUND + "|cause=" + e.getMessage());
+            return new OlogException(Response.Status.NOT_FOUND, e.getMessage()).toResponse();
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
-                    + e.getResponseStatusCode() +  "|cause=" + e);
+                    + e.getResponseStatusCode() + "|cause=" + e);
             return e.toResponse();
-        } 
+        }
     }
 
     /**
@@ -147,12 +150,12 @@ public class LogResource {
                 result.getLog().setOwner(um.getUserName());
                 log_data.add(result);
             }
-            
+
             cm.checkValid(log_data);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), log_data);
             }
-            
+
             List<BitemporalLog> result = cm.createOrReplaceLogs(log_data);
             XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class);
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
@@ -161,17 +164,17 @@ public class LogResource {
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
             return r;
-        } catch (MappingException e){
-            log.warning(um.getUserName()  + "|" + uriInfo.getPath() + "|POST|ERROR|"
-                    + Response.Status.NOT_FOUND + "|data=" + XmlLogs.toLogger(data.getLogs()) +  "|cause=" + e.getMessage());
-            return new OlogException(Response.Status.NOT_FOUND,e.getMessage()).toResponse();
+        } catch (MappingException e) {
+            log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|"
+                    + Response.Status.NOT_FOUND + "|data=" + XmlLogs.toLogger(data.getLogs()) + "|cause=" + e.getMessage());
+            return new OlogException(Response.Status.NOT_FOUND, e.getMessage()).toResponse();
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlLogs.toLogger(data.getLogs()) + "|cause=" + e);
             return e.toResponse();
         }
     }
-    
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -190,12 +193,12 @@ public class LogResource {
                 result.getLog().setOwner(um.getUserName());
                 log_data.add(result);
             }
-            
+
             cm.checkValid(log_data);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), log_data);
             }
-            
+
             List<BitemporalLog> result = cm.createOrReplaceLogs(log_data);
             XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class);
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
@@ -204,10 +207,10 @@ public class LogResource {
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
             return r;
-        } catch (MappingException e){
-            log.warning(um.getUserName()  + "|" + uriInfo.getPath() + "|POST|ERROR|"
-                    + Response.Status.NOT_FOUND + "|data=" + XmlLogs.toLogger(data) +  "|cause=" + e.getMessage());
-            return new OlogException(Response.Status.NOT_FOUND,e.getMessage()).toResponse();
+        } catch (MappingException e) {
+            log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|"
+                    + Response.Status.NOT_FOUND + "|data=" + XmlLogs.toLogger(data) + "|cause=" + e.getMessage());
+            return new OlogException(Response.Status.NOT_FOUND, e.getMessage()).toResponse();
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlLogs.toLogger(data) + "|cause=" + e);
@@ -239,21 +242,21 @@ public class LogResource {
             }
             audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
-        } catch (MappingException e){
+        } catch (MappingException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
-                    + Response.Status.NOT_FOUND +  "|cause=" + e.getMessage());
-            return new OlogException(Response.Status.NOT_FOUND,e.getMessage()).toResponse();
+                    + Response.Status.NOT_FOUND + "|cause=" + e.getMessage());
+            return new OlogException(Response.Status.NOT_FOUND, e.getMessage()).toResponse();
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
-                    + e.getResponseStatusCode() +  "|cause=" + e);
+                    + e.getResponseStatusCode() + "|cause=" + e);
             return e.toResponse();
         }
     }
 
     /**
-     * PUT method for editing a log instance identified by the payload.
-     * The <b>complete</b> set of logbooks/tags for the log must be supplied,
-     * which will replace the existing set of logbooks/tags.
+     * PUT method for editing a log instance identified by the payload. The
+     * <b>complete</b> set of logbooks/tags for the log must be supplied, which
+     * will replace the existing set of logbooks/tags.
      *
      * @param logId id of log to edit
      * @param data new data (logbooks/tags) for log <tt>id</tt>
@@ -271,14 +274,17 @@ public class LogResource {
         try {
             BitemporalLog log_data = DozerBeanMapperSingletonWrapper.getInstance().map(data, BitemporalLog.class);
             //ValidityInterval not working in Dozer
-            log_data = log_data.copyWith(cm.getValidityInterval(data));
+            // For backward compat if there is an existing entry 
+                // and the validity interval start/end are empty,
+                // then the previous interval will be used
+            log_data = log_data.copyWith(cm.getValidityIntervalMerge(logId,data));
             log_data.getLog().setOwner(um.getUserName());
             cm.checkValid(log_data);
             cm.checkIdMatchesPayload(logId, log_data);
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroup(um.getUserName(), log_data);
             }
-            
+
             BitemporalLog result = cm.createOrReplaceLog(logId, log_data);
             XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class);
             Response r = Response.ok(xmlresult).build();
@@ -288,7 +294,7 @@ public class LogResource {
         } catch (MappingException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + Response.Status.NOT_FOUND
                     + "|data=" + XmlLog.toLogger(data) + "|cause=" + e.getMessage());
-            return new OlogException(Response.Status.NOT_FOUND,e.getMessage()).toResponse();
+            return new OlogException(Response.Status.NOT_FOUND, e.getMessage()).toResponse();
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlLog.toLogger(data) + "|cause=" + e);
@@ -301,7 +307,8 @@ public class LogResource {
      * payload into an existing log.
      *
      * @param logId id of log to add
-     * @param data new Log data (logbooks/tags) to be merged into log <tt>id</tt>
+     * @param data new Log data (logbooks/tags) to be merged into log
+     * <tt>id</tt>
      * @return HTTP response
      */
     @POST
@@ -315,9 +322,9 @@ public class LogResource {
         um.setHostAddress(hostAddress);
         BitemporalLog result = null;
         try {
-           BitemporalLog log_data = DozerBeanMapperSingletonWrapper.getInstance().map(data, BitemporalLog.class);
+            BitemporalLog log_data = DozerBeanMapperSingletonWrapper.getInstance().map(data, BitemporalLog.class);
             //ValidityInterval not working in Dozer
-            log_data = log_data.copyWith(cm.getValidityIntervalMerge(logId,data));
+            log_data = log_data.copyWith(cm.getValidityIntervalMerge(logId, data));
 
             log_data.getLog().setOwner(um.getUserName());
             cm.checkValid(log_data);
@@ -326,7 +333,7 @@ public class LogResource {
                 cm.checkUserBelongsToGroupOfLog(um.getUserName(), logId);
                 cm.checkUserBelongsToGroup(um.getUserName(), log_data);
             }
-            
+
             result = cm.updateLog(logId, log_data);
             XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class);
             Response r = Response.ok(xmlresult).build();
@@ -336,7 +343,7 @@ public class LogResource {
         } catch (MappingException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + Response.Status.NOT_FOUND
                     + "|data=" + XmlLog.toLogger(data) + "|cause=" + e.getMessage());
-            return new OlogException(Response.Status.NOT_FOUND,e.getMessage()).toResponse();
+            return new OlogException(Response.Status.NOT_FOUND, e.getMessage()).toResponse();
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlLog.toLogger(data) + "|cause=" + e);
@@ -345,8 +352,8 @@ public class LogResource {
     }
 
     /**
-     * DELETE method for deleting a log instance identified by
-     * path parameter <tt>id</tt>.
+     * DELETE method for deleting a log instance identified by path parameter
+     * <tt>id</tt>.
      *
      * @param logId log to remove
      * @return HTTP Response

@@ -66,6 +66,7 @@ public class LogManager {
         Boolean empty = false;
         Boolean history = false;
         String historyType = "";
+        String sortType = "created";
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
             em.getTransaction().begin();
@@ -157,6 +158,8 @@ public class LogManager {
                 } else if (key.equals("history")) {
                     history = true;
                     historyType = match.getValue().iterator().next();
+                } else if (key.equals("sort")) {
+                    sortType = match.getValue().iterator().next();
                 } else {
                     Collection<String> cleanedMatchesValues = new HashSet<String>();
                     value_patterns.putAll(key,mysqlSyntax(matchesValues,cleanedMatchesValues));
@@ -318,7 +321,20 @@ public class LogManager {
             cq.select(from);
             cq.where(finalPredicate);
             cq.groupBy(from);
-            cq.orderBy(cb.desc(from.get(Entry_.createdDate)));           
+            switch (sortType) {
+                    case "created":
+                        cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
+                        break;
+                    case "modified":
+                        cq.orderBy(cb.desc(logs.get(Log_.modifiedDate)));
+                        break;
+                    case "eventStart":
+                        cq.orderBy(cb.desc(bitemporalLog.get(BitemporalLog_.validityStart)));
+                        break;
+                    default:
+                        cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
+            }
+                       
             TypedQuery<Entry> typedQuery = em.createQuery(cq);
             if (!paginate_matches.isEmpty()) {
                 String page = null, limit = null;
@@ -540,6 +556,7 @@ public class LogManager {
             if (log.getEntry().getId() != null) {
                 entry = (Entry) em.find(Entry.class, log.getEntry().getId());
                 newLog.setState(State.Active);
+                entry.log().end();
                 entry.log().set(newLog, bitemporalLog.getValidityInterval());
                 newLog.setEntry(entry);
                 newLog.setVersion(String.valueOf(entry.log().getEvolution().size()));
