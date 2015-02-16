@@ -16,3 +16,20 @@ CREATE TABLE  `olog`.`bitemporal_log` (
 );
 
 ALTER TABLE `olog`.`entries` ADD COLUMN `state` ENUM('Active','Inactive') NOT NULL DEFAULT 'Active' AFTER `created`;
+
+INSERT INTO `olog`.`bitemporal_log` (
+	`log_id`, 
+	`recordinterval_0`, 
+	`recordinterval`, 
+	`validityinterval_0`, 
+	`validityinterval`, 
+	`entry_id`)
+  SELECT `id`, 
+         `modified`, 
+	 if((SELECT `modified` FROM `olog`.`logs` e WHERE e.`id` > l.`id` and e.`entry_id`=l.`entry_id` ORDER BY `id` LIMIT 1) is null, 
+		'3197-09-13 18:00:00', 
+		(SELECT `modified` FROM `olog`.`logs` e WHERE e.`id` > l.`id` and e.`entry_id`=l.`entry_id` ORDER BY `id` LIMIT 1)), 
+	`modified`, 
+	'3197-09-13 18:00:00', 
+	`entry_id` 
+	from `olog`.`logs` l;

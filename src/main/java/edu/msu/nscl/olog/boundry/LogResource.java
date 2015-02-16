@@ -5,15 +5,12 @@
  */
 package edu.msu.nscl.olog.boundry;
 
-import edu.msu.nscl.olog.entity.Log;
 import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.OlogException;
 import edu.msu.nscl.olog.control.OlogImpl;
 import edu.msu.nscl.olog.UserManager;
-import edu.msu.nscl.olog.control.IntervalConverter;
 import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.XmlLog;
-import edu.msu.nscl.olog.entity.bitemporal.Bitemporal;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
