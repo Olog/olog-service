@@ -136,9 +136,9 @@ public class OlogContextListener implements ServletContextListener {
 
             repo = new JCRUtil();
             try {
-                preCache();
                 // start Dozer singleton
                 BitemporalLog result = DozerBeanMapperSingletonWrapper.getInstance().map(new XmlLog(), BitemporalLog.class);
+                preCache();
             } catch (Exception e) {
                 Logger.getLogger(OlogContextListener.class.getName()).log(Level.SEVERE, null, e);
 

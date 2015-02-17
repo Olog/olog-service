@@ -9,6 +9,7 @@ import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.OlogException;
 import edu.msu.nscl.olog.control.OlogImpl;
 import edu.msu.nscl.olog.UserManager;
+import edu.msu.nscl.olog.control.Mapper;
 import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.XmlLog;
 import java.io.IOException;
@@ -77,9 +78,21 @@ public class LogResource {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
+            long startTime = System.nanoTime();
             List<BitemporalLog> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
-            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class);
+            long endTime = System.nanoTime();
+            long duration = (endTime - startTime);
+            log.warning("***** result took: " + String.valueOf(duration));
+            startTime = System.nanoTime();
+            XmlLogs xmlresult = Mapper.getXmlLogs(result);
+            endTime = System.nanoTime();
+            duration = (endTime - startTime);
+            log.warning("***** dozer took: " + String.valueOf(duration));
+            startTime = System.nanoTime();
             Response r = Response.ok(xmlresult).build();
+            endTime = System.nanoTime();
+            duration = (endTime - startTime);
+            log.warning("***** response took: " + String.valueOf(duration));
             audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.size() + " logs");
             return r;
@@ -101,12 +114,9 @@ public class LogResource {
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
             List<BitemporalLog> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
-            List<XmlLog> xmlresult = new ArrayList<XmlLog>();
-            // should be a faster map
-            for (BitemporalLog l : result) {
-                xmlresult.add(DozerBeanMapperSingletonWrapper.getInstance().map(l, XmlLog.class));
-            }
-            Response r = Response.ok(xmlresult).build();
+            XmlLogs xmlresult = Mapper.getXmlLogs(result);
+           
+            Response r = Response.ok(xmlresult.getLogs()).build();
             audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.size() + " logs");
             return r;
@@ -141,9 +151,7 @@ public class LogResource {
         try {
             List<BitemporalLog> log_data = new ArrayList<BitemporalLog>();
             for(XmlLog datum : data.getLogs()){
-                BitemporalLog result = DozerBeanMapperSingletonWrapper.getInstance().map(datum, BitemporalLog.class);
-                //ValidityInterval not working in Dozer
-                result = result.copyWith(cm.getValidityInterval(datum));
+                BitemporalLog result = Mapper.getBitemporalLog(datum);
                 result.getLog().setOwner(um.getUserName());
                 log_data.add(result);
             }
@@ -154,7 +162,7 @@ public class LogResource {
             }
 
             List<BitemporalLog> result = cm.createOrReplaceLogs(log_data);
-            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class);
+            XmlLogs xmlresult = Mapper.getXmlLogs(result);
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
                     + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
             Response r = Response.ok(xmlresult).build();
@@ -184,9 +192,7 @@ public class LogResource {
         try {
             List<BitemporalLog> log_data = new ArrayList<BitemporalLog>();
             for(XmlLog datum : data){
-                BitemporalLog result = DozerBeanMapperSingletonWrapper.getInstance().map(datum, BitemporalLog.class);
-                //ValidityInterval not working in Dozer
-                result = result.copyWith(cm.getValidityInterval(datum));
+                BitemporalLog result = Mapper.getBitemporalLog(datum);
                 result.getLog().setOwner(um.getUserName());
                 log_data.add(result);
             }
@@ -197,7 +203,7 @@ public class LogResource {
             }
 
             List<BitemporalLog> result = cm.createOrReplaceLogs(log_data);
-            XmlLogs xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLogs.class);
+            XmlLogs xmlresult = Mapper.getXmlLogs(result);
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
                     + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
             Response r = Response.ok(xmlresult).build();
@@ -234,7 +240,7 @@ public class LogResource {
             if (result == null) {
                 r = Response.status(Response.Status.NOT_FOUND).build();
             } else {
-                XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class);
+                XmlLog xmlresult = Mapper.getXmlLog(result);
                 r = Response.ok(xmlresult).build();
             }
             audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
@@ -269,11 +275,11 @@ public class LogResource {
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(hostAddress);
         try {
-            BitemporalLog log_data = DozerBeanMapperSingletonWrapper.getInstance().map(data, BitemporalLog.class);
-            //ValidityInterval not working in Dozer
+            BitemporalLog log_data = Mapper.getBitemporalLog(data);
             // For backward compat if there is an existing entry 
                 // and the validity interval start/end are empty,
                 // then the previous interval will be used
+            // I should move this instead of creating a new object
             log_data = log_data.copyWith(cm.getValidityIntervalMerge(logId,data));
             log_data.getLog().setOwner(um.getUserName());
             cm.checkValid(log_data);
@@ -283,7 +289,7 @@ public class LogResource {
             }
 
             BitemporalLog result = cm.createOrReplaceLog(logId, log_data);
-            XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class);
+            XmlLog xmlresult = Mapper.getXmlLog(result);
             Response r = Response.ok(xmlresult).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + XmlLog.toLogger(xmlresult));
@@ -319,8 +325,7 @@ public class LogResource {
         um.setHostAddress(hostAddress);
         BitemporalLog result = null;
         try {
-            BitemporalLog log_data = DozerBeanMapperSingletonWrapper.getInstance().map(data, BitemporalLog.class);
-            //ValidityInterval not working in Dozer
+            BitemporalLog log_data = Mapper.getBitemporalLog(data);
             log_data = log_data.copyWith(cm.getValidityIntervalMerge(logId, data));
 
             log_data.getLog().setOwner(um.getUserName());
@@ -332,7 +337,7 @@ public class LogResource {
             }
 
             result = cm.updateLog(logId, log_data);
-            XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class);
+            XmlLog xmlresult = Mapper.getXmlLog(result);
             Response r = Response.ok(xmlresult).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLog.toLogger(xmlresult));

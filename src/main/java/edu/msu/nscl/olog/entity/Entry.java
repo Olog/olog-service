@@ -63,6 +63,10 @@ public class Entry implements Serializable {
     public Entry() {
     }
 
+    public Entry(Long id) {
+        this.id = id;
+    }
+    
     /**
      * Getter for entry id.
      *

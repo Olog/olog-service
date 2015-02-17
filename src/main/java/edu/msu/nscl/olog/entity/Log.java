@@ -103,6 +103,20 @@ public class Log implements Serializable, Comparable<Log> {
         this.attributes.addAll(log2.attributes);
     }
 
+    public Log(Long id, String version, String owner, String source, Level level, State state, Date modifiedDate, String description, Entry entry) {
+        this.id = id;
+        this.version = version;
+        this.owner = owner;
+        this.source = source;
+        this.level = level;
+        this.state = state;
+        this.modifiedDate = modifiedDate;
+        this.description = description;
+        this.entry = entry;
+    }
+
+    
+    
     /**
      * Creates a new instance of Log.
      *

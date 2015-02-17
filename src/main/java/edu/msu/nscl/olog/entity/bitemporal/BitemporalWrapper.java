@@ -56,6 +56,26 @@ import org.joda.time.Interval;
 @MappedSuperclass
 public abstract class BitemporalWrapper<V> implements Bitemporal, Serializable {
     
+    // This was made for sorting, criteria JPA and transformers are not working for me
+    @Column(name = "validityinterval_0", nullable = false, insertable = false, updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date validityStart;
+    
+    // This was made for sorting, criteria JPA and transformers are not working for me
+    @Column(name = "validityinterval", nullable = false, insertable = false, updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date validityEnd;
+    
+    // This was made for sorting, criteria JPA and transformers are not working for me
+    @Column(name = "recordinterval_0", nullable = false, insertable = false, updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date recordStart;
+    
+    // This was made for sorting, criteria JPA and transformers are not working for me
+    @Column(name = "recordinterval", nullable = false, insertable = false, updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date recordEnd;
+    
     @Transformation(fetch = FetchType.LAZY)
     @ReadTransformer(method = "readValidityInterval")
     @WriteTransformers({
@@ -63,11 +83,6 @@ public abstract class BitemporalWrapper<V> implements Bitemporal, Serializable {
         @WriteTransformer(method = "writeValidityIntervalEnd", column = @Column(name = "validityinterval"))
     })
     private Interval validityInterval;
-    
-    // This was made for sorting, criteria JPA and transformers are not working for me
-    @Column(name = "validityinterval_0", nullable = false, insertable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date validityStart;
     
     @Transformation(fetch = FetchType.LAZY)
     @ReadTransformer(method = "readRecordInterval")

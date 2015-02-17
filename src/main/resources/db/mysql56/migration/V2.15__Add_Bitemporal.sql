@@ -33,3 +33,8 @@ INSERT INTO `olog`.`bitemporal_log` (
 	'3197-09-13 18:00:00', 
 	`entry_id` 
 	from `olog`.`logs` l;
+
+ALTER TABLE `olog`.`bitemporal_log` ADD INDEX `record_0` USING BTREE(`recordinterval_0`),
+ ADD INDEX `record` USING BTREE(`recordinterval`),
+ ADD INDEX `valid_0` USING BTREE(`validityinterval_0`),
+ ADD INDEX `valid` USING BTREE(`validityinterval`);

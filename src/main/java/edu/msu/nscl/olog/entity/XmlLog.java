@@ -58,6 +58,20 @@ public class XmlLog implements Serializable, Comparable<XmlLog> {
         // this.level = new Level();
     }
 
+    public XmlLog(Long id, String version, String owner, String source, Level level, State state, Date modifiedDate, Date createdDate, Date eventStart, Date eventEnd, String description) {
+        this.id = id;
+        this.version = version;
+        this.owner = owner;
+        this.source = source;
+        this.level = level;
+        this.state = state;
+        this.modifiedDate = modifiedDate;
+        this.createdDate = createdDate;
+        this.eventStart = eventStart;
+        this.eventEnd = eventEnd;
+        this.description = description;
+    }
+
     /**
      * Creates a new instance of Log.
      *
