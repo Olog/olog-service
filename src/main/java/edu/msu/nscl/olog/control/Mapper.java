@@ -16,6 +16,8 @@ import edu.msu.nscl.olog.entity.XmlLog;
 import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.entity.XmlProperty;
 import edu.msu.nscl.olog.entity.bitemporal.TimeUtils;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,7 +29,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.Response;
-import org.dozer.MappingException;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
@@ -40,48 +41,43 @@ public final class Mapper {
         
     }
     
-    public static BitemporalLog getBitemporalLog(XmlLog xmlLog){
-        Entry entry = new Entry(xmlLog.getId());
-        Log log = new Log(
-        null,
-        xmlLog.getVersion(),
-        xmlLog.getOwner(),
-        xmlLog.getSource(),
-        xmlLog.getLevel(),
-        xmlLog.getState(),
-        xmlLog.getModifiedDate(),
-        xmlLog.getDescription(),
-        entry); 
-        log.setLogbooks(xmlLog.getLogbooks());
-        log.setTags(xmlLog.getTags());
-        log.setAttributes(getLogAttribute(xmlLog.getXmlProperties()));
-            // For backward compat if there is an existing entry 
-                // and the validity interval start/end are empty,
-                // then the previous interval will be used
-        Interval interval = new Interval(xmlLog.getEventStart().getTime(),xmlLog.getEventEnd().getTime());
-        return entry.log().set(log, interval);
+    public static BitemporalLog getBitemporalLog(XmlLog xmlLog) throws OlogException{
+        Log log = getLog(xmlLog);
+        
+        Interval interval;
+        if (xmlLog.getEventStart() != null && xmlLog.getEventEnd() != null) {
+            interval = new Interval(xmlLog.getEventStart().getTime(), xmlLog.getEventEnd().getTime());
+        } else if (xmlLog.getEventStart() != null && xmlLog.getEventEnd() == null) {
+            interval = TimeUtils.from(new DateTime(xmlLog.getEventStart()));
+        } else {
+            interval = TimeUtils.fromNow();
+        }
+        return log.getEntry().log().set(log, interval);
     }
     
-    public static BitemporalLog getBitemporalLogMerge(Long id, XmlLog xmlLog){
-        Entry entry = new Entry(xmlLog.getId());
-        Log log = new Log(
-        null,
-        xmlLog.getVersion(),
-        xmlLog.getOwner(),
-        xmlLog.getSource(),
-        xmlLog.getLevel(),
-        xmlLog.getState(),
-        xmlLog.getModifiedDate(),
-        xmlLog.getDescription(),
-        entry); 
-        log.setLogbooks(xmlLog.getLogbooks());
-        log.setTags(xmlLog.getTags());
-        log.setAttributes(getLogAttribute(xmlLog.getXmlProperties()));
-            // For backward compat if there is an existing entry 
-                // and the validity interval start/end are empty,
-                // then the previous interval will be used
-        Interval interval = new Interval(xmlLog.getEventStart().getTime(),xmlLog.getEventEnd().getTime());
-        return entry.log().set(log, interval);
+    public static BitemporalLog getBitemporalLogMergeInterval(Long id, XmlLog xmlLog) throws OlogException{
+        OlogImpl cm = OlogImpl.getInstance();
+        BitemporalLog dest = null;
+        try {
+            dest = cm.findLogById(id, null);
+        } catch (OlogException | UnsupportedEncodingException | NoSuchAlgorithmException ex) {
+            Logger.getLogger(Mapper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if (dest == null) {
+            throw new OlogException(Response.Status.NOT_FOUND,
+                    "Log entry " + id + " could not be updated: Does not exists");
+        }
+        Log log = getLog(xmlLog);
+        
+        Interval interval;
+        if (xmlLog.getEventStart() != null && xmlLog.getEventEnd() != null) {
+            interval = new Interval(xmlLog.getEventStart().getTime(), xmlLog.getEventEnd().getTime());
+        } else if (xmlLog.getEventStart() != null && xmlLog.getEventEnd() == null) {
+            interval = TimeUtils.from(new DateTime(xmlLog.getEventStart()));
+        } else {
+            interval = dest.getValidityInterval();
+        }
+        return log.getEntry().log().set(log, interval);
     }
     
     public static XmlLogs getXmlLogs(List<BitemporalLog> bitemporalLogs){
@@ -116,6 +112,25 @@ public final class Mapper {
         return xmlLog;
     }
     
+    private static Log getLog(XmlLog xmlLog) throws OlogException{
+        Entry entry = new Entry(xmlLog.getId());
+        Log log = new Log(
+        null,
+        xmlLog.getVersion(),
+        xmlLog.getOwner(),
+        xmlLog.getSource(),
+        xmlLog.getLevel(),
+        xmlLog.getState(),
+        xmlLog.getModifiedDate(),
+        xmlLog.getDescription(),
+        entry); 
+        log.setLogbooks(xmlLog.getLogbooks());
+        log.setTags(xmlLog.getTags());
+        log.setAttributes(getLogAttributes(xmlLog.getXmlProperties()));
+        
+        return log;
+    }
+    
     private static Collection<XmlAttachment> getXmlAttachments(long id) {
         try {
             return AttachmentManager.findAll(id).getAttachments();
@@ -147,37 +162,35 @@ public final class Mapper {
         return xmlProperties;
     }
     
-    private static Set<LogAttribute> getLogAttribute(Collection<XmlProperty> xmlProperties){
+    public static Set<LogAttribute> getLogAttributes(Collection<XmlProperty> xmlProperties) throws OlogException{
         Set<LogAttribute> logattrs = new HashSet<LogAttribute>();
         Long i = 0L;
         Iterator<XmlProperty> iter = xmlProperties.iterator();
         while (iter.hasNext()) {
-            try {
-                XmlProperty p = iter.next();
-                Property prop = PropertyManager.findProperty(p.getName());
-                if (prop != null) {
-                    for (Map.Entry<String, String> att : p.getAttributes().entrySet()) {
-                        Attribute newAtt = AttributeManager.findAttribute(prop, att.getKey());
-                        if (newAtt != null) {
-                            LogAttribute logattr = new LogAttribute();
-                            logattr.setAttribute(newAtt);
-                            logattr.setAttributeId(newAtt.getId());
-                            logattr.setValue(att.getValue());
-                            logattr.setGroupingNum(i);
-                            logattrs.add(logattr);
-                        } else {
-                            throw new OlogException(Response.Status.NOT_FOUND,
-                                    "Log entry  property attribute:" + prop.getName() + att.getKey() + " does not exists.");
-                        }
+
+            XmlProperty p = iter.next();
+            Property prop = PropertyManager.findProperty(p.getName());
+            if (prop != null) {
+                for (Map.Entry<String, String> att : p.getAttributes().entrySet()) {
+                    Attribute newAtt = AttributeManager.findAttribute(prop, att.getKey());
+                    if (newAtt != null) {
+                        LogAttribute logattr = new LogAttribute();
+                        logattr.setAttribute(newAtt);
+                        logattr.setAttributeId(newAtt.getId());
+                        logattr.setValue(att.getValue());
+                        logattr.setGroupingNum(i);
+                        logattrs.add(logattr);
+                    } else {
+                        throw new OlogException(Response.Status.NOT_FOUND,
+                                "Log entry  property attribute:" + prop.getName() + att.getKey() + " does not exists.");
                     }
-                    i++;
-                } else {
-                    throw new OlogException(Response.Status.NOT_FOUND,
-                            "Log entry prop:" + p.getName() + " does not exists.");
                 }
-            } catch (Exception ex) {
-                throw new MappingException(ex.getMessage());
+                i++;
+            } else {
+                throw new OlogException(Response.Status.NOT_FOUND,
+                        "Log entry prop:" + p.getName() + " does not exists.");
             }
+
         }
         return logattrs;
     }

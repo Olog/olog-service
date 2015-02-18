@@ -923,32 +923,4 @@ public class OlogImpl {
     public void removeAttachment(String fileName, Long logId) throws OlogException {
         AttachmentManager.remove(fileName, logId);
     }
-
-    public Interval getValidityInterval(XmlLog source) {
-        Interval interval;
-        if (source.getEventStart() != null && source.getEventEnd() != null) {
-            interval = new Interval(source.getEventStart().getTime(), source.getEventEnd().getTime());
-        } else if (source.getEventStart() != null && source.getEventEnd() == null) {
-            interval = TimeUtils.from(new DateTime(source.getEventStart()));
-        } else {
-            interval = TimeUtils.fromNow();
-        }
-        return interval;
-    }
-    public Interval getValidityIntervalMerge(Long logId, XmlLog source) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        BitemporalLog dest = findLogById(logId, null);
-        if (dest == null) {
-            throw new OlogException(Response.Status.NOT_FOUND,
-                    "Log entry " + logId + " could not be updated: Does not exists");
-        }
-        Interval interval;
-        if (source.getEventStart() != null && source.getEventEnd() != null) {
-            interval = new Interval(source.getEventStart().getTime(), source.getEventEnd().getTime());
-        } else if (source.getEventStart() != null && source.getEventEnd() == null) {
-            interval = TimeUtils.from(new DateTime(source.getEventStart()));
-        } else {
-            interval = dest.getValidityInterval();
-        }
-        return interval;
-    }
 }

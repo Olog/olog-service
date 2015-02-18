@@ -17,7 +17,6 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.persistence.EntityManager;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -32,11 +31,7 @@ import org.apache.jackrabbit.core.RepositoryImpl;
 
 import com.googlecode.flyway.core.Flyway;
 import com.googlecode.flyway.core.api.MigrationVersion;
-import edu.msu.nscl.olog.entity.BitemporalLog;
-import edu.msu.nscl.olog.entity.XmlLog;
-import java.sql.SQLException;
 import org.apache.cxf.jaxrs.impl.MetadataMap;
-import org.dozer.DozerBeanMapperSingletonWrapper;
 
 public class OlogContextListener implements ServletContextListener {
 
@@ -136,8 +131,6 @@ public class OlogContextListener implements ServletContextListener {
 
             repo = new JCRUtil();
             try {
-                // start Dozer singleton
-                BitemporalLog result = DozerBeanMapperSingletonWrapper.getInstance().map(new XmlLog(), BitemporalLog.class);
                 preCache();
             } catch (Exception e) {
                 Logger.getLogger(OlogContextListener.class.getName()).log(Level.SEVERE, null, e);
@@ -156,6 +149,7 @@ public class OlogContextListener implements ServletContextListener {
             MultivaluedMap<String,String> map = new MetadataMap();
             map.add("logbook", logbook.getName());
             map.add("limit", "10");
+            map.add("search", "*");
             cm.findLogsByMultiMatch(map);
         }
         cm.listLogbooks();

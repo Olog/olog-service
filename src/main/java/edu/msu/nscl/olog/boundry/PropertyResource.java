@@ -5,6 +5,7 @@ package edu.msu.nscl.olog.boundry;
 
 import edu.msu.nscl.olog.entity.Log;
 import edu.msu.nscl.olog.OlogException;
+import edu.msu.nscl.olog.control.Mapper;
 import edu.msu.nscl.olog.control.OlogImpl;
 import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.LogAttribute;
@@ -13,6 +14,9 @@ import edu.msu.nscl.olog.entity.XmlProperties;
 import edu.msu.nscl.olog.entity.XmlProperty;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -30,7 +34,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
-import org.dozer.DozerBeanMapperSingletonWrapper;
 
 /**
  * Top level Jersey HTTP methods for the .../properties URL
@@ -199,9 +202,14 @@ public class PropertyResource {
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         try {
             cm.checkPropertyName(property, data);
-            LogAttribute logAttribute = DozerBeanMapperSingletonWrapper.getInstance().map(data, LogAttribute.class);
-            BitemporalLog result = cm.addAttribute(logId, logAttribute);
-            XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class, "v1");
+            Collection<XmlProperty> properties = new ArrayList<XmlProperty>();
+            properties.add(data);
+            Set<LogAttribute> logAttributes = Mapper.getLogAttributes(properties);
+            BitemporalLog result = null;
+            for(LogAttribute logAttribute : logAttributes){
+                result = cm.addAttribute(logId, logAttribute);
+            }
+            XmlLog xmlresult = Mapper.getXmlLog(result);
             Response r = Response.ok(xmlresult).build();
             audit.info(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
             return r;
@@ -227,12 +235,16 @@ public class PropertyResource {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
-        BitemporalLog result = null;
         try {
             cm.checkPropertyName(property, data);
-            LogAttribute logAttribute = DozerBeanMapperSingletonWrapper.getInstance().map(data, LogAttribute.class, "v1");
-            result = cm.removeAttribute(logId, logAttribute);
-            XmlLog xmlresult = DozerBeanMapperSingletonWrapper.getInstance().map(result, XmlLog.class, "v1");
+            Collection<XmlProperty> properties = new ArrayList<XmlProperty>();
+            properties.add(data);
+            Set<LogAttribute> logAttributes = Mapper.getLogAttributes(properties);
+            BitemporalLog result = null;
+            for(LogAttribute logAttribute : logAttributes){
+                result = cm.removeAttribute(logId, logAttribute);
+            }
+            XmlLog xmlresult = Mapper.getXmlLog(result);
             Response r = Response.ok(xmlresult).build();
             audit.info(user + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;

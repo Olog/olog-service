@@ -36,8 +36,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
-import org.dozer.DozerBeanMapperSingletonWrapper;
-import org.dozer.MappingException;
 
 /**
  * Top level Jersey HTTP methods for the .../logs URL
@@ -78,28 +76,12 @@ public class LogResource {
         OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
-            long startTime = System.nanoTime();
             List<BitemporalLog> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
-            long endTime = System.nanoTime();
-            long duration = (endTime - startTime);
-            log.warning("***** result took: " + String.valueOf(duration));
-            startTime = System.nanoTime();
             XmlLogs xmlresult = Mapper.getXmlLogs(result);
-            endTime = System.nanoTime();
-            duration = (endTime - startTime);
-            log.warning("***** dozer took: " + String.valueOf(duration));
-            startTime = System.nanoTime();
             Response r = Response.ok(xmlresult).build();
-            endTime = System.nanoTime();
-            duration = (endTime - startTime);
-            log.warning("***** response took: " + String.valueOf(duration));
             audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.size() + " logs");
             return r;
-        } catch (MappingException e) {
-            log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
-                    + Response.Status.NOT_FOUND + "|cause=" + e.getMessage());
-            return new OlogException(Response.Status.NOT_FOUND, e.getMessage()).toResponse();
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() + "|cause=" + e);
@@ -120,10 +102,6 @@ public class LogResource {
             audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.size() + " logs");
             return r;
-        } catch (MappingException e) {
-            log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
-                    + Response.Status.NOT_FOUND + "|cause=" + e.getMessage());
-            return new OlogException(Response.Status.NOT_FOUND, e.getMessage()).toResponse();
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() + "|cause=" + e);
@@ -169,10 +147,6 @@ public class LogResource {
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
             return r;
-        } catch (MappingException e) {
-            log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|"
-                    + Response.Status.NOT_FOUND + "|data=" + XmlLogs.toLogger(data.getLogs()) + "|cause=" + e.getMessage());
-            return new OlogException(Response.Status.NOT_FOUND, e.getMessage()).toResponse();
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlLogs.toLogger(data.getLogs()) + "|cause=" + e);
@@ -210,10 +184,6 @@ public class LogResource {
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
             return r;
-        } catch (MappingException e) {
-            log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|"
-                    + Response.Status.NOT_FOUND + "|data=" + XmlLogs.toLogger(data) + "|cause=" + e.getMessage());
-            return new OlogException(Response.Status.NOT_FOUND, e.getMessage()).toResponse();
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlLogs.toLogger(data) + "|cause=" + e);
@@ -245,10 +215,6 @@ public class LogResource {
             }
             audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
             return r;
-        } catch (MappingException e) {
-            log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
-                    + Response.Status.NOT_FOUND + "|cause=" + e.getMessage());
-            return new OlogException(Response.Status.NOT_FOUND, e.getMessage()).toResponse();
         } catch (OlogException e) {
             log.warning(user + "|" + uriInfo.getPath() + "|GET|ERROR|"
                     + e.getResponseStatusCode() + "|cause=" + e);
@@ -275,12 +241,8 @@ public class LogResource {
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(hostAddress);
         try {
-            BitemporalLog log_data = Mapper.getBitemporalLog(data);
-            // For backward compat if there is an existing entry 
-                // and the validity interval start/end are empty,
-                // then the previous interval will be used
-            // I should move this instead of creating a new object
-            log_data = log_data.copyWith(cm.getValidityIntervalMerge(logId,data));
+            BitemporalLog log_data = Mapper.getBitemporalLogMergeInterval(logId,data);
+
             log_data.getLog().setOwner(um.getUserName());
             cm.checkValid(log_data);
             cm.checkIdMatchesPayload(logId, log_data);
@@ -294,10 +256,6 @@ public class LogResource {
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + XmlLog.toLogger(xmlresult));
             return r;
-        } catch (MappingException e) {
-            log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + Response.Status.NOT_FOUND
-                    + "|data=" + XmlLog.toLogger(data) + "|cause=" + e.getMessage());
-            return new OlogException(Response.Status.NOT_FOUND, e.getMessage()).toResponse();
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlLog.toLogger(data) + "|cause=" + e);
@@ -325,8 +283,7 @@ public class LogResource {
         um.setHostAddress(hostAddress);
         BitemporalLog result = null;
         try {
-            BitemporalLog log_data = Mapper.getBitemporalLog(data);
-            log_data = log_data.copyWith(cm.getValidityIntervalMerge(logId, data));
+            BitemporalLog log_data = Mapper.getBitemporalLogMergeInterval(logId, data);
 
             log_data.getLog().setOwner(um.getUserName());
             cm.checkValid(log_data);
@@ -342,10 +299,6 @@ public class LogResource {
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLog.toLogger(xmlresult));
             return r;
-        } catch (MappingException e) {
-            log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + Response.Status.NOT_FOUND
-                    + "|data=" + XmlLog.toLogger(data) + "|cause=" + e.getMessage());
-            return new OlogException(Response.Status.NOT_FOUND, e.getMessage()).toResponse();
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
                     + "|data=" + XmlLog.toLogger(data) + "|cause=" + e);
