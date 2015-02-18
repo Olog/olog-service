@@ -141,8 +141,8 @@ public final class Mapper {
     }
     
     private static Collection<XmlProperty> getXmlProperties(Set<LogAttribute> logAttribute){
-         Iterator<LogAttribute> iter = logAttribute.iterator();
-        Collection<XmlProperty> xmlProperties = new ArrayList<XmlProperty>();
+        Iterator<LogAttribute> iter = logAttribute.iterator();
+        Collection<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
         while (iter.hasNext()) {
             XmlProperty xmlProperty = new XmlProperty();
             Map<String, String> map = new HashMap<String, String>();
@@ -167,7 +167,6 @@ public final class Mapper {
         Long i = 0L;
         Iterator<XmlProperty> iter = xmlProperties.iterator();
         while (iter.hasNext()) {
-
             XmlProperty p = iter.next();
             Property prop = PropertyManager.findProperty(p.getName());
             if (prop != null) {
@@ -178,7 +177,6 @@ public final class Mapper {
                         logattr.setAttribute(newAtt);
                         logattr.setAttributeId(newAtt.getId());
                         logattr.setValue(att.getValue());
-                        logattr.setGroupingNum(i);
                         logattrs.add(logattr);
                     } else {
                         throw new OlogException(Response.Status.NOT_FOUND,

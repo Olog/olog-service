@@ -30,7 +30,7 @@ INSERT INTO `olog`.`bitemporal_log` (
 		'3197-09-13 18:00:00', 
 		(SELECT `modified` FROM `olog`.`logs` e WHERE e.`id` > l.`id` and e.`entry_id`=l.`entry_id` ORDER BY `id` LIMIT 1)), 
 	`modified`, 
-	'3197-09-13 18:00:00', 
+	'3197-09-13 18:00:00',
 	`entry_id` 
 	from `olog`.`logs` l;
 
@@ -38,3 +38,9 @@ ALTER TABLE `olog`.`bitemporal_log` ADD INDEX `record_0` USING BTREE(`recordinte
  ADD INDEX `record` USING BTREE(`recordinterval`),
  ADD INDEX `valid_0` USING BTREE(`validityinterval_0`),
  ADD INDEX `valid` USING BTREE(`validityinterval`);
+
+ALTER TABLE `olog`.`bitemporal_log` ADD INDEX `ids`(`log_id`, `entry_id`);
+
+UPDATE `olog`.`bitemporal_log` SET recordinterval='3197-09-13 18:00:00' where recordinterval_0 > recordinterval;
+
+ALTER TABLE `olog`.`logs_attributes` MODIFY COLUMN `grouping_num` INT(11) DEFAULT NULL;

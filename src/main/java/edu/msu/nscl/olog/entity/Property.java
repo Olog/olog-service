@@ -8,8 +8,7 @@ package edu.msu.nscl.olog.entity;
 import java.io.Serializable;
 import java.util.*;
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import javax.xml.bind.annotation.*;
+
 
 /**
  * Property object that can be represented as XML/JSON in payload data.
@@ -19,15 +18,12 @@ import javax.xml.bind.annotation.*;
  */
 @Entity
 @Table(name = "properties")
-@XmlRootElement(name = "property")
 public class Property implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-    @Transient
-    private int groupingNum;
     @Column(name = "name", nullable = false)
     private String name = null;
     @Enumerated(EnumType.STRING)
@@ -66,7 +62,6 @@ public class Property implements Serializable {
      *
      * @return property id
      */
-    @XmlAttribute
     public Long getId() {
         return id;
     }
@@ -81,30 +76,10 @@ public class Property implements Serializable {
     }
 
     /**
-     * Getter for property id.
-     *
-     * @return property id
-     */
-    @XmlAttribute
-    public int getGroupingNum() {
-        return groupingNum;
-    }
-
-    /**
-     * Setter for property id.
-     *
-     * @param id property id
-     */
-    public void setGroupingNum(int groupingNum) {
-        this.groupingNum = groupingNum;
-    }
-
-    /**
      * Getter for property name.
      *
      * @return property name
      */
-    @XmlAttribute
     public String getName() {
         return name;
     }
@@ -118,7 +93,6 @@ public class Property implements Serializable {
         this.name = name;
     }
 
-    @XmlAttribute
     public State getState() {
         return state;
     }
@@ -130,12 +104,10 @@ public class Property implements Serializable {
     /**
      * @return the attributes
      */
-    @XmlTransient
     public Set<Attribute> getAttributes() {
         return attributes;
     }
 
-    @XmlElementRef(type = Attribute.class, name = "attribute")
     public Set<Attribute> getAttributeSet() {
         return attributes;
     }
@@ -191,8 +163,6 @@ public class Property implements Serializable {
         if (!(o instanceof Property)) return false;
 
         Property property = (Property) o;
-
-        if (groupingNum != property.groupingNum) return false;
         if (!id.equals(property.id)) return false;
         if (name != null ? !name.equals(property.name) : property.name != null) return false;
         if (state != property.state) return false;
@@ -203,7 +173,6 @@ public class Property implements Serializable {
     @Override
     public int hashCode() {
         int result = id.hashCode();
-        result = 31 * result + groupingNum;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (state != null ? state.hashCode() : 0);
         return result;

@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.persistence.Transient;
 
@@ -24,7 +25,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class XmlProperty {
 
     private Long id;
-    private int groupingNum;
     private String name = null;
     private Map<String, String> attributes = new HashMap<String, String>();;
     private HashSet<XmlLog> logs = new HashSet<XmlLog>();
@@ -72,25 +72,6 @@ public class XmlProperty {
      */
     public void setId(Long id) {
         this.id = id;
-    }
-
-    /**
-     * Getter for property id.
-     *
-     * @return property id
-     */
-    @XmlAttribute
-    public int getGroupingNum() {
-        return groupingNum;
-    }
-
-    /**
-     * Setter for property id.
-     *
-     * @param id property id
-     */
-    public void setGroupingNum(int groupingNum) {
-        this.groupingNum = groupingNum;
     }
 
     /**
@@ -177,7 +158,9 @@ public class XmlProperty {
 
     @Override
     public int hashCode() {
-        int hash = 7;
+        int hash = 3;
+        hash = 37 * hash + Objects.hashCode(this.id);
+        hash = 37 * hash + Objects.hashCode(this.name);
         return hash;
     }
 
@@ -190,16 +173,15 @@ public class XmlProperty {
             return false;
         }
         final XmlProperty other = (XmlProperty) obj;
-        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
+        if (!Objects.equals(this.id, other.id)) {
             return false;
         }
-        if (this.groupingNum != other.groupingNum) {
-            return false;
-        }
-        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+        if (!Objects.equals(this.name, other.name)) {
             return false;
         }
         return true;
     }
+
+    
 
 }

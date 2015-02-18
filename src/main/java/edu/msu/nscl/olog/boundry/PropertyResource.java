@@ -16,6 +16,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
@@ -202,7 +203,7 @@ public class PropertyResource {
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         try {
             cm.checkPropertyName(property, data);
-            Collection<XmlProperty> properties = new ArrayList<XmlProperty>();
+            Collection<XmlProperty> properties = new HashSet<XmlProperty>();
             properties.add(data);
             Set<LogAttribute> logAttributes = Mapper.getLogAttributes(properties);
             BitemporalLog result = null;
@@ -237,7 +238,7 @@ public class PropertyResource {
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         try {
             cm.checkPropertyName(property, data);
-            Collection<XmlProperty> properties = new ArrayList<XmlProperty>();
+            Collection<XmlProperty> properties = new HashSet<XmlProperty>();
             properties.add(data);
             Set<LogAttribute> logAttributes = Mapper.getLogAttributes(properties);
             BitemporalLog result = null;

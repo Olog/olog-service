@@ -273,22 +273,41 @@ public class LogManager {
                         end = match.getValue().iterator().next();
                     }
                 }
+                Path<Date> pathDate;
+                switch (sortType) {
+                    case "created":
+                        pathDate = from.get(Entry_.createdDate);
+                        cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
+                        break;
+                    case "modified":
+                        pathDate = logs.get(Log_.modifiedDate);
+                        cq.orderBy(cb.desc(logs.get(Log_.modifiedDate)));
+                        break;
+                    case "eventStart":
+                        pathDate = bitemporalLog.get(BitemporalLog_.validityStart);
+                        cq.orderBy(cb.desc(bitemporalLog.get(BitemporalLog_.validityStart)));
+                        break;
+                    default:
+                        pathDate = from.get(Entry_.createdDate);
+                        cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
+                }
+                
                 if (start != null && end == null) {
                     Date jStart = new java.util.Date(Long.valueOf(start) * 1000);
                     Date jEndNow = new java.util.Date(Calendar.getInstance().getTime().getTime());
-                    datePredicate = cb.between(from.get(Entry_.createdDate),
+                    datePredicate = cb.between(pathDate,
                             jStart,
                             jEndNow);
                 } else if (start == null && end != null) {
                     Date jStart1970 = new java.util.Date(0);
                     Date jEnd = new java.util.Date(Long.valueOf(end) * 1000);
-                    datePredicate = cb.between(from.get(Entry_.createdDate),
+                    datePredicate = cb.between(pathDate,
                             jStart1970,
                             jEnd);
                 } else {
                     Date jStart = new java.util.Date(Long.valueOf(start) * 1000);
                     Date jEnd = new java.util.Date(Long.valueOf(end) * 1000);
-                    datePredicate = cb.between(from.get(Entry_.createdDate),
+                    datePredicate = cb.between(pathDate,
                             jStart,
                             jEnd);
                 }
@@ -321,19 +340,6 @@ public class LogManager {
             cq.select(from);
             cq.where(finalPredicate);
             cq.groupBy(from);
-            switch (sortType) {
-                    case "created":
-                        cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
-                        break;
-                    case "modified":
-                        cq.orderBy(cb.desc(logs.get(Log_.modifiedDate)));
-                        break;
-                    case "eventStart":
-                        cq.orderBy(cb.desc(bitemporalLog.get(BitemporalLog_.validityStart)));
-                        break;
-                    default:
-                        cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
-            }
                        
             TypedQuery<Entry> typedQuery = em.createQuery(cq);
             if (!paginate_matches.isEmpty()) {
@@ -464,7 +470,7 @@ public class LogManager {
         try {
             em.getTransaction().begin();
             Entry entry = em.find(Entry.class, id);
-            BitemporalLog result = entry.log().getHistory().get(Integer.getInteger(version).intValue());
+            BitemporalLog result = entry.log().getHistory().get(Integer.parseInt(version));
             em.getTransaction().commit();
             return result;
         } catch (ArrayIndexOutOfBoundsException e) {
