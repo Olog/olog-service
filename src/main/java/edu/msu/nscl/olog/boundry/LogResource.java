@@ -35,7 +35,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
 
 /**
  * Top level Jersey HTTP methods for the .../logs URL
@@ -43,7 +42,6 @@ import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 @Path("/logs/")
-@CrossOriginResourceSharing(allowAllOrigins = true, allowCredentials = true)
 public class LogResource {
 
     //@Resource

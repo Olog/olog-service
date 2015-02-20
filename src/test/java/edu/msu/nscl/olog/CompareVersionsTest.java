@@ -1,5 +1,6 @@
 package edu.msu.nscl.olog;
 
+
 import edu.msu.nscl.olog.boundry.LogManager;
 import edu.msu.nscl.olog.entity.XmlAttachments;
 import edu.msu.nscl.olog.entity.XmlLogs;
@@ -23,7 +24,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import org.apache.cxf.jaxrs.impl.MetadataMap;
+import javax.ws.rs.core.MultivaluedHashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -55,7 +56,7 @@ public class CompareVersionsTest {
     }
 
     public void findLogByAttribute() throws OlogException {
-        MultivaluedMap<String, String> map = new MetadataMap();
+        MultivaluedMap<String,String> map = new MultivaluedHashMap<String, String>();
         map.add("sweep.crystal_name", "ECF_229");
         map.add("limit", "20");
         map.add("page", "1");
@@ -86,7 +87,7 @@ public class CompareVersionsTest {
 
 
     public void findLogByDate() throws OlogException {
-        MultivaluedMap<String, String> map = new MetadataMap();
+        MultivaluedMap<String,String> map = new MultivaluedHashMap<String, String>();
         map.add("start", String.valueOf(DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH).getTime() / 1000));
         List<BitemporalLog> newLogs = LogManager.findLog(map);
         List<BitemporalLog> oldLogs = LogManagerTest.findLog(map);

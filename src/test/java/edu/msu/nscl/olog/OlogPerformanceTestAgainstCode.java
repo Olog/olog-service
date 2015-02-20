@@ -1,6 +1,7 @@
 package edu.msu.nscl.olog;
 
 
+
 import edu.msu.nscl.olog.boundry.LogManager;
 import edu.msu.nscl.olog.boundry.LogbookManager;
 import edu.msu.nscl.olog.boundry.TagManager;
@@ -37,7 +38,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import org.apache.cxf.jaxrs.impl.MetadataMap;
+import javax.ws.rs.core.MultivaluedHashMap;
 
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
@@ -100,7 +101,7 @@ public class OlogPerformanceTestAgainstCode {
 
 
     public void findLogByAttribute(String dbTypeText) throws RepositoryException, OlogException, IOException {
-        MultivaluedMap<String, String> map = new MetadataMap();
+        MultivaluedMap<String,String> map = new MultivaluedHashMap<String, String>();
         map.add("sweep.crystal_name", "ECF_229");
         long startTime = System.nanoTime();
         List<BitemporalLog> logs = LogManager.findLog(map);
@@ -112,7 +113,7 @@ public class OlogPerformanceTestAgainstCode {
     }
 
     public void findLogByDescription(String dbTypeText) throws RepositoryException, OlogException, IOException {
-        MultivaluedMap<String, String> map = new MetadataMap();
+        MultivaluedMap<String,String> map = new MultivaluedHashMap<String, String>();
         map.add("search", "Energy");
         long startTime = System.nanoTime();
         List<BitemporalLog> logs = LogManager.findLog(map);
@@ -147,7 +148,7 @@ public class OlogPerformanceTestAgainstCode {
     }
 
     public void findLogByDate(String dbTypeText) throws RepositoryException, OlogException, IOException {
-        MultivaluedMap<String, String> map = new MetadataMap();
+        MultivaluedMap<String,String> map = new MultivaluedHashMap<String, String>();
         map.add("start", String.valueOf(DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH).getTime() / 1000));
         long startTime = System.nanoTime();
         List<BitemporalLog> logs = LogManager.findLog(map);

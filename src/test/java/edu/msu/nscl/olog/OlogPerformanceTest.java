@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import org.apache.cxf.jaxrs.impl.MetadataMap;
+import javax.ws.rs.core.MultivaluedHashMap;
 
 public class OlogPerformanceTest {
 
@@ -74,7 +74,7 @@ public class OlogPerformanceTest {
     }
 
     public void findLogByAttribute(String dbTypeText) throws RepositoryException, OlogException, IOException {
-        MultivaluedMap<String, String> map = new MetadataMap();
+        MultivaluedMap<String,String> map = new MultivaluedHashMap<String, String>();
         map.add("sweep.crystal_name", "ECF_229");
         long startTime = System.nanoTime();
         List<BitemporalLog> logs = LogManagerTest.findLog(map);
@@ -120,7 +120,7 @@ public class OlogPerformanceTest {
     }
 
     public void findLogByDate(String dbTypeText) throws RepositoryException, OlogException, IOException {
-        MultivaluedMap<String, String> map = new MetadataMap();
+        MultivaluedMap<String,String> map = new MultivaluedHashMap<String, String>();
         map.add("start", String.valueOf(DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH).getTime() / 1000));
         long startTime = System.nanoTime();
         List<BitemporalLog> logs = LogManagerTest.findLog(map);

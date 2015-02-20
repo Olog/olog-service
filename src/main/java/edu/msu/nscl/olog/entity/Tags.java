@@ -6,7 +6,6 @@
 package edu.msu.nscl.olog.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonRootName;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;

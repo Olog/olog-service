@@ -6,7 +6,6 @@
 package edu.msu.nscl.olog.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.io.Serializable;
 import java.util.*;
 import javax.xml.bind.annotation.*;

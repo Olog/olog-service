@@ -16,11 +16,12 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
+import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.io.IOUtils;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
-import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 
 /**
@@ -29,7 +30,6 @@ import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
  * @author Eric Berryman
  */
 @Path("/attachments/")
-@CrossOriginResourceSharing(allowAllOrigins = true, allowCredentials = true)
 public class AttachmentResource {
 
     @Context
@@ -103,6 +103,8 @@ public class AttachmentResource {
     /**
      * GET method for retrieving the list of attachments for a given log.
      *
+     * @param logId
+     * @param fileName
      * @return
      */
     @GET
@@ -132,8 +134,12 @@ public class AttachmentResource {
     /**
      * POST method for adding a new Attachment to a log entry.
      *
-     * @param Long logId the id of the log entry that the property is being added to
-     * @param data the MULTIPART_FORM_DATA containing attachment and values to be added to be associated with the log entry
+     * @param req
+     * @param headers
+     * @param logId the id of the log entry that the property is being added to
+     * @param uploadedInputStream
+     * @param disposition
+     * @param body
      * @return
      */
     @POST
@@ -142,7 +148,9 @@ public class AttachmentResource {
     public Response addAttachment(@Context HttpServletRequest req, 
                                   @Context HttpHeaders headers, 
                                   @PathParam("logId") Long logId,
-                                  @Multipart("file") org.apache.cxf.jaxrs.ext.multipart.Attachment incommingAttachment) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+                                  @FormDataParam("file") InputStream uploadedInputStream,
+                                  @FormDataParam("file") FormDataContentDisposition disposition,
+                                  @FormDataParam("file") FormDataBodyPart body) {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
@@ -154,11 +162,11 @@ public class AttachmentResource {
                 cm.checkUserBelongsToGroupOfLog(um.getUserName(), logId);
             }
             //TODO: Check PathParam fileName?
-            attachment.setFileName(incommingAttachment.getContentDisposition().getParameter("filename"));
-            attachment.setMimeType(incommingAttachment.getContentType());
-            attachment.setContent(incommingAttachment.getObject(InputStream.class));
+            attachment.setFileName(disposition.getFileName());
+            attachment.setMimeType(body.getMediaType());
+            attachment.setContent(uploadedInputStream);
             //attachment.setFileSize(incommingAttachment.getContentDisposition().getParameter(null))); 
-            attachment.setEncoding(nonNull(incommingAttachment.getHeaders().getFirst("Content-Transfer-Encoding")));
+            attachment.setEncoding(nonNull(body.getHeaders().getFirst("Content-Transfer-Encoding")));
             result = cm.createAttachment(attachment, logId);
 
             Response r = Response.ok(result).build();
@@ -169,15 +177,23 @@ public class AttachmentResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|"
                     + e.getResponseStatusCode() + "|cause=" + e);
             return e.toResponse();
+        } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
+            log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|"
+                    + Status.BAD_REQUEST + "|cause=" + e);
+            return new OlogException(Status.BAD_REQUEST,e.toString()).toResponse();
         }
     }
     
     /**
      * PUT method for adding a new Attachment to a log entry.
      *
-     * @param String fileName the fileName of the file being added
-     * @param Long logId the id of the log entry that the property is being added to
-     * @param data the MULTIPART_FORM_DATA containing attachment and values to be added to be associated with the log entry
+     * @param req
+     * @param headers
+     * @param fileName
+     * @param logId
+     * @param uploadedInputStream
+     * @param disposition
+     * @param body
      * @return
      */
     @PUT
@@ -187,7 +203,9 @@ public class AttachmentResource {
                                   @Context HttpHeaders headers, 
                                   @PathParam("fileName") String fileName, 
                                   @PathParam("logId") Long logId,
-                                  @Multipart("file") org.apache.cxf.jaxrs.ext.multipart.Attachment incommingAttachment) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+                                  @FormDataParam("file") InputStream uploadedInputStream,
+                                  @FormDataParam("file") FormDataContentDisposition disposition,
+                                  @FormDataParam("file") FormDataBodyPart body) {
         OlogImpl cm = OlogImpl.getInstance();
         UserManager um = UserManager.getInstance();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
@@ -198,16 +216,16 @@ public class AttachmentResource {
                 cm.checkUserBelongsToGroupOfLog(um.getUserName(), logId);
             }
             //TODO: Check PathParam fileName?
-            attachment.setFileName(incommingAttachment.getContentDisposition().getParameter("filename"));
-            attachment.setMimeType(incommingAttachment.getContentType());
-            attachment.setContent(incommingAttachment.getObject(InputStream.class));
+            attachment.setFileName(disposition.getFileName());
+            attachment.setMimeType(body.getMediaType());
+            attachment.setContent(uploadedInputStream);
             //attachment.setFileSize(incommingAttachment.getContentDisposition().getParameter(null))); 
-            attachment.setEncoding(nonNull(incommingAttachment.getHeaders().getFirst("Content-Transfer-Encoding")));
+            attachment.setEncoding(nonNull(body.getHeaders().getFirst("Content-Transfer-Encoding")));
             //TODO: Should be destructive (replace)
             //cm.removeExistingAttachment(fileName,logId);
             cm.createAttachment(attachment, logId);
  
-            String output = "File uploaded to : " + logId.toString()+"/"+incommingAttachment.getContentDisposition().getParameter("filename");
+            String output = "File uploaded to : " + logId.toString()+"/"+disposition.getFileName();
             Response r = Response.status(200).entity(output).build();
             
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus() + " | " + output);
@@ -216,6 +234,10 @@ public class AttachmentResource {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|ERROR|"
                     + e.getResponseStatusCode() + "|cause=" + e);
             return e.toResponse();
+        } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
+            log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|"
+                    + Status.BAD_REQUEST + "|cause=" + e);
+            return new OlogException(Status.BAD_REQUEST,e.toString()).toResponse();
         }
     }
 

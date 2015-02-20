@@ -28,16 +28,14 @@ import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.LogAttribute;
 import edu.msu.nscl.olog.entity.Logbook;
 import edu.msu.nscl.olog.entity.XmlLog;
-import edu.msu.nscl.olog.entity.bitemporal.TimeUtils;
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import javax.jcr.*;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+
 import javax.ws.rs.core.Response;
-import org.apache.cxf.jaxrs.impl.MetadataMap;
-import org.joda.time.DateTime;
-import org.joda.time.Interval;
 
 /**
  * Central business logic layer that implements all directory operations.
@@ -358,7 +356,7 @@ public class OlogImpl {
     public Tag createOrReplaceTag(String tagName, Tag data) throws OlogException {
         Tag tag = TagManager.create(tagName);
         if (data.getLogs().size() > 0) {
-            MultivaluedMap<String, String> map = new MetadataMap();
+            MultivaluedMap<String, String> map = new MultivaluedHashMap<String, String>();
             map.add("tag", tagName);
             List<BitemporalLog> logs = LogManager.findLog(map);
             List<BitemporalLog> logsData = new ArrayList<BitemporalLog>();

@@ -44,7 +44,7 @@ public class JCRUtil extends OlogContextListener {
                 jcrInDb = (Boolean) initCtx.lookup("java:/comp/env/JCR_IN_DB");
             } catch (NamingException e ) {
             }
-            System.out.println(jcrInDb);
+            System.out.println("JCR in DB (java:/comp/env/JCR_IN_DB): "+jcrInDb);
             if (Boolean.TRUE.equals(jcrInDb)) {
                 xml = filePath + "/repository_db.xml";
             } else {

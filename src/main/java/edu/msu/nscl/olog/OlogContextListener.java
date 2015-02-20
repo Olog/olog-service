@@ -31,7 +31,8 @@ import org.apache.jackrabbit.core.RepositoryImpl;
 
 import com.googlecode.flyway.core.Flyway;
 import com.googlecode.flyway.core.api.MigrationVersion;
-import org.apache.cxf.jaxrs.impl.MetadataMap;
+import javax.ws.rs.core.MultivaluedHashMap;
+
 
 public class OlogContextListener implements ServletContextListener {
 
@@ -126,7 +127,7 @@ public class OlogContextListener implements ServletContextListener {
             }
             
             flyway.migrate();
-            System.out.println("Database is up to date: ");
+            System.out.println("Database is up to date. ");
             DbConnection.getInstance().close();
 
             repo = new JCRUtil();
@@ -136,7 +137,7 @@ public class OlogContextListener implements ServletContextListener {
                 Logger.getLogger(OlogContextListener.class.getName()).log(Level.SEVERE, null, e);
 
             }
-            System.out.println("Olog JCR has been initialized: ");
+            System.out.println("Olog JCR has been initialized. ");
         } catch (OlogException ex) {
             Logger.getLogger(OlogContextListener.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -146,7 +147,7 @@ public class OlogContextListener implements ServletContextListener {
         OlogImpl cm = OlogImpl.getInstance();
         Logbooks logbooks  = cm.listLogbooks();
         for (Logbook logbook : logbooks.getLogbooks()) {
-            MultivaluedMap<String,String> map = new MetadataMap();
+            MultivaluedMap<String,String> map = new MultivaluedHashMap<String, String>();
             map.add("logbook", logbook.getName());
             map.add("limit", "10");
             map.add("search", "*");

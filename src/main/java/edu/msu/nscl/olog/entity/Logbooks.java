@@ -5,7 +5,6 @@
  */
 package edu.msu.nscl.olog.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -47,7 +46,6 @@ public class Logbooks {
      * @return logbooks a collection of Logbook
      */
     @XmlElement(name = "logbook")
-    @JsonProperty("logbook")
     public Collection<Logbook> getLogbooks() {
         return logbooks;
     }

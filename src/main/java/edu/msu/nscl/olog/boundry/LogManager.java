@@ -277,19 +277,15 @@ public class LogManager {
                 switch (sortType) {
                     case "created":
                         pathDate = from.get(Entry_.createdDate);
-                        cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
                         break;
                     case "modified":
                         pathDate = logs.get(Log_.modifiedDate);
-                        cq.orderBy(cb.desc(logs.get(Log_.modifiedDate)));
                         break;
                     case "eventStart":
                         pathDate = bitemporalLog.get(BitemporalLog_.validityStart);
-                        cq.orderBy(cb.desc(bitemporalLog.get(BitemporalLog_.validityStart)));
                         break;
                     default:
                         pathDate = from.get(Entry_.createdDate);
-                        cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
                 }
                 
                 if (start != null && end == null) {
@@ -340,6 +336,19 @@ public class LogManager {
             cq.select(from);
             cq.where(finalPredicate);
             cq.groupBy(from);
+            switch (sortType) {
+                    case "created":
+                        cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
+                        break;
+                    case "modified":
+                        cq.orderBy(cb.desc(logs.get(Log_.modifiedDate)));
+                        break;
+                    case "eventStart":
+                        cq.orderBy(cb.desc(bitemporalLog.get(BitemporalLog_.validityStart)));
+                        break;
+                    default:
+                        cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
+                }
                        
             TypedQuery<Entry> typedQuery = em.createQuery(cq);
             if (!paginate_matches.isEmpty()) {
