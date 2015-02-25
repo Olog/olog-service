@@ -1,3 +1,0 @@
-glob:app/tmp/*
-glob:olog/target/*
-glob:ologAPI/target/*
