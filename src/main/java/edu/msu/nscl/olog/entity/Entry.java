@@ -4,8 +4,8 @@
  */
 package edu.msu.nscl.olog.entity;
 
-import edu.msu.nscl.olog.entity.bitemporal.WrappedBitemporalProperty;
-import edu.msu.nscl.olog.entity.bitemporal.WrappedValueAccessor;
+import edu.msu.nscl.olog.bitemporal.control.WrappedBitemporalProperty;
+import edu.msu.nscl.olog.bitemporal.control.WrappedValueAccessor;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;

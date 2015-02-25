@@ -2,7 +2,7 @@
  * (c) Copyright Ervacon 2007.
  * All Rights Reserved.
  */
-package edu.msu.nscl.olog.entity.bitemporal;
+package edu.msu.nscl.olog.bitemporal.control;
 
 import java.io.Serializable;
 import java.sql.Timestamp;

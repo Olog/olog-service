@@ -15,7 +15,7 @@ import edu.msu.nscl.olog.entity.XmlAttachment;
 import edu.msu.nscl.olog.entity.XmlLog;
 import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.entity.XmlProperty;
-import edu.msu.nscl.olog.entity.bitemporal.TimeUtils;
+import edu.msu.nscl.olog.bitemporal.control.TimeUtils;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;

@@ -5,8 +5,8 @@
  */
 package edu.msu.nscl.olog.entity;
 
-import edu.msu.nscl.olog.entity.bitemporal.Bitemporal;
-import edu.msu.nscl.olog.entity.bitemporal.BitemporalWrapper;
+import edu.msu.nscl.olog.bitemporal.control.Bitemporal;
+import edu.msu.nscl.olog.bitemporal.control.BitemporalWrapper;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

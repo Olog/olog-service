@@ -5,7 +5,7 @@
  */
 package edu.msu.nscl.olog.entity;
 
-import edu.msu.nscl.olog.entity.bitemporal.BitemporalWrapper_;
+import edu.msu.nscl.olog.bitemporal.control.BitemporalWrapper_;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 

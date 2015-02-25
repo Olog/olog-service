@@ -1,4 +1,4 @@
-package edu.msu.nscl.olog.entity.bitemporal;
+package edu.msu.nscl.olog.bitemporal.control;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;

@@ -25,7 +25,7 @@ import edu.msu.nscl.olog.OlogException;
 import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.BitemporalLog_;
 import edu.msu.nscl.olog.entity.State;
-import edu.msu.nscl.olog.entity.bitemporal.BitemporalProperty;
+import edu.msu.nscl.olog.bitemporal.control.BitemporalProperty;
 import java.lang.reflect.Method;
 import java.util.*;
 import javax.persistence.EntityManager;
