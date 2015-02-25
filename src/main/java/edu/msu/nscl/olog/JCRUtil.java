@@ -5,9 +5,6 @@
 
 package edu.msu.nscl.olog;
 
-import java.io.File;
-import java.lang.Boolean;
-import java.lang.String;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,11 +15,8 @@ import javax.jcr.SimpleCredentials;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.servlet.ServletContext;
 import org.apache.jackrabbit.core.RepositoryImpl;
-import org.apache.jackrabbit.core.config.ConfigurationException;
 import org.apache.jackrabbit.core.config.RepositoryConfig;
-import org.apache.jackrabbit.j2ee.RepositoryAccessServlet;
 
 public class JCRUtil extends OlogContextListener {
     private static Repository repository;

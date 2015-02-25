@@ -3,7 +3,6 @@
  */
 package edu.msu.nscl.olog.boundry;
 
-import edu.msu.nscl.olog.entity.Log;
 import edu.msu.nscl.olog.OlogException;
 import edu.msu.nscl.olog.control.Mapper;
 import edu.msu.nscl.olog.control.OlogImpl;
@@ -14,7 +13,6 @@ import edu.msu.nscl.olog.entity.XmlProperties;
 import edu.msu.nscl.olog.entity.XmlProperty;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;

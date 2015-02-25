@@ -12,7 +12,6 @@ import edu.msu.nscl.olog.control.OlogImpl;
 import edu.msu.nscl.olog.UserManager;
 import java.io.IOException;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.DELETE;

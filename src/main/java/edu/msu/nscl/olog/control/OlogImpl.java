@@ -62,52 +62,6 @@ public class OlogImpl {
     }
 
     /**
-     * Merges Logbooks and Tags of two logs in place
-     *
-     * @param dest destination log
-     * @param src source log
-     */
-    public static void mergeXmlLogs(XmlLog dest, XmlLog src) {
-//        if(src.getSubject() != null)
-//            dest.setSubject(src.getSubject());
-        if (src.getDescription() != null) {
-            dest.setDescription(src.getDescription());
-        }
-        if (src.getLevel() != null) {
-            dest.setLevel(src.getLevel());
-        }
-        src_logbooks:
-        for (Logbook s : src.getLogbooks()) {
-            for (Logbook d : dest.getLogbooks()) {
-                if (d.getName().equals(s.getName())) {
-                    continue src_logbooks;
-                }
-            }
-            dest.getLogbooks().add(s);
-        }
-        src_tags:
-        for (Tag s : src.getTags()) {
-            for (Tag d : dest.getTags()) {
-                if (d.getName().equals(s.getName())) {
-//TODO: here                   d.setState(s.getState());
-                    continue src_tags;
-                }
-            }
-            dest.getTags().add(s);
-        }
-        src_properties:
-        for (XmlProperty s : src.getXmlProperties()) {
-            for (XmlProperty d : dest.getXmlProperties()) {
-                if (d.getName().equals(s.getName())) {
-                    d.setAttributes(s.getAttributes());
-                    continue src_properties;
-                }
-            }
-            dest.getXmlProperties().add(s);
-        }
-    }
-
-    /**
      * Return single log found by log id.
      *
      * @param logId id to look for

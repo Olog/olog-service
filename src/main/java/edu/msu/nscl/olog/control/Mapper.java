@@ -18,7 +18,6 @@ import edu.msu.nscl.olog.entity.XmlProperty;
 import edu.msu.nscl.olog.entity.bitemporal.TimeUtils;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;

@@ -28,7 +28,7 @@ public abstract class UserManager {
     private ThreadLocal<Collection<String>> groups = new ThreadLocal<Collection<String>>();
     private ThreadLocal<String> hostName = new ThreadLocal<String>();
     
-    private static final String defaultUserManager = "edu.msu.nscl.olog.IDUserManager";
+    private static final String defaultUserManager = "edu.msu.nscl.olog.JACCUserManager";
     private static final String userManager;
     private static UserManager instance;
     

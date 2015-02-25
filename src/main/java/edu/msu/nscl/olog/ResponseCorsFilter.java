@@ -25,7 +25,7 @@ public class ResponseCorsFilter implements ContainerResponseFilter {
         
         if(null != reqHead && !reqHead.equals(null)){
             headers.add("Access-Control-Allow-Headers", reqHead);
-        }
+        }       
     }
         
 }

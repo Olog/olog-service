@@ -6,7 +6,6 @@
 
 package edu.msu.nscl.olog;
 
-import edu.msu.nscl.olog.UserManager;
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.regex.Pattern;
@@ -18,7 +17,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
@@ -61,18 +59,18 @@ public class ADLDAPUserManager extends UserManager {
 
     @Override
     protected Set<String> getGroups(Principal user) {
-        try {
+            try {
             Set<String> groups = new HashSet<String>();
             DirContext dirctx = getJndiContext();
             SearchControls ctrls = new SearchControls();
             ctrls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-
+            
             String searchfilter = "(&(objectClass=user)(" + memberUidField + "=" + user.getName() + "))";
             String[] attributesToReturn = { "sAMAccountName", "memberOf", "cn" };
             ctrls.setReturningAttributes(attributesToReturn);
             NamingEnumeration<SearchResult> result = dirctx.search("", searchfilter, ctrls);
-
             
+	
             while (result.hasMore()) {
                 Attribute att = result.next().getAttributes().get(groupTargetField);
                 if (att != null) {
@@ -80,13 +78,13 @@ public class ADLDAPUserManager extends UserManager {
                         Matcher m = Pattern.compile("CN=(.*?),[A-Z]{2}=",Pattern.CASE_INSENSITIVE).matcher((String)att.get(i));
                         if (m.find())
                             groups.add(m.group(1));
-                    }  
                 }
             }
+        }
             return groups;
         } catch (NamingException e) {
                 throw new IllegalStateException("Error while retrieving group information for user '"
                         + user.getName() + "'", e);
         }
+        }
     }
-}
