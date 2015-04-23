@@ -29,6 +29,8 @@ import edu.msu.nscl.olog.bitemporal.control.BitemporalProperty;
 import java.lang.reflect.Method;
 import java.util.*;
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import javax.ws.rs.core.MultivaluedMap;
@@ -71,7 +73,7 @@ public class LogManager {
         try {
             em.getTransaction().begin();
             CriteriaBuilder cb = em.getCriteriaBuilder();
-            CriteriaQuery<Entry> cq = cb.createQuery(Entry.class);
+            CriteriaQuery<Tuple> cq = cb.createTupleQuery();
             Root<Entry> from = cq.from(Entry.class);
             Join<Entry, BitemporalLog> bitemporalLog = from.join(Entry_.logs, JoinType.INNER);
             Join<BitemporalLog, Log> logs = bitemporalLog.join(BitemporalLog_.log, JoinType.LEFT);
@@ -279,7 +281,7 @@ public class LogManager {
                         pathDate = from.get(Entry_.createdDate);
                         break;
                     case "modified":
-                        pathDate = logs.get(Log_.modifiedDate);
+                        pathDate = bitemporalLog.get(BitemporalLog_.recordStart);
                         break;
                     case "eventStart":
                         pathDate = bitemporalLog.get(BitemporalLog_.validityStart);
@@ -309,8 +311,6 @@ public class LogManager {
                 }
                 andPredicates.add(datePredicate);
             }
-
-            cq.distinct(true);
             
             Predicate statusPredicate = cb.equal(from.get(Entry_.state), State.Active);
             andPredicates.add(statusPredicate);
@@ -332,25 +332,28 @@ public class LogManager {
                 }
                 finalPredicate = cb.and(finalPredicate, orfinalPredicate);
             }
-
-            cq.select(from);
-            cq.where(finalPredicate);
-            cq.groupBy(from);
+            
+            Expression max;
             switch (sortType) {
                     case "created":
-                        cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
+                        max = cb.greatest(from.get(Entry_.createdDate));
                         break;
                     case "modified":
-                        cq.orderBy(cb.desc(logs.get(Log_.modifiedDate)));
+                        max = cb.greatest(bitemporalLog.get(BitemporalLog_.recordStart));
                         break;
                     case "eventStart":
-                        cq.orderBy(cb.desc(bitemporalLog.get(BitemporalLog_.validityStart)));
+                        max = cb.greatest(bitemporalLog.get(BitemporalLog_.validityStart));
                         break;
                     default:
-                        cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
+                        max = cb.greatest(from.get(Entry_.createdDate));
+                        
                 }
-                       
-            TypedQuery<Entry> typedQuery = em.createQuery(cq);
+            cq.multiselect(max,from);
+            cq.where(finalPredicate);
+            cq.groupBy(from.get(Entry_.id));
+            cq.orderBy(cb.desc(max));
+
+            Query typedQuery = em.createQuery(cq);
             if (!paginate_matches.isEmpty()) {
                 String page = null, limit = null;
                 for (Map.Entry<String, Collection<String>> match : paginate_matches.asMap().entrySet()) {
@@ -396,11 +399,11 @@ public class LogManager {
                 historyMethod = BitemporalProperty.class.getMethod(methodString);
             }
             
-            List<Entry> rs = typedQuery.getResultList();
+            List<Tuple> rs = typedQuery.getResultList();
             if (rs != null) {
-                Iterator<Entry> iterator = rs.iterator();
+                Iterator<Tuple> iterator = rs.iterator();
                 while (iterator.hasNext()) {
-                    Entry e = iterator.next();
+                    Entry e = (Entry)iterator.next().get(1);
                     if (history) {
                         Entry entry = ((Entry) em.find(Entry.class, e.getId()));
                         List<BitemporalLog> all = (List<BitemporalLog>) historyMethod.invoke(entry.log());

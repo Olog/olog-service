@@ -18,6 +18,7 @@ import edu.msu.nscl.olog.entity.XmlProperty;
 import edu.msu.nscl.olog.bitemporal.control.TimeUtils;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -97,7 +98,7 @@ public final class Mapper {
                 log.getSource(),
                 log.getLevel(),
                 log.getState(),
-                log.getModifiedDate(),
+                bitemporalLog.getRecordInterval().getStart().toDate(),
                 log.getEntry().getCreatedDate(),
                 bitemporalLog.getValidityInterval().getStart().toDate(),
                 bitemporalLog.getValidityInterval().getEnd().toDate(),
@@ -141,24 +142,36 @@ public final class Mapper {
     
     private static Collection<XmlProperty> getXmlProperties(Set<LogAttribute> logAttribute){
         Iterator<LogAttribute> iter = logAttribute.iterator();
-        Collection<XmlProperty> xmlProperties = new HashSet<XmlProperty>();
+        Collection<XmlProperty> finalXmlProperties = new ArrayList<XmlProperty>();
+        Map<Long, XmlProperty> xmlProperties = new HashMap<Long, XmlProperty>();
         while (iter.hasNext()) {
-            XmlProperty xmlProperty = new XmlProperty();
-            Map<String, String> map = new HashMap<String, String>();
             LogAttribute logattr = iter.next();
-            Attribute attr = logattr.getAttribute();
-            xmlProperty.setName(attr.getProperty().getName());
-            xmlProperty.setId(attr.getProperty().getId());
-            for (XmlProperty prevXmlProperty : xmlProperties) {
-                if (prevXmlProperty.getId().equals(xmlProperty.getId())) {
-                    map = prevXmlProperty.getAttributes();
+            XmlProperty xmlProperty = xmlProperties.get(logattr.getGroupingNum());
+            if (xmlProperty != null) {
+                Attribute attr = logattr.getAttribute();
+                Map<String, String> map = xmlProperty.getAttributes();
+                map.put(attr.getName(), logattr.getValue());
+                xmlProperty.setAttributes(map);
+            } else {
+                if (xmlProperties.containsKey(logattr.getGroupingNum())) {
+                    // key is null
+                } else {
+                    xmlProperty = new XmlProperty();
+                    Attribute attr = logattr.getAttribute();
+                    xmlProperty.setName(attr.getProperty().getName());
+                    xmlProperty.setId(attr.getProperty().getId());
+                    Map<String, String> map = new HashMap<>();
+                    map.put(attr.getName(), logattr.getValue());
+                    xmlProperty.setAttributes(map);
                 }
             }
-            map.put(attr.getName(), logattr.getValue());
-            xmlProperty.setAttributes(map);
-            xmlProperties.add(xmlProperty);
+            xmlProperties.put(logattr.getGroupingNum(), xmlProperty);
         }
-        return xmlProperties;
+        for (Map.Entry<Long, XmlProperty> map : xmlProperties.entrySet()) {
+            finalXmlProperties.add(map.getValue());
+        }
+
+        return finalXmlProperties;
     }
     
     public static Set<LogAttribute> getLogAttributes(Collection<XmlProperty> xmlProperties) throws OlogException{
@@ -176,6 +189,7 @@ public final class Mapper {
                         logattr.setAttribute(newAtt);
                         logattr.setAttributeId(newAtt.getId());
                         logattr.setValue(att.getValue());
+                        logattr.setGroupingNum(i);
                         logattrs.add(logattr);
                     } else {
                         throw new OlogException(Response.Status.NOT_FOUND,

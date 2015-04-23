@@ -4,6 +4,7 @@
  */
 package edu.msu.nscl.olog.entity;
 
+import edu.msu.nscl.olog.bitemporal.control.TimeUtils;
 import edu.msu.nscl.olog.bitemporal.control.WrappedBitemporalProperty;
 import edu.msu.nscl.olog.bitemporal.control.WrappedValueAccessor;
 import java.io.Serializable;
@@ -40,7 +41,7 @@ public class Entry implements Serializable {
 
     @PrePersist
     public void setUpdated() {
-        this.setCreatedDate(new Date());
+        this.setCreatedDate(TimeUtils.now().toDate());
     }
     
     public WrappedBitemporalProperty<Log, BitemporalLog> log() {

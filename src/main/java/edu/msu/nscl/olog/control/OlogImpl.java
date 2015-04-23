@@ -548,7 +548,7 @@ public class OlogImpl {
     private BitemporalLog createOneLog(BitemporalLog data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
         UserManager um = UserManager.getInstance();
         data.getLog().setSource(um.getHostAddress());
-        data.getLog().setOwner(um.getUserName());
+        //data.getLog().setOwner(um.getUserName());
         return LogManager.create(data);
     }
 

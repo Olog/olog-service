@@ -5,6 +5,7 @@
  */
 package edu.msu.nscl.olog.entity;
 
+import edu.msu.nscl.olog.bitemporal.control.TimeUtils;
 import java.io.Serializable;
 import java.util.*;
 import javax.persistence.*;

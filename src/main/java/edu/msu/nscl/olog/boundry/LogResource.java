@@ -9,6 +9,7 @@ import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.OlogException;
 import edu.msu.nscl.olog.control.OlogImpl;
 import edu.msu.nscl.olog.UserManager;
+import edu.msu.nscl.olog.bitemporal.control.TimeUtils;
 import edu.msu.nscl.olog.control.Mapper;
 import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.XmlLog;
@@ -33,8 +34,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
+import org.joda.time.DateTime;
 
 /**
  * Top level Jersey HTTP methods for the .../logs URL
@@ -46,7 +49,6 @@ public class LogResource {
 
     //@Resource
     //private WebServiceContext wsContext
-
     @Context
     private UriInfo uriInfo;
     @Context
@@ -95,7 +97,7 @@ public class LogResource {
         try {
             List<BitemporalLog> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
             XmlLogs xmlresult = Mapper.getXmlLogs(result);
-           
+
             Response r = Response.ok(xmlresult.getLogs()).build();
             audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.size() + " logs");
@@ -126,7 +128,7 @@ public class LogResource {
 
         try {
             List<BitemporalLog> log_data = new ArrayList<BitemporalLog>();
-            for(XmlLog datum : data.getLogs()){
+            for (XmlLog datum : data.getLogs()) {
                 BitemporalLog result = Mapper.getBitemporalLog(datum);
                 result.getLog().setOwner(um.getUserName());
                 log_data.add(result);
@@ -163,7 +165,7 @@ public class LogResource {
         um.setHostAddress(hostAddress);
         try {
             List<BitemporalLog> log_data = new ArrayList<BitemporalLog>();
-            for(XmlLog datum : data){
+            for (XmlLog datum : data) {
                 BitemporalLog result = Mapper.getBitemporalLog(datum);
                 result.getLog().setOwner(um.getUserName());
                 log_data.add(result);
@@ -239,7 +241,7 @@ public class LogResource {
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(hostAddress);
         try {
-            BitemporalLog log_data = Mapper.getBitemporalLogMergeInterval(logId,data);
+            BitemporalLog log_data = Mapper.getBitemporalLogMergeInterval(logId, data);
 
             log_data.getLog().setOwner(um.getUserName());
             cm.checkValid(log_data);
@@ -328,6 +330,58 @@ public class LogResource {
         } catch (OlogException e) {
             log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|DELETE|ERROR|" + e.getResponseStatusCode()
                     + "|cause=" + e);
+            return e.toResponse();
+        }
+    }
+
+    /**
+     * POST method for importing multiple log instances, create time
+     * and user persisted.
+     *
+     * @param data Logs data (from payload)
+     * @return HTTP Response
+     * @throws IOException when audit or log fail
+     */
+    @POST
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Path("import")
+    public Response importLogs(@Context HttpServletRequest req, @Context HttpHeaders headers, XmlLogs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
+        OlogImpl cm = OlogImpl.getInstance();
+        UserManager um = UserManager.getInstance();
+        String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
+        um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
+        um.setHostAddress(hostAddress);
+        if (!um.userHasAdminRole()) {
+            return (new OlogException(Status.FORBIDDEN, "Requires Admin")).toResponse();
+        }
+
+        try {
+            List<BitemporalLog> log_data = new ArrayList<BitemporalLog>();
+            for (XmlLog datum : data.getLogs()) {
+                TimeUtils.setReference(new DateTime(datum.getCreatedDate().getTime()));
+                BitemporalLog result = null;
+                if (datum.getId() != null) {
+                    result = Mapper.getBitemporalLogMergeInterval(datum.getId(),datum);
+                } else {
+                    result = Mapper.getBitemporalLog(datum);     
+                }
+                log_data.add(result);
+            }
+
+            cm.checkValid(log_data);
+
+            List<BitemporalLog> result = cm.createOrReplaceLogs(log_data);
+            XmlLogs xmlresult = Mapper.getXmlLogs(result);
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
+                    + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
+            Response r = Response.ok(xmlresult).build();
+            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
+                    + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
+            return r;
+        } catch (OlogException e) {
+            log.warning(um.getUserName() + "|" + uriInfo.getPath() + "|POST|ERROR|" + e.getResponseStatusCode()
+                    + "|data=" + XmlLogs.toLogger(data.getLogs()) + "|cause=" + e);
             return e.toResponse();
         }
     }
