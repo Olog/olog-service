@@ -28,6 +28,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.DependsOn;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -36,12 +42,17 @@ import org.joda.time.Interval;
  *
  * @author berryman
  */
-public final class Mapper {
-    private Mapper () {
-        
-    }
+@Startup
+@Singleton
+@DependsOn("OlogImpl")
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
+public class Mapper {
     
-    public static BitemporalLog getBitemporalLog(XmlLog xmlLog) throws OlogException{
+    @Inject
+    private OlogImpl cm;
+  
+    
+    public  BitemporalLog getBitemporalLog(XmlLog xmlLog) throws OlogException{
         Log log = getLog(xmlLog);
         
         Interval interval;
@@ -55,8 +66,7 @@ public final class Mapper {
         return log.getEntry().log().set(log, interval);
     }
     
-    public static BitemporalLog getBitemporalLogMergeInterval(Long id, XmlLog xmlLog) throws OlogException{
-        OlogImpl cm = OlogImpl.getInstance();
+    public BitemporalLog getBitemporalLogMergeInterval(Long id, XmlLog xmlLog) throws OlogException{
         BitemporalLog dest = null;
         try {
             dest = cm.findLogById(id, null);
@@ -80,7 +90,7 @@ public final class Mapper {
         return log.getEntry().log().set(log, interval);
     }
     
-    public static XmlLogs getXmlLogs(List<BitemporalLog> bitemporalLogs){
+    public  XmlLogs getXmlLogs(List<BitemporalLog> bitemporalLogs){
         XmlLogs xmlLogs = new XmlLogs();
         for( BitemporalLog bitemporalLog: bitemporalLogs){
             XmlLog xmlLog = getXmlLog(bitemporalLog);
@@ -89,7 +99,7 @@ public final class Mapper {
         return xmlLogs;
     }
     
-    public static XmlLog getXmlLog(BitemporalLog bitemporalLog){
+    public  XmlLog getXmlLog(BitemporalLog bitemporalLog){
         Log log = bitemporalLog.getLog();
         XmlLog xmlLog = new XmlLog(
                 log.getEntry().getId(),
@@ -112,7 +122,7 @@ public final class Mapper {
         return xmlLog;
     }
     
-    private static Log getLog(XmlLog xmlLog) throws OlogException{
+    private  Log getLog(XmlLog xmlLog) throws OlogException{
         Entry entry = new Entry(xmlLog.getId());
         Log log = new Log(
         null,
@@ -131,7 +141,7 @@ public final class Mapper {
         return log;
     }
     
-    private static Collection<XmlAttachment> getXmlAttachments(long id) {
+    private  Collection<XmlAttachment> getXmlAttachments(long id) {
         try {
             return AttachmentManager.findAll(id).getAttachments();
         } catch (OlogException ex) {
@@ -140,7 +150,7 @@ public final class Mapper {
         return null;
     }
     
-    private static Collection<XmlProperty> getXmlProperties(Set<LogAttribute> logAttribute){
+    private  Collection<XmlProperty> getXmlProperties(Set<LogAttribute> logAttribute){
         Iterator<LogAttribute> iter = logAttribute.iterator();
         Collection<XmlProperty> finalXmlProperties = new ArrayList<XmlProperty>();
         Map<Long, XmlProperty> xmlProperties = new HashMap<Long, XmlProperty>();
@@ -174,23 +184,25 @@ public final class Mapper {
         return finalXmlProperties;
     }
     
-    public static Set<LogAttribute> getLogAttributes(Collection<XmlProperty> xmlProperties) throws OlogException{
+    public  Set<LogAttribute> getLogAttributes(Collection<XmlProperty> xmlProperties) throws OlogException{
         Set<LogAttribute> logattrs = new HashSet<LogAttribute>();
         Long i = 0L;
         Iterator<XmlProperty> iter = xmlProperties.iterator();
         while (iter.hasNext()) {
             XmlProperty p = iter.next();
             Property prop = PropertyManager.findProperty(p.getName());
-            if (prop != null) {
+            if (prop.getName() != null) {
                 for (Map.Entry<String, String> att : p.getAttributes().entrySet()) {
                     Attribute newAtt = AttributeManager.findAttribute(prop, att.getKey());
                     if (newAtt != null) {
-                        LogAttribute logattr = new LogAttribute();
-                        logattr.setAttribute(newAtt);
-                        logattr.setAttributeId(newAtt.getId());
-                        logattr.setValue(att.getValue());
-                        logattr.setGroupingNum(i);
-                        logattrs.add(logattr);
+                        if (newAtt.getId() != null) {
+                            LogAttribute logattr = new LogAttribute();
+                            logattr.setAttribute(newAtt);
+                            logattr.setAttributeId(newAtt.getId());
+                            logattr.setValue(att.getValue());
+                            logattr.setGroupingNum(i);
+                            logattrs.add(logattr);
+                        }
                     } else {
                         throw new OlogException(Response.Status.NOT_FOUND,
                                 "Log entry  property attribute:" + prop.getName() + att.getKey() + " does not exists.");

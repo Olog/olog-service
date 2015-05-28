@@ -6,6 +6,7 @@
 package edu.msu.nscl.olog.control;
 
 import edu.msu.nscl.olog.OlogException;
+import edu.msu.nscl.olog.ResourceBinder;
 import edu.msu.nscl.olog.UserManager;
 import edu.msu.nscl.olog.boundry.LogbookManager;
 import edu.msu.nscl.olog.boundry.LogManager;
@@ -25,12 +26,20 @@ import edu.msu.nscl.olog.entity.Log;
 import edu.msu.nscl.olog.entity.Property;
 import edu.msu.nscl.olog.entity.Attribute;
 import edu.msu.nscl.olog.entity.BitemporalLog;
+import edu.msu.nscl.olog.entity.BitemporalLogs;
 import edu.msu.nscl.olog.entity.LogAttribute;
 import edu.msu.nscl.olog.entity.Logbook;
-import edu.msu.nscl.olog.entity.XmlLog;
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.DependsOn;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+import javax.inject.Inject;
 import javax.jcr.*;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
@@ -42,24 +51,15 @@ import javax.ws.rs.core.Response;
  *
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
+@Startup
+@Singleton
+@DependsOn("ResourceBinder")
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
+@TransactionManagement(TransactionManagementType.BEAN)
 public class OlogImpl {
 
-    private static OlogImpl instance = new OlogImpl();
-
-    /**
-     * Create an instance of OlogManager
-     */
-    private OlogImpl() {
-    }
-
-    /**
-     * Returns the (singleton) instance of OlogManager
-     *
-     * @return the instance of OlogManager
-     */
-    public static OlogImpl getInstance() {
-        return instance;
-    }
+    @Inject
+    private ResourceBinder rb;
 
     /**
      * Return single log found by log id.
@@ -95,7 +95,7 @@ public class OlogImpl {
      * @return Logs container with all found logs and their logbooks
      * @throws OlogException wrapping an SQLException
      */
-    public List<BitemporalLog> findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws OlogException, RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
+    public BitemporalLogs findLogsByMultiMatch(MultivaluedMap<String, String> matches) throws OlogException, RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
         return LogManager.findLog(matches);
     }
 
@@ -466,16 +466,19 @@ public class OlogImpl {
      * @throws OlogException wrapping an SQLException
      */
     public BitemporalLog addAttribute(Long logId, LogAttribute data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
-
-        BitemporalLog log = LogManager.findLog(logId);
-        Set<LogAttribute> currentLogAttributes = log.getLog().getAttributes();
-        data.setLog(log.getLog());
-        data.setAttributeId(data.getId());
-        data.setLogId(log.getLog().getId());
-        currentLogAttributes.add(data);
-        log.getLog().setAttributes(currentLogAttributes);
-
-        return LogManager.create(log);
+        if (data.getId() != null) {
+            BitemporalLog log = LogManager.findLog(logId);
+            Set<LogAttribute> currentLogAttributes = log.getLog().getAttributes();
+            data.setLog(log.getLog());
+            data.setAttributeId(data.getId());
+            data.setLogId(log.getLog().getId());
+            currentLogAttributes.add(data);
+            log.getLog().setAttributes(currentLogAttributes);
+            return LogManager.create(log);
+        } else {
+            throw new OlogException(Response.Status.NOT_FOUND,
+                    "LogAttribute id for " + data.getValue() + " could not be updated: Does not exists");
+        }   
     }
 
     /**
@@ -517,7 +520,7 @@ public class OlogImpl {
      * SQLException
      */
     public BitemporalLog createOrReplaceLog(Long logId, BitemporalLog data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         data.getLog().setSource(um.getHostAddress());
         data.getLog().setOwner(um.getUserName());
         return LogManager.create(data);
@@ -546,7 +549,7 @@ public class OlogImpl {
      * SQLException
      */
     private BitemporalLog createOneLog(BitemporalLog data) throws OlogException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         data.getLog().setSource(um.getHostAddress());
         //data.getLog().setOwner(um.getUserName());
         return LogManager.create(data);
@@ -607,6 +610,10 @@ public class OlogImpl {
                     throw new OlogException(Response.Status.BAD_REQUEST,
                             "Log entry " + log.getId() + " property does not have an attribute.");
                 } else {
+                    if (logAttribute.getValue() == null){
+                        throw new OlogException(Response.Status.BAD_REQUEST,
+                                "Log entry " + log.getId() + " property:" + logAttribute.getAttribute().getProperty().getName() + " attribute does not have a key or value.");
+                    }
                     if (logAttribute.getValue().isEmpty() || logAttribute.getAttribute().getName().isEmpty()) {
                         throw new OlogException(Response.Status.BAD_REQUEST,
                                 "Log entry " + log.getId() + " property:" + logAttribute.getAttribute().getProperty().getName() + " attribute does not have a key or value.");
@@ -834,7 +841,7 @@ public class OlogImpl {
         if (data == null) {
             return;
         }
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         if (!um.userIsInGroup(data.getOwner())) {
             throw new OlogException(Response.Status.FORBIDDEN,
                     "User '" + um.getUserName()

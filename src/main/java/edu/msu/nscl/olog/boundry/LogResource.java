@@ -7,11 +7,14 @@ package edu.msu.nscl.olog.boundry;
 
 import edu.msu.nscl.olog.entity.XmlLogs;
 import edu.msu.nscl.olog.OlogException;
+import edu.msu.nscl.olog.ResourceBinder;
 import edu.msu.nscl.olog.control.OlogImpl;
 import edu.msu.nscl.olog.UserManager;
 import edu.msu.nscl.olog.bitemporal.control.TimeUtils;
 import edu.msu.nscl.olog.control.Mapper;
+import edu.msu.nscl.olog.control.PerformanceInterceptor;
 import edu.msu.nscl.olog.entity.BitemporalLog;
+import edu.msu.nscl.olog.entity.BitemporalLogs;
 import edu.msu.nscl.olog.entity.XmlLog;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -19,6 +22,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.interceptor.Interceptors;
 import javax.jcr.RepositoryException;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
@@ -53,6 +58,12 @@ public class LogResource {
     private UriInfo uriInfo;
     @Context
     private SecurityContext securityContext;
+    @Inject
+    ResourceBinder rb;
+    @Inject
+    OlogImpl cm;
+    @Inject
+    Mapper mapper;
 
     private Logger audit = Logger.getLogger(this.getClass().getPackage().getName() + ".audit");
     private Logger log = Logger.getLogger(this.getClass().getName());
@@ -72,12 +83,13 @@ public class LogResource {
      */
     @GET
     @Produces(MediaType.APPLICATION_XML)
+    @Interceptors(PerformanceInterceptor.class) 
     public Response query() throws RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
-            List<BitemporalLog> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
-            XmlLogs xmlresult = Mapper.getXmlLogs(result);
+            BitemporalLogs result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
+            XmlLogs xmlresult = mapper.getXmlLogs(result);
+            xmlresult.setCount(result.getQueryCount());
             Response r = Response.ok(xmlresult).build();
             audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
                     + "|returns " + result.size() + " logs");
@@ -91,12 +103,12 @@ public class LogResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @Interceptors(PerformanceInterceptor.class) 
     public Response queryjson() throws RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
             List<BitemporalLog> result = cm.findLogsByMultiMatch(uriInfo.getQueryParameters());
-            XmlLogs xmlresult = Mapper.getXmlLogs(result);
+            XmlLogs xmlresult = mapper.getXmlLogs(result);
 
             Response r = Response.ok(xmlresult.getLogs()).build();
             audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus()
@@ -119,17 +131,17 @@ public class LogResource {
     @POST
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
+    @Interceptors(PerformanceInterceptor.class) 
     public Response add(@Context HttpServletRequest req, @Context HttpHeaders headers, XmlLogs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(hostAddress);
 
         try {
             List<BitemporalLog> log_data = new ArrayList<BitemporalLog>();
             for (XmlLog datum : data.getLogs()) {
-                BitemporalLog result = Mapper.getBitemporalLog(datum);
+                BitemporalLog result = mapper.getBitemporalLog(datum);
                 result.getLog().setOwner(um.getUserName());
                 log_data.add(result);
             }
@@ -140,9 +152,7 @@ public class LogResource {
             }
 
             List<BitemporalLog> result = cm.createOrReplaceLogs(log_data);
-            XmlLogs xmlresult = Mapper.getXmlLogs(result);
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
-                    + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
+            XmlLogs xmlresult = mapper.getXmlLogs(result);
             Response r = Response.ok(xmlresult).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
@@ -157,16 +167,16 @@ public class LogResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @Interceptors(PerformanceInterceptor.class) 
     public Response addjson(@Context HttpServletRequest req, @Context HttpHeaders headers, List<XmlLog> data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(hostAddress);
         try {
             List<BitemporalLog> log_data = new ArrayList<BitemporalLog>();
             for (XmlLog datum : data) {
-                BitemporalLog result = Mapper.getBitemporalLog(datum);
+                BitemporalLog result = mapper.getBitemporalLog(datum);
                 result.getLog().setOwner(um.getUserName());
                 log_data.add(result);
             }
@@ -177,9 +187,7 @@ public class LogResource {
             }
 
             List<BitemporalLog> result = cm.createOrReplaceLogs(log_data);
-            XmlLogs xmlresult = Mapper.getXmlLogs(result);
-            audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
-                    + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
+            XmlLogs xmlresult = mapper.getXmlLogs(result);
             Response r = Response.ok(xmlresult).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
@@ -200,8 +208,8 @@ public class LogResource {
     @GET
     @Path("{logId}")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response read(@PathParam("logId") Long logId) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         BitemporalLog result = null;
         try {
@@ -210,7 +218,7 @@ public class LogResource {
             if (result == null) {
                 r = Response.status(Response.Status.NOT_FOUND).build();
             } else {
-                XmlLog xmlresult = Mapper.getXmlLog(result);
+                XmlLog xmlresult = mapper.getXmlLog(result);
                 r = Response.ok(xmlresult).build();
             }
             audit.info(user + "|" + uriInfo.getPath() + "|GET|OK|" + r.getStatus());
@@ -234,14 +242,14 @@ public class LogResource {
     @PUT
     @Path("{logId}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response create(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, XmlLog data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(hostAddress);
         try {
-            BitemporalLog log_data = Mapper.getBitemporalLogMergeInterval(logId, data);
+            BitemporalLog log_data = mapper.getBitemporalLogMergeInterval(logId, data);
 
             log_data.getLog().setOwner(um.getUserName());
             cm.checkValid(log_data);
@@ -251,7 +259,7 @@ public class LogResource {
             }
 
             BitemporalLog result = cm.createOrReplaceLog(logId, log_data);
-            XmlLog xmlresult = Mapper.getXmlLog(result);
+            XmlLog xmlresult = mapper.getXmlLog(result);
             Response r = Response.ok(xmlresult).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus()
                     + "|data=" + XmlLog.toLogger(xmlresult));
@@ -275,15 +283,15 @@ public class LogResource {
     @POST
     @Path("{logId}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response update(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("logId") Long logId, XmlLog data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(hostAddress);
         BitemporalLog result = null;
         try {
-            BitemporalLog log_data = Mapper.getBitemporalLogMergeInterval(logId, data);
+            BitemporalLog log_data = mapper.getBitemporalLogMergeInterval(logId, data);
 
             log_data.getLog().setOwner(um.getUserName());
             cm.checkValid(log_data);
@@ -294,7 +302,7 @@ public class LogResource {
             }
 
             result = cm.updateLog(logId, log_data);
-            XmlLog xmlresult = Mapper.getXmlLog(result);
+            XmlLog xmlresult = mapper.getXmlLog(result);
             Response r = Response.ok(xmlresult).build();
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + r.getStatus()
                     + "|data=" + XmlLog.toLogger(xmlresult));
@@ -315,9 +323,9 @@ public class LogResource {
      */
     @DELETE
     @Path("{logId}")
+    @Interceptors(PerformanceInterceptor.class) 
     public Response remove(@PathParam("logId") Long logId) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        UserManager um = UserManager.getInstance();
-        OlogImpl cm = OlogImpl.getInstance();
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             if (!um.userHasAdminRole()) {
@@ -346,10 +354,10 @@ public class LogResource {
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("import")
+    @Interceptors(PerformanceInterceptor.class) 
     public Response importLogs(@Context HttpServletRequest req, @Context HttpHeaders headers, XmlLogs data) throws IOException, UnsupportedEncodingException, NoSuchAlgorithmException, NamingException, RepositoryException {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(hostAddress);
         if (!um.userHasAdminRole()) {
@@ -362,9 +370,9 @@ public class LogResource {
                 TimeUtils.setReference(new DateTime(datum.getCreatedDate().getTime()));
                 BitemporalLog result = null;
                 if (datum.getId() != null) {
-                    result = Mapper.getBitemporalLogMergeInterval(datum.getId(),datum);
+                    result = mapper.getBitemporalLogMergeInterval(datum.getId(),datum);
                 } else {
-                    result = Mapper.getBitemporalLog(datum);     
+                    result = mapper.getBitemporalLog(datum);     
                 }
                 log_data.add(result);
             }
@@ -372,7 +380,7 @@ public class LogResource {
             cm.checkValid(log_data);
 
             List<BitemporalLog> result = cm.createOrReplaceLogs(log_data);
-            XmlLogs xmlresult = Mapper.getXmlLogs(result);
+            XmlLogs xmlresult = mapper.getXmlLogs(result);
             audit.info(um.getUserName() + "|" + uriInfo.getPath() + "|POST|OK|" + "done adding the log"
                     + "|data=" + XmlLogs.toLogger(xmlresult.getLogs()));
             Response r = Response.ok(xmlresult).build();

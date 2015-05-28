@@ -6,12 +6,16 @@
 package edu.msu.nscl.olog.boundry;
 
 import edu.msu.nscl.olog.OlogException;
+import edu.msu.nscl.olog.ResourceBinder;
 import edu.msu.nscl.olog.control.OlogImpl;
 import edu.msu.nscl.olog.entity.Tag;
 import edu.msu.nscl.olog.entity.Tags;
 import edu.msu.nscl.olog.UserManager;
+import edu.msu.nscl.olog.control.PerformanceInterceptor;
 import java.io.IOException;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.interceptor.Interceptors;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
@@ -37,6 +41,10 @@ public class TagResource {
     private UriInfo uriInfo;
     @Context
     private SecurityContext securityContext;
+    @Inject
+    ResourceBinder rb;
+    @Inject
+    OlogImpl cm;
 
     private Logger audit = Logger.getLogger(this.getClass().getPackage().getName() + ".audit");
     private Logger log = Logger.getLogger(this.getClass().getName());
@@ -53,8 +61,8 @@ public class TagResource {
 
     @GET
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response list() {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         Tags result = null;
         try {
@@ -79,9 +87,9 @@ public class TagResource {
      */
     @POST
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response add(Tags data) throws IOException {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Tags result = null;
         try {
@@ -108,8 +116,8 @@ public class TagResource {
     @GET
     @Path("{tagName}")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response read(@PathParam("tagName") String tag) {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         Tag result = null;
         try {
@@ -142,9 +150,9 @@ public class TagResource {
     @PUT
     @Path("{tagName}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response create(@PathParam("tagName") String tag, Tag data) {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Tag result = null;
         try {
@@ -175,9 +183,9 @@ public class TagResource {
     @POST
     @Path("{tagName}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response update(@PathParam("tagName") String tag, Tag data) {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Tag result = null;
         try {
@@ -202,9 +210,9 @@ public class TagResource {
      */
     @DELETE
     @Path("{tagName}")
+    @Interceptors(PerformanceInterceptor.class) 
     public Response remove(@PathParam("tagName") String tag) {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             cm.removeExistingTag(tag);
@@ -230,9 +238,9 @@ public class TagResource {
     @PUT
     @Path("{tagName}/{logId}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response addSingle(@PathParam("tagName") String tag, @PathParam("logId")Long logId) {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Tag result = null;
         try {
@@ -257,9 +265,9 @@ public class TagResource {
      */
     @DELETE
     @Path("{tagName}/{logId}")
+    @Interceptors(PerformanceInterceptor.class) 
     public Response removeSingle(@PathParam("tagName") String tag, @PathParam("logId")Long logId) {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             cm.removeSingleTag(tag, logId);

@@ -31,6 +31,7 @@ import org.apache.jackrabbit.core.RepositoryImpl;
 
 import com.googlecode.flyway.core.Flyway;
 import com.googlecode.flyway.core.api.MigrationVersion;
+import javax.inject.Inject;
 import javax.ws.rs.core.MultivaluedHashMap;
 
 
@@ -39,6 +40,8 @@ public class OlogContextListener implements ServletContextListener {
     private static OlogContextListener instance = new OlogContextListener();
     private static ServletContext context;
     private JCRUtil repo;
+    @Inject
+    private OlogImpl cm;
 
 	private enum DatabaseType {
 		mysql, pgsql;
@@ -144,7 +147,6 @@ public class OlogContextListener implements ServletContextListener {
     }
 
     public void preCache() throws Exception {
-        OlogImpl cm = OlogImpl.getInstance();
         Logbooks logbooks  = cm.listLogbooks();
         for (Logbook logbook : logbooks.getLogbooks()) {
             MultivaluedMap<String,String> map = new MultivaluedHashMap<String, String>();

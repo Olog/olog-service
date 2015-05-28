@@ -34,7 +34,7 @@ public class JACCUserManager extends UserManager {
             HashSet<String> roleSet = new HashSet();
             for(Principal principal :principals){
                 roleSet.add(principal.getName());
-            }  
+            }
             return roleSet;
             
 //            Do we want to look at only Web Role Permissions?  Checking againist all principals for now.

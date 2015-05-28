@@ -88,7 +88,7 @@ public class PropertyManager {
             select.where(namePredicate);
             select.orderBy(cb.asc(from.get(Property_.name)));
             TypedQuery<Property> typedQuery = em.createQuery(select);
-            Property result = null;
+            Property result = new Property();
             List<Property> rs = typedQuery.getResultList();
             if (rs != null) {
                 Iterator<Property> iterator = rs.iterator();
@@ -176,16 +176,17 @@ public class PropertyManager {
 
              }*/
             Property Inactiveproperty = findProperty(property.getName());
-            if (Inactiveproperty != null) {
+            if (Inactiveproperty.getId() != null) {
+                Inactiveproperty = em.find(Property.class, Inactiveproperty.getId());
+                em.persist(Inactiveproperty);
                 Inactiveproperty.setState(State.Active);
-                Inactiveproperty = em.merge(Inactiveproperty);
                 em.getTransaction().commit();
                 return Inactiveproperty;
             } else {
                 Property newProperty = new Property();
+                em.persist(newProperty);
                 newProperty.setName(property.getName());
                 newProperty.setState(State.Active);
-                em.persist(newProperty);
                 em.getTransaction().commit();
                 return newProperty;
             }

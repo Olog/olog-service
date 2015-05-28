@@ -4,8 +4,11 @@
 package edu.msu.nscl.olog.boundry;
 
 import edu.msu.nscl.olog.OlogException;
+import edu.msu.nscl.olog.ResourceBinder;
+import edu.msu.nscl.olog.UserManager;
 import edu.msu.nscl.olog.control.Mapper;
 import edu.msu.nscl.olog.control.OlogImpl;
+import edu.msu.nscl.olog.control.PerformanceInterceptor;
 import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.LogAttribute;
 import edu.msu.nscl.olog.entity.XmlLog;
@@ -17,6 +20,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.interceptor.Interceptors;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -45,6 +50,13 @@ public class PropertyResource {
     private UriInfo uriInfo;
     @Context
     private SecurityContext securityContext;
+    @Inject
+    ResourceBinder rb;
+    @Inject
+    OlogImpl cm;
+    @Inject
+    Mapper mapper;
+    
     private Logger audit = Logger.getLogger(this.getClass().getPackage().getName() + ".audit");
     private Logger log = Logger.getLogger(this.getClass().getName());
 
@@ -59,8 +71,8 @@ public class PropertyResource {
      */
     @GET
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response listProperties() {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlProperties result = null;
         try {
@@ -87,8 +99,8 @@ public class PropertyResource {
     @Path("{propName}")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response addProperty(@PathParam("propName") String newProperty, XmlProperty data) {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlProperty result = null;
         try {
@@ -112,8 +124,8 @@ public class PropertyResource {
     @GET
     @Path("{propName}")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response listAttributes(@PathParam("propName") String property) {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlProperty result = null;
         try {
@@ -139,8 +151,8 @@ public class PropertyResource {
     @Path("{propName}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response appendProperty(@PathParam("propName") String newProperty, XmlProperty data) {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlProperty result = null;
         try {
@@ -165,9 +177,9 @@ public class PropertyResource {
      */
     @DELETE
     @Path("{propName}")
+    @Interceptors(PerformanceInterceptor.class) 
     public Response removeProperty(@PathParam("propName") String property) {
         //TODO: remove data, it's not used and not needed
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         try {
             cm.removeProperty(property);
@@ -193,20 +205,20 @@ public class PropertyResource {
     @Path("{propName}/{logId}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response addAttribute(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("propName") String property, @PathParam("logId") Long logId, XmlProperty data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         try {
             cm.checkPropertyName(property, data);
             Collection<XmlProperty> properties = new HashSet<XmlProperty>();
             properties.add(data);
-            Set<LogAttribute> logAttributes = Mapper.getLogAttributes(properties);
+            Set<LogAttribute> logAttributes = mapper.getLogAttributes(properties);
             BitemporalLog result = null;
             for(LogAttribute logAttribute : logAttributes){
                 result = cm.addAttribute(logId, logAttribute);
             }
-            XmlLog xmlresult = Mapper.getXmlLog(result);
+            XmlLog xmlresult = mapper.getXmlLog(result);
             Response r = Response.ok(xmlresult).build();
             audit.info(user + "|" + uriInfo.getPath() + "|PUT|OK|" + r.getStatus());
             return r;
@@ -228,20 +240,20 @@ public class PropertyResource {
     @DELETE
     @Path("{propName}/{logId}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response removeAttribute(@Context HttpServletRequest req, @Context HttpHeaders headers, @PathParam("propName") String property, @PathParam("logId") Long logId, XmlProperty data) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         String hostAddress = req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For");
         try {
             cm.checkPropertyName(property, data);
             Collection<XmlProperty> properties = new HashSet<XmlProperty>();
             properties.add(data);
-            Set<LogAttribute> logAttributes = Mapper.getLogAttributes(properties);
+            Set<LogAttribute> logAttributes = mapper.getLogAttributes(properties);
             BitemporalLog result = null;
             for(LogAttribute logAttribute : logAttributes){
                 result = cm.removeAttribute(logId, logAttribute);
             }
-            XmlLog xmlresult = Mapper.getXmlLog(result);
+            XmlLog xmlresult = mapper.getXmlLog(result);
             Response r = Response.ok(xmlresult).build();
             audit.info(user + "|" + uriInfo.getPath() + "|DELETE|OK|" + r.getStatus());
             return r;

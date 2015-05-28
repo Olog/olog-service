@@ -8,10 +8,14 @@ package edu.msu.nscl.olog.boundry;
 import edu.msu.nscl.olog.entity.Logbook;
 import edu.msu.nscl.olog.entity.Logbooks;
 import edu.msu.nscl.olog.OlogException;
+import edu.msu.nscl.olog.ResourceBinder;
 import edu.msu.nscl.olog.control.OlogImpl;
 import edu.msu.nscl.olog.UserManager;
+import edu.msu.nscl.olog.control.PerformanceInterceptor;
 import java.io.IOException;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.interceptor.Interceptors;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.DELETE;
@@ -37,6 +41,10 @@ public class LogbookResource {
     private UriInfo uriInfo;
     @Context
     private SecurityContext securityContext;
+    @Inject
+    ResourceBinder rb;
+    @Inject
+    OlogImpl cm;
 
     private Logger audit = Logger.getLogger(this.getClass().getPackage().getName() + ".audit");
     private Logger log = Logger.getLogger(this.getClass().getName());
@@ -53,8 +61,8 @@ public class LogbookResource {
 
     @GET
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response list() {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         Logbooks result = null;
         try {
@@ -79,9 +87,9 @@ public class LogbookResource {
      */
     @POST
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response add(Logbooks data) throws IOException {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Logbooks result = null;
         try {
@@ -111,8 +119,8 @@ public class LogbookResource {
     @GET
     @Path("{logbookName}")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response read(@PathParam("logbookName") String logbook) {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         Logbook result = null;
         try {
@@ -146,9 +154,9 @@ public class LogbookResource {
     @PUT
     @Path("{logbookName}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response create(@PathParam("logbookName") String logbookName, Logbook data) {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Logbook result = null;
         try {
@@ -182,9 +190,9 @@ public class LogbookResource {
     @POST
     @Path("{logbookName}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response update(@PathParam("logbookName") String logbook, Logbook data) {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Logbook result = null;
         try {
@@ -213,9 +221,9 @@ public class LogbookResource {
      */
     @DELETE
     @Path("{logbookName}")
+    @Interceptors(PerformanceInterceptor.class) 
     public Response remove(@PathParam("logbookName") String logbook) {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             if (!um.userHasAdminRole()) {
@@ -244,9 +252,9 @@ public class LogbookResource {
     @PUT
     @Path("{logbookName}/{logId}")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response addSingle(@PathParam("logbookName") String logbook, @PathParam("logId") Long logId) {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         Logbook data = null;
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         Logbook result = null;
@@ -277,9 +285,9 @@ public class LogbookResource {
      */
     @DELETE
     @Path("{logbookName}/{logId}")
+    @Interceptors(PerformanceInterceptor.class) 
     public Response removeSingle(@PathParam("logbookName") String logbook, @PathParam("logId") Long logId) {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             if (!um.userHasAdminRole()) {

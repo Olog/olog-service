@@ -44,6 +44,11 @@
   		edu.msu.nscl.olog.OlogContextListener
   	</listener-class>
     </listener>
+    <listener>
+  	<listener-class>
+  		edu.msu.nscl.olog.OlogServletRequestListener
+  	</listener-class>
+    </listener>
     <servlet-mapping>
         <servlet-name>ServletAdaptor</servlet-name>
         <url-pattern>/resources/*</url-pattern>

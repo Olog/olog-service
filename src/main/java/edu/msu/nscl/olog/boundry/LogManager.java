@@ -26,12 +26,12 @@ import edu.msu.nscl.olog.entity.BitemporalLog;
 import edu.msu.nscl.olog.entity.BitemporalLog_;
 import edu.msu.nscl.olog.entity.State;
 import edu.msu.nscl.olog.bitemporal.control.BitemporalProperty;
+import edu.msu.nscl.olog.entity.BitemporalLogs;
 import java.lang.reflect.Method;
 import java.util.*;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.Tuple;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -46,8 +46,8 @@ public class LogManager {
 
     private LogManager() {
     }
-
-    public static List<BitemporalLog> findLog(MultivaluedMap<String, String> matches) throws OlogException {
+ 
+    public static BitemporalLogs findLog(MultivaluedMap<String, String> matches) throws OlogException {
 
         // XXX: should mandate a limit for it, since for big db it can run out of memory
         List<Predicate> andPredicates = new ArrayList<Predicate>();
@@ -85,9 +85,9 @@ public class LogManager {
                 String key = match.getKey().toLowerCase();
                 Collection<String> matchesValues = match.getValue();
                 if (key.equals("search")) {
-                    log_patterns.addAll(mysqlSyntax(matchesValues,log_patterns));
+                    log_patterns.addAll(mysqlSyntax(matchesValues, log_patterns));
                 } else if (key.equals("id")) {
-                    id_patterns.addAll(mysqlSyntax(matchesValues,id_patterns));
+                    id_patterns.addAll(mysqlSyntax(matchesValues, id_patterns));
                 } else if (key.equals("tag")) {
                     for (String m : matchesValues) {
                         if (m.contains("?") || m.contains("*")) {
@@ -144,9 +144,9 @@ public class LogManager {
                         }
                     }
                 } else if (key.equals("owner")) {
-                    owner_patterns.addAll(mysqlSyntax(matchesValues,owner_patterns));
+                    owner_patterns.addAll(mysqlSyntax(matchesValues, owner_patterns));
                 } else if (key.equals("source")) {
-                    source_patterns.addAll(mysqlSyntax(matchesValues,source_patterns));
+                    source_patterns.addAll(mysqlSyntax(matchesValues, source_patterns));
                 } else if (key.equals("page")) {
                     paginate_matches.putAll(key, match.getValue());
                 } else if (key.equals("limit")) {
@@ -164,7 +164,7 @@ public class LogManager {
                     sortType = match.getValue().iterator().next();
                 } else {
                     Collection<String> cleanedMatchesValues = new HashSet<String>();
-                    value_patterns.putAll(key,mysqlSyntax(matchesValues,cleanedMatchesValues));
+                    value_patterns.putAll(key, mysqlSyntax(matchesValues, cleanedMatchesValues));
                 }
             }
             //cb.or() causes an error in eclipselink with p1 as first argument 
@@ -289,7 +289,7 @@ public class LogManager {
                     default:
                         pathDate = from.get(Entry_.createdDate);
                 }
-                
+
                 if (start != null && end == null) {
                     Date jStart = new java.util.Date(Long.valueOf(start) * 1000);
                     Date jEndNow = new java.util.Date(Calendar.getInstance().getTime().getTime());
@@ -311,7 +311,7 @@ public class LogManager {
                 }
                 andPredicates.add(datePredicate);
             }
-            
+
             Predicate statusPredicate = cb.equal(from.get(Entry_.state), State.Active);
             andPredicates.add(statusPredicate);
 
@@ -332,23 +332,23 @@ public class LogManager {
                 }
                 finalPredicate = cb.and(finalPredicate, orfinalPredicate);
             }
-            
+
             Expression max;
             switch (sortType) {
-                    case "created":
-                        max = cb.greatest(from.get(Entry_.createdDate));
-                        break;
-                    case "modified":
-                        max = cb.greatest(bitemporalLog.get(BitemporalLog_.recordStart));
-                        break;
-                    case "eventStart":
-                        max = cb.greatest(bitemporalLog.get(BitemporalLog_.validityStart));
-                        break;
-                    default:
-                        max = cb.greatest(from.get(Entry_.createdDate));
-                        
-                }
-            cq.multiselect(max,from);
+                case "created":
+                    max = cb.greatest(from.get(Entry_.createdDate));
+                    break;
+                case "modified":
+                    max = cb.greatest(bitemporalLog.get(BitemporalLog_.recordStart));
+                    break;
+                case "eventStart":
+                    max = cb.greatest(bitemporalLog.get(BitemporalLog_.validityStart));
+                    break;
+                default:
+                    max = cb.greatest(from.get(Entry_.createdDate));
+
+            }
+            cq.multiselect(max, from);
             cq.where(finalPredicate);
             cq.groupBy(from.get(Entry_.id));
             cq.orderBy(cb.desc(max));
@@ -377,7 +377,7 @@ public class LogManager {
 
             }
 
-            List<BitemporalLog> result = new ArrayList<BitemporalLog>();
+            BitemporalLogs result = new BitemporalLogs();
 
             if (empty) {
                 em.getTransaction().commit();
@@ -398,7 +398,14 @@ public class LogManager {
                 }
                 historyMethod = BitemporalProperty.class.getMethod(methodString);
             }
-            
+
+            CriteriaQuery<Long> countcq = cb.createQuery(Long.class);
+            countcq.select(cb.countDistinct(from));
+            em.createQuery(countcq);
+            countcq.where(finalPredicate);
+            Long count = em.createQuery(countcq).getSingleResult();
+            result.setQueryCount(count);
+
             List<Tuple> rs = typedQuery.getResultList();
             if (rs != null) {
                 Iterator<Tuple> iterator = rs.iterator();
@@ -508,7 +515,6 @@ public class LogManager {
      *
      * @throws OlogException wrapping an SQLException
      */
-    
     public static BitemporalLog create(BitemporalLog bitemporalLog) throws OlogException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         Log log = bitemporalLog.getLog();
@@ -537,8 +543,7 @@ public class LogManager {
                     String logbookName = iterator.next().getName();
                     Logbook logbook = LogbookManager.findLogbook(logbookName);
                     if (logbook != null) {
-                        logbook = em.merge(logbook);
-                        logbook.addLog(newLog);
+                        logbook = em.find(Logbook.class,logbook.getId());
                         logbooks.add(logbook);
                     } else {
                         em.getTransaction().rollback();
@@ -559,8 +564,7 @@ public class LogManager {
                     String tagName = partialTag.getName();
                     Tag tag = TagManager.findTag(tagName);
                     if (tag != null) {
-                        tag = em.merge(tag);
-                        tag.addLog(newLog);
+                        tag = em.find(Tag.class,tag.getId());
                         tags.add(tag);
                     } else {
                         em.getTransaction().rollback();
@@ -654,7 +658,7 @@ public class LogManager {
         }
         return log;
     }
-    
+
     private static Collection<String> mysqlSyntax(Collection<String> matchesValues, Collection<String> patterns) {
         for (String m : matchesValues) {
             if (m.contains("?") || m.contains("*")) {

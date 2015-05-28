@@ -4,13 +4,17 @@
 package edu.msu.nscl.olog.boundry;
 
 import edu.msu.nscl.olog.OlogException;
+import edu.msu.nscl.olog.ResourceBinder;
 import edu.msu.nscl.olog.control.OlogImpl;
 import edu.msu.nscl.olog.UserManager;
+import edu.msu.nscl.olog.control.PerformanceInterceptor;
 import edu.msu.nscl.olog.entity.XmlAttachment;
 import edu.msu.nscl.olog.entity.XmlAttachments;
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.interceptor.Interceptors;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -32,6 +36,10 @@ public class AttachmentResource {
     private UriInfo uriInfo;
     @Context
     private SecurityContext securityContext;
+    @Inject
+    ResourceBinder rb;
+    @Inject
+    OlogImpl cm;
     
     private Logger audit = Logger.getLogger(this.getClass().getPackage().getName() + ".audit");
     private Logger log = Logger.getLogger(this.getClass().getName());
@@ -50,8 +58,8 @@ public class AttachmentResource {
     @GET
     @Path("{logId}")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Interceptors(PerformanceInterceptor.class) 
     public Response read(@PathParam("logId") Long logId) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         XmlAttachments result;
         try {
@@ -74,8 +82,8 @@ public class AttachmentResource {
      */
     @GET
     @Path("{logId}/{fileName}")
+    @Interceptors(PerformanceInterceptor.class) 
     public Response getFile(@PathParam("logId") Long logId, @PathParam("fileName") String fileName ) {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         edu.msu.nscl.olog.entity.Attachment result;
         try {
@@ -105,8 +113,8 @@ public class AttachmentResource {
      */
     @GET
     @Path("{logId}/{fileName}:thumbnail")
+    @Interceptors(PerformanceInterceptor.class) 
     public Response getThumbnail(@PathParam("logId") Long logId, @PathParam("fileName") String fileName ) {
-        OlogImpl cm = OlogImpl.getInstance();
         String user = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "";
         edu.msu.nscl.olog.entity.Attachment result;
         try {
@@ -141,14 +149,14 @@ public class AttachmentResource {
     @POST
     @Path("{logId}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Interceptors(PerformanceInterceptor.class) 
     public Response addAttachment(@Context HttpServletRequest req, 
                                   @Context HttpHeaders headers, 
                                   @PathParam("logId") Long logId,
                                   @FormDataParam("file") InputStream uploadedInputStream,
                                   @FormDataParam("file") FormDataContentDisposition disposition,
                                   @FormDataParam("file") FormDataBodyPart body) {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For"));
         edu.msu.nscl.olog.entity.Attachment attachment = new edu.msu.nscl.olog.entity.Attachment();
@@ -195,6 +203,7 @@ public class AttachmentResource {
     @PUT
     @Path("{logId}/{fileName}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Interceptors(PerformanceInterceptor.class) 
     public Response addReplaceAttachment(@Context HttpServletRequest req, 
                                   @Context HttpHeaders headers, 
                                   @PathParam("fileName") String fileName, 
@@ -202,8 +211,7 @@ public class AttachmentResource {
                                   @FormDataParam("file") InputStream uploadedInputStream,
                                   @FormDataParam("file") FormDataContentDisposition disposition,
                                   @FormDataParam("file") FormDataBodyPart body) {
-        OlogImpl cm = OlogImpl.getInstance();
-        UserManager um = UserManager.getInstance();
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         um.setHostAddress(req.getHeader("X-Forwarded-For") == null ? req.getRemoteAddr() : req.getHeader("X-Forwarded-For"));
         edu.msu.nscl.olog.entity.Attachment attachment = new edu.msu.nscl.olog.entity.Attachment();
@@ -246,12 +254,12 @@ public class AttachmentResource {
      */
     @DELETE
     @Path("{logId}/{fileName}")
+    @Interceptors(PerformanceInterceptor.class) 
     public Response removeAttachment(@Context HttpServletRequest req, 
                                      @Context HttpHeaders headers, 
                                      @PathParam("fileName") String fileName, 
                                      @PathParam("logId") Long logId) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        UserManager um = UserManager.getInstance();
-        OlogImpl cm = OlogImpl.getInstance();
+        UserManager um = rb.getUserManager();
         um.setUser(securityContext.getUserPrincipal(), securityContext.isUserInRole("Administrator"));
         try {
             if (!um.userHasAdminRole()) {
