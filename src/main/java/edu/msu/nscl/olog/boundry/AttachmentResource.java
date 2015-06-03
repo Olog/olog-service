@@ -165,11 +165,14 @@ public class AttachmentResource {
             if (!um.userHasAdminRole()) {
                 cm.checkUserBelongsToGroupOfLog(um.getUserName(), logId);
             }
-            //TODO: Check PathParam fileName?
-            attachment.setFileName(disposition.getFileName());
+
+            if(disposition.getFileName().equalsIgnoreCase("blob")){
+                attachment.setFileName(body.getParent().getContentDisposition().getFileName());
+            }else{
+                attachment.setFileName(disposition.getFileName());
+            }
             attachment.setMimeType(body.getMediaType());
             attachment.setContent(uploadedInputStream);
-            //attachment.setFileSize(incommingAttachment.getContentDisposition().getParameter(null))); 
             attachment.setEncoding(nonNull(body.getHeaders().getFirst("Content-Transfer-Encoding")));
             result = cm.createAttachment(attachment, logId);
 

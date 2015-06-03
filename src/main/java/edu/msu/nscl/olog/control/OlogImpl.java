@@ -449,12 +449,20 @@ public class OlogImpl {
         } else {
             //TODO: be able to add new Attributes to an existing Property
             Property property = PropertyManager.findProperty(data.getName());
-            Set<Attribute> attributes = property.getAttributes();
-            for (Map.Entry<String, String> att : data.getAttributes().entrySet()) {
-                attributes.add(new Attribute(att.getKey()));
+            if(property.getName()==null){
+                property = PropertyManager.create(data.toProperty());
+                for (Map.Entry<String, String> att : data.getAttributes().entrySet()) {
+                    property = AttributeManager.create(property, att.getKey());
+                }
+            } else {
+                Set<Attribute> attributes = property.getAttributes();
+                for (Map.Entry<String, String> att : data.getAttributes().entrySet()) {
+                    attributes.add(new Attribute(att.getKey()));
+                }
+                property.setAttributes(attributes);
+                property = PropertyManager.create(property);
             }
-            property.setAttributes(attributes);
-            return PropertyManager.create(property).toXmlProperty();
+            return property.toXmlProperty();
         }
     }
 

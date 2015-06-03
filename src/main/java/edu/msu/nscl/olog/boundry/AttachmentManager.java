@@ -4,6 +4,7 @@
  */
 package edu.msu.nscl.olog.boundry;
 
+//import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import edu.msu.nscl.olog.JCRUtil;
 import edu.msu.nscl.olog.OlogException;
 import edu.msu.nscl.olog.entity.Attachment;
@@ -138,13 +139,14 @@ public class AttachmentManager {
             String fileName = attachment.getFileName();
             Long fileSize = attachment.getFileSize();
             InputStream stream;
-
-            if (attachment.getEncoding().equalsIgnoreCase("base64")) {
-                StringWriter writer = new StringWriter();
-                IOUtils.copy(attachment.getContent(), writer, null);
-                stream = new ByteArrayInputStream(DatatypeConverter.parseBase64Binary(writer.toString()));
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            IOUtils.copy(attachment.getContent(), baos);
+            byte[] bytes = baos.toByteArray();
+            String string = new String(bytes);
+            if (attachment.getEncoding().equalsIgnoreCase("base64") || isBase64Encoded(string)) {
+                stream = new ByteArrayInputStream(DatatypeConverter.parseBase64Binary(string));
             } else {
-                stream = attachment.getContent();
+                stream = new ByteArrayInputStream(bytes);
             }
 
             if (mimeType == null) {
@@ -217,6 +219,9 @@ public class AttachmentManager {
         } catch (RepositoryException ex) {
             throw new OlogException(Response.Status.CONFLICT,
                     "Log entry " + logId.toString() + " could not put item in repository. " + ex);
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
+                    "Log entry " + logId.toString() + " could not convert base64 object. " + ex);
         }
     }
 
@@ -240,6 +245,15 @@ public class AttachmentManager {
         } catch (RepositoryException ex) {
             throw new OlogException(Response.Status.NOT_FOUND,
                     "Log entry " + logId.toString() + " could not find item in repository. " + ex);
+        }
+    }
+    
+    private static Boolean isBase64Encoded(String str) {
+        try {
+            byte[] data = DatatypeConverter.parseBase64Binary(str);
+            return (str.replace(" ", "").length() % 4 == 0);
+        } catch (Exception ex) {
+            return false;
         }
     }
 }

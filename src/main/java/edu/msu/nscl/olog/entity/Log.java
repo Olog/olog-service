@@ -97,8 +97,11 @@ public class Log implements Serializable, Comparable<Log> {
         this.version = (log1.version!=null)?log1.version:log2.version;
         
         this.tags.addAll(log1.tags);
+        this.tags.addAll(log2.tags);
         this.logbooks.addAll(log1.logbooks);
+        this.logbooks.addAll(log2.logbooks);
         this.attributes.addAll(log1.attributes);
+        //this.attributes.addAll(log2.attributes);
     }
 
     public Log(Long id, String version, String owner, String source, Level level, State state, Date modifiedDate, String description, Entry entry) {

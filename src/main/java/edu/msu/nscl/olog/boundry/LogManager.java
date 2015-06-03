@@ -527,6 +527,7 @@ public class LogManager {
             }
             em.getTransaction().begin();
             Log newLog = new Log();
+            em.persist(newLog);
             newLog.setState(State.Active);
             newLog.setLevel(log.getLevel());
             newLog.setOwner(log.getOwner());
@@ -535,7 +536,7 @@ public class LogManager {
             //XXX: remove new line and tab character since psql do not convert them
             //newLog.setDescription(log.getDescription().replaceAll("\n", " ").replaceAll("\t", " "));
             newLog.setSource(log.getSource());
-            em.persist(newLog);
+            
             if (!log.getLogbooks().isEmpty()) {
                 Iterator<Logbook> iterator = log.getLogbooks().iterator();
                 Set<Logbook> logbooks = new HashSet<Logbook>();
@@ -575,6 +576,7 @@ public class LogManager {
                 newLog.setTags(tags);
             }
             Entry entry = new Entry();
+            em.persist(entry);
             if (log.getEntry().getId() != null) {
                 entry = (Entry) em.find(Entry.class, log.getEntry().getId());
                 newLog.setState(State.Active);
@@ -582,21 +584,19 @@ public class LogManager {
                 entry.log().set(newLog, bitemporalLog.getValidityInterval());
                 newLog.setEntry(entry);
                 newLog.setVersion(String.valueOf(entry.log().getEvolution().size()));
-                em.merge(entry);
             } else {
                 newLog.setState(State.Active);
                 entry.log().set(newLog, bitemporalLog.getValidityInterval());
                 newLog.setEntry(entry);
                 newLog.setVersion("1");
-                em.persist(entry);
             }
             em.flush();
             if (log.getAttributes() != null) {
                 Set<LogAttribute> logattrs = new HashSet<LogAttribute>();
                 for (LogAttribute logattr : log.getAttributes()) {
+                    em.persist(logattr);
                     logattr.setLog(newLog);
                     logattr.setLogId(newLog.getId());
-                    em.persist(logattr);
                     logattrs.add(logattr);
                 }
                 newLog.setAttributes(logattrs);
