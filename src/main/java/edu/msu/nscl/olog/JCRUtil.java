@@ -53,6 +53,7 @@ public class JCRUtil extends OlogContextListener {
             if (dir==null) {
                 dir = "jackrabbit";
             }
+            System.out.println("JCR in Path (java:/comp/env/JCR_REPO_PATH): "+dir);
             RepositoryConfig config = RepositoryConfig.create(xml, dir);
             repository = RepositoryImpl.create(config);
             

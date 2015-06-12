@@ -36,6 +36,7 @@ public class Entry implements Serializable {
     private State state = State.Active;
         
     @OneToMany(fetch=FetchType.LAZY, cascade = CascadeType.ALL , orphanRemoval=true)
+    @OrderBy("recordStart ASC")
     @JoinColumn(name="entry_id")
     private Collection<BitemporalLog> logs = new LinkedList<BitemporalLog>();
 
