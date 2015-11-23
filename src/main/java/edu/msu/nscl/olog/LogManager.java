@@ -367,7 +367,7 @@ public class LogManager {
                     datePredicate, searchPredicate, idPredicate, ownerPredicate, sourcePredicate);
             cq.select(from);
             cq.where(finalPredicate);
-            cq.groupBy(from);
+            //cq.groupBy(from);
             cq.orderBy(cb.desc(from.get(Entry_.createdDate)));
             TypedQuery<Entry> typedQuery = em.createQuery(cq);
             if (!paginate_matches.isEmpty()) {
