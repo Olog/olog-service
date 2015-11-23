@@ -143,7 +143,7 @@ public class AttachmentManager {
             IOUtils.copy(attachment.getContent(), baos);
             byte[] bytes = baos.toByteArray();
             String string = new String(bytes);
-            if (attachment.getEncoding().equalsIgnoreCase("base64") || isBase64Encoded(string)) {
+            if (isBase64Encoded(string)) {
                 stream = new ByteArrayInputStream(DatatypeConverter.parseBase64Binary(string));
             } else {
                 stream = new ByteArrayInputStream(bytes);
