@@ -1,2 +1,2 @@
-olog-service.war => usr/share/olog-service/
+olog-service*.war usr/share/olog-service/
 etc

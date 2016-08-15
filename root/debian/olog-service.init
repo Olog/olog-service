@@ -17,7 +17,7 @@
 # Description:       Olog Logbook Service
 ### END INIT INFO
 
-PROG=/usr/share/olog-service/olog-service
+PROG=olog-service
 PROG_WAR=/usr/share/olog-service/olog-service.war
 GF_HOME=/home/glassfish/glassfish4/glassfish
 ASADMIN=$GF_HOME/bin/asadmin
