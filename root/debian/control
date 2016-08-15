@@ -1,0 +1,12 @@
+Source: olog-service
+Section: java
+Priority: optional
+Maintainer: Eric Berryman <berryman@frib.msu.edu>
+Build-Depends: debhelper (>= 7),
+Standards-Version: 3.8.0
+Homepage: https://olog.github.io/
+
+Package: olog-service
+Depends: default-jre-headless
+Architecture: amd64
+Description: Olog Logbook Service
