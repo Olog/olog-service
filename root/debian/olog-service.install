@@ -1,3 +1,2 @@
-#!/usr/bin/dh-exec
-olog-service*.war => usr/share/olog-service/olog-service.war
+olog-service.war => usr/share/olog-service/
 etc
