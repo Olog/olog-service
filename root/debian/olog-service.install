@@ -1,2 +1,3 @@
 olog-service*.war usr/share/olog-service/
 etc
+db usr/share/olog-service/
