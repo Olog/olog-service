@@ -15,12 +15,15 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import org.joda.time.Interval;
+import org.eclipse.persistence.annotations.Cache;
+import org.eclipse.persistence.annotations.CacheCoordinationType;
 
 /**
  *
  * @author berryman
  */
 @Entity
+@Cache(coordinationType=CacheCoordinationType.SEND_NEW_OBJECTS_WITH_CHANGES)
 @Table(name = "bitemporal_log")
 public class BitemporalLog extends BitemporalWrapper<Log> {
     

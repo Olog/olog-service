@@ -7,12 +7,15 @@ package edu.msu.nscl.olog.entity;
 import java.io.Serializable;
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlTransient;
+import org.eclipse.persistence.annotations.Cache;
+import org.eclipse.persistence.annotations.CacheCoordinationType;
 
 /**
  *
  * @author berryman
  */
 @Entity
+@Cache(coordinationType=CacheCoordinationType.SEND_NEW_OBJECTS_WITH_CHANGES)
 @Table(name = "logs_attributes")
 @IdClass(LogAttributeId.class)
 public class LogAttribute implements Serializable {

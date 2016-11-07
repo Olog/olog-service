@@ -10,6 +10,8 @@ import java.io.Serializable;
 import java.util.*;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import org.eclipse.persistence.annotations.Cache;
+import org.eclipse.persistence.annotations.CacheCoordinationType;
 
 
 /**
@@ -18,6 +20,7 @@ import javax.validation.constraints.NotNull;
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 @Entity
+@Cache(coordinationType=CacheCoordinationType.SEND_NEW_OBJECTS_WITH_CHANGES)
 @Table(name = "logs")
 public class Log implements Serializable, Comparable<Log> {
 

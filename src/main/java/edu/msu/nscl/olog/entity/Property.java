@@ -8,6 +8,8 @@ package edu.msu.nscl.olog.entity;
 import java.io.Serializable;
 import java.util.*;
 import javax.persistence.*;
+import org.eclipse.persistence.annotations.Cache;
+import org.eclipse.persistence.annotations.CacheCoordinationType;
 
 
 /**
@@ -17,6 +19,7 @@ import javax.persistence.*;
  * <Ralph.Lange@helmholtz-berlin.de>
  */
 @Entity
+@Cache(coordinationType=CacheCoordinationType.SEND_NEW_OBJECTS_WITH_CHANGES)
 @Table(name = "properties")
 public class Property implements Serializable {
 

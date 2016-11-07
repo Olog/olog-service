@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
+import org.eclipse.persistence.annotations.Cache;
+import org.eclipse.persistence.annotations.CacheCoordinationType;
 
 /**
  * Logbook object that can be represented as XML/JSON in payload data.
@@ -18,6 +20,7 @@ import javax.xml.bind.annotation.*;
  * @author Eric Berryman taken from Ralph Lange <Ralph.Lange@bessy.de>
  */
 @Entity
+@Cache(coordinationType=CacheCoordinationType.SEND_NEW_OBJECTS_WITH_CHANGES)
 @Table(name = "logbooks")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "is_tag", discriminatorType = DiscriminatorType.INTEGER)

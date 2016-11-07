@@ -23,6 +23,9 @@
       <property name="eclipselink.query-results-cache.ignore-null" value="true"/>
       <property name="eclipselink.jdbc.cache-statements" value="true"/>
       <property name="eclipselink.weaving" value="false"/>
+      <property name="eclipselink.cache.coordination.protocol" value="jms"/>
+      <property name="eclipselink.cache.coordination.jms.topic" value="jms/OlogTopic"/>
+      <property name="eclipselink.cache.coordination.jms.factory" value="jms/OlogTopicConnectionFactory"/>
     </properties>
   </persistence-unit>
 </persistence>
