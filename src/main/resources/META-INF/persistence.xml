@@ -3,26 +3,29 @@
   <persistence-unit name="olog_prod" transaction-type="RESOURCE_LOCAL">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <non-jta-data-source>jdbc/olog</non-jta-data-source>
-    <class>edu.msu.nscl.olog.Logbook</class>
-    <class>edu.msu.nscl.olog.Tag</class>
-    <class>edu.msu.nscl.olog.Log</class>
-    <class>edu.msu.nscl.olog.Entry</class>
-    <class>edu.msu.nscl.olog.Property</class>
-    <class>edu.msu.nscl.olog.Attribute</class>
-    <class>edu.msu.nscl.olog.LogAttribute</class>
-    <exclude-unlisted-classes>true</exclude-unlisted-classes>
+    <class>edu.msu.nscl.olog.entity.Tag</class>
+    <class>edu.msu.nscl.olog.entity.Property</class>
+    <class>edu.msu.nscl.olog.entity.Logbook</class>
+    <class>edu.msu.nscl.olog.entity.Entry</class>
+    <class>edu.msu.nscl.olog.entity.LogAttribute</class>
+    <class>edu.msu.nscl.olog.entity.Attribute</class>
+    <class>edu.msu.nscl.olog.entity.Log</class>
+    <class>edu.msu.nscl.olog.entity.BitemporalLog</class>
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.logger" value="ServerLogger"/>
       <property name="eclipselink.logging.level" value="WARNING"/>
       <property name="eclipselink.session.customizer" value="edu.msu.nscl.olog.JPATomcatSessionCustomizer"/>
-        <property name="eclipselink.cache.shared.default" value="true"/>
-        <property name="eclipselink.query-cache" value="true"/>
-        <property name="eclipselink.cache-usage" value="CheckCacheThenDatabase "/>
-        <property name="javax.persistence.sharedCache.mode" value="ALL"/>
-        <property name="eclipselink.query-results-cache.ignore-null" value="true"/>
-        <property name="eclipselink.jdbc.cache-statements" value="true" />
-        <property name="eclipselink.weaving" value="false"/>
+      <property name="eclipselink.cache.shared.default" value="true"/>
+      <property name="eclipselink.query-cache" value="true"/>
+      <property name="eclipselink.cache-usage" value="CheckCacheThenDatabase "/>
+      <property name="javax.persistence.sharedCache.mode" value="ALL"/>
+      <property name="eclipselink.query-results-cache.ignore-null" value="true"/>
+      <property name="eclipselink.jdbc.cache-statements" value="true"/>
+      <property name="eclipselink.weaving" value="false"/>
+      <property name="eclipselink.cache.coordination.protocol" value="jms"/>
+      <property name="eclipselink.cache.coordination.jms.topic" value="jms/OlogTopic"/>
+      <property name="eclipselink.cache.coordination.jms.factory" value="jms/OlogTopicConnectionFactory"/>
     </properties>
-
   </persistence-unit>
 </persistence>

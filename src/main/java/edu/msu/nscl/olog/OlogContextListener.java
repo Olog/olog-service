@@ -8,11 +8,15 @@ package edu.msu.nscl.olog;
  *
  * @author berryman
  */
+import edu.msu.nscl.olog.control.OlogImpl;
+import edu.msu.nscl.olog.entity.Logbooks;
+import edu.msu.nscl.olog.entity.XmlProperties;
+import edu.msu.nscl.olog.entity.XmlProperty;
+import edu.msu.nscl.olog.entity.Logbook;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.persistence.EntityManager;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -20,7 +24,6 @@ import javax.sql.DataSource;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.apache.ddlutils.PlatformUtils;
 import org.apache.ddlutils.platform.mysql.MySqlPlatform;
 import org.apache.ddlutils.platform.postgresql.PostgreSqlPlatform;
@@ -28,12 +31,17 @@ import org.apache.jackrabbit.core.RepositoryImpl;
 
 import com.googlecode.flyway.core.Flyway;
 import com.googlecode.flyway.core.api.MigrationVersion;
+import javax.inject.Inject;
+import javax.ws.rs.core.MultivaluedHashMap;
+
 
 public class OlogContextListener implements ServletContextListener {
 
     private static OlogContextListener instance = new OlogContextListener();
     private static ServletContext context;
     private JCRUtil repo;
+    @Inject
+    private OlogImpl cm;
 
 	private enum DatabaseType {
 		mysql, pgsql;
@@ -122,7 +130,8 @@ public class OlogContextListener implements ServletContextListener {
             }
             
             flyway.migrate();
-            System.out.println("Database is up to date: ");
+            System.out.println("Database is up to date. ");
+            DbConnection.getInstance().close();
 
             repo = new JCRUtil();
             try {
@@ -131,19 +140,19 @@ public class OlogContextListener implements ServletContextListener {
                 Logger.getLogger(OlogContextListener.class.getName()).log(Level.SEVERE, null, e);
 
             }
-            System.out.println("Olog JCR has been initialized: ");
+            System.out.println("Olog JCR has been initialized. ");
         } catch (OlogException ex) {
             Logger.getLogger(OlogContextListener.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     public void preCache() throws Exception {
-        OlogImpl cm = OlogImpl.getInstance();
         Logbooks logbooks  = cm.listLogbooks();
         for (Logbook logbook : logbooks.getLogbooks()) {
-            MultivaluedMap<String,String> map = new MultivaluedMapImpl();
+            MultivaluedMap<String,String> map = new MultivaluedHashMap<String, String>();
             map.add("logbook", logbook.getName());
             map.add("limit", "10");
+            map.add("search", "*");
             cm.findLogsByMultiMatch(map);
         }
         cm.listLogbooks();

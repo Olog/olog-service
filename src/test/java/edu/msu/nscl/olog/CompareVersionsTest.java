@@ -1,6 +1,12 @@
 package edu.msu.nscl.olog;
 
-import com.sun.jersey.core.util.MultivaluedMapImpl;
+
+import edu.msu.nscl.olog.boundry.LogManager;
+import edu.msu.nscl.olog.entity.XmlAttachments;
+import edu.msu.nscl.olog.entity.XmlLogs;
+import edu.msu.nscl.olog.boundry.AttachmentManager;
+import edu.msu.nscl.olog.entity.BitemporalLog;
+import edu.msu.nscl.olog.entity.Log;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -17,6 +23,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
+import javax.ws.rs.core.MultivaluedHashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -48,12 +56,12 @@ public class CompareVersionsTest {
     }
 
     public void findLogByAttribute() throws OlogException {
-        MultivaluedMap<String, String> map = new MultivaluedMapImpl();
+        MultivaluedMap<String,String> map = new MultivaluedHashMap<String, String>();
         map.add("sweep.crystal_name", "ECF_229");
         map.add("limit", "20");
         map.add("page", "1");
-        Logs newLogs = LogManager.findLog(map);
-        Logs oldLogs = LogManagerTest.findLog(map);
+        List<BitemporalLog> newLogs = LogManager.findLog(map);
+        List<BitemporalLog> oldLogs = LogManagerTest.findLog(map);
         assertEquals(newLogs.size(), oldLogs.size());
         for(int i =0 ; i< newLogs.size() ; i++) {
             compareLogs(newLogs.get(i), oldLogs.get(i));
@@ -62,36 +70,36 @@ public class CompareVersionsTest {
 
 
     public void createLogTest() throws OlogException {
-        Log log = LogManager.findLog(2006252l);
+        BitemporalLog bitemporalLog = LogManager.findLog(2006252l);
+        Log log = bitemporalLog.getLog();
         log.setId(null);
         log.setEntry(null);
-        log.setEntryId(null);
         log.setVersion(null);
         log.setOwner("testLog");
-        Log newLog = LogManager.create(log);
-        Log oldLog = LogManager.create(log);
-        assertEquals(newLog.getAttributes(), oldLog.getAttributes());
-        assertEquals(newLog.getDescription(), oldLog.getDescription());
-        assertEquals(newLog.getOwner(), oldLog.getOwner());
-        assertEquals(newLog.getSource(), oldLog.getSource());
+        bitemporalLog.setLog(log);
+        BitemporalLog newLog = LogManager.create(bitemporalLog);
+        BitemporalLog oldLog = LogManager.create(bitemporalLog);
+        assertEquals(newLog.getLog().getAttributes(), oldLog.getLog().getAttributes());
+        assertEquals(newLog.getLog().getDescription(), oldLog.getLog().getDescription());
+        assertEquals(newLog.getLog().getOwner(), oldLog.getLog().getOwner());
+        assertEquals(newLog.getLog().getSource(), oldLog.getLog().getSource());
     }
 
 
     public void findLogByDate() throws OlogException {
-        MultivaluedMap<String, String> map = new MultivaluedMapImpl();
+        MultivaluedMap<String,String> map = new MultivaluedHashMap<String, String>();
         map.add("start", String.valueOf(DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH).getTime() / 1000));
-        Logs newLogs = LogManager.findLog(map);
-        Logs oldLogs = LogManagerTest.findLog(map);
+        List<BitemporalLog> newLogs = LogManager.findLog(map);
+        List<BitemporalLog> oldLogs = LogManagerTest.findLog(map);
         assertEquals(newLogs.size(), oldLogs.size());
         for(int i =0 ; i< newLogs.size() ; i++) {
             compareLogs(newLogs.get(i), oldLogs.get(i));
         }
     }
 
-    private void compareLogs(final Log firstLog, final Log secondLog) {
+    private void compareLogs(final BitemporalLog firstLog, final BitemporalLog secondLog) {
         assertEquals(firstLog, secondLog);
-        assertEquals(firstLog.getAttributes(), secondLog.getAttributes());
-        assertEquals(firstLog.getXmlProperties(), secondLog.getXmlProperties());
+        assertEquals(firstLog.getLog().getAttributes(), secondLog.getLog().getAttributes());
     }
 
     private void mockPersistance() {

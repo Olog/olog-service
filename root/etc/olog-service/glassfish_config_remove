@@ -1,0 +1,12 @@
+#!/bin/bash
+
+exec sh -ac '. /etc/default/olog-service
+
+${ASADMIN} delete-auth-realm olog
+${ASADMIN} delete-custom-resource olog/ldapManagerConnection
+${ASADMIN} delete-custom-resource olog/userManager
+${ASADMIN} delete-jdbc-connection-pool OlogPool
+${ASADMIN} delete-jdbc-resource jdbc/olog
+${ASADMIN} delete-jdbc-connection-pool JCRPool
+${ASADMIN} delete-jdbc-resource jdbc/jcr
+'

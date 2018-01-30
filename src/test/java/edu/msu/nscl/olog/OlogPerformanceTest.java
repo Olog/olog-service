@@ -1,7 +1,15 @@
 package edu.msu.nscl.olog;
 
 
-import com.sun.jersey.core.util.MultivaluedMapImpl;
+import edu.msu.nscl.olog.entity.BitemporalLog;
+import edu.msu.nscl.olog.entity.Logbooks;
+import edu.msu.nscl.olog.entity.Property;
+import edu.msu.nscl.olog.entity.Tag;
+import edu.msu.nscl.olog.entity.Tags;
+import edu.msu.nscl.olog.entity.Logbook;
+import edu.msu.nscl.olog.entity.XmlLogs;
+import edu.msu.nscl.olog.entity.LogAttribute;
+import edu.msu.nscl.olog.entity.Log;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.junit.*;
@@ -14,6 +22,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import javax.ws.rs.core.MultivaluedHashMap;
 
 public class OlogPerformanceTest {
 
@@ -65,12 +74,12 @@ public class OlogPerformanceTest {
     }
 
     public void findLogByAttribute(String dbTypeText) throws RepositoryException, OlogException, IOException {
-        MultivaluedMap<String, String> map = new MultivaluedMapImpl();
+        MultivaluedMap<String,String> map = new MultivaluedHashMap<String, String>();
         map.add("sweep.crystal_name", "ECF_229");
         long startTime = System.nanoTime();
-        Logs logs = LogManagerTest.findLog(map);
+        List<BitemporalLog> logs = LogManagerTest.findLog(map);
         long endTime = System.nanoTime();
-        logId = logs.getLogList().size() > 0 ? logs.get(0).getEntryId(): 1l;
+        logId = logs.size() > 0 ? logs.get(0).getLog().getId(): 1l;
          double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to find a log by attribute is: " + totalTime + "(s)");
         out.newLine();
@@ -79,12 +88,11 @@ public class OlogPerformanceTest {
     public void insertLog(final String dbTypeText) throws RepositoryException, OlogException, IOException {
         Log logOld = LogManagerTest.findLog(logId);
         logOld.setOwner("testLog");
-        logOld.setEntryId(null);
         logOld.setId(null);
         logOld.setState(null);
         logOld.setState(null);
         logOld.setEntry(null);
-        logOld.getLogbooks().iterator().next().setLogs(new Logs());
+        logOld.getLogbooks().iterator().next().setLogs(new HashSet<Log>());
         logOld.getLogbooks().iterator().next().setOwner("testOwner");
         logOld.getLogbooks().iterator().next().setName("testLog");
 
@@ -92,7 +100,6 @@ public class OlogPerformanceTest {
         logOld.setAttributes(new HashSet<LogAttribute>());
         long startTime = System.nanoTime();
         Log log = LogManagerTest.create(logOld);
-        logId = log.getEntryId();
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to insert a log  is: " + totalTime + "(s)");
@@ -102,11 +109,9 @@ public class OlogPerformanceTest {
     public void insertLog2(String dbTypeText) throws RepositoryException, OlogException, IOException {
         Log logOld = LogManagerTest.findLog(logId);
         logOld.setOwner("testLog2");
-        logOld.setEntryId(null);
         logOld.getLogbooks().iterator().next().setLogs(null);
         long startTime = System.nanoTime();
         Log log = LogManagerTest.create(logOld);
-        logId = log.getEntryId();
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to insert a log2  is: " + totalTime + "(s)" );
@@ -115,10 +120,10 @@ public class OlogPerformanceTest {
     }
 
     public void findLogByDate(String dbTypeText) throws RepositoryException, OlogException, IOException {
-        MultivaluedMap<String, String> map = new MultivaluedMapImpl();
+        MultivaluedMap<String,String> map = new MultivaluedHashMap<String, String>();
         map.add("start", String.valueOf(DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH).getTime() / 1000));
         long startTime = System.nanoTime();
-        Logs logs = LogManagerTest.findLog(map);
+        List<BitemporalLog> logs = LogManagerTest.findLog(map);
         long endTime = System.nanoTime();
         double totalTime =(endTime - startTime) / 1000000000.0;
         out.write(dbTypeText + " Time consume to find a log by date is: " + totalTime + "(s)");

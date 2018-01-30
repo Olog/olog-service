@@ -1,0 +1,54 @@
+#!/bin/sh
+# /etc/rc.d/init.d/olog-service:  Olog Logbook Service
+#
+# Version: olog-service 1.0
+#
+# chkconfig: 345 99 01
+# description: Olog Logbook Service
+#
+
+### BEGIN INIT INFO
+# Provides:          olog-service
+# Required-Start:    $remote_fs $local_fs $network $syslog $time
+# Required-Stop:     $remote_fs $local_fs $network $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: olog-service
+# Description:       Olog Logbook Service
+### END INIT INFO
+
+PROG=olog-service
+PROG_WAR=/usr/share/olog-service/olog-service.war
+GF_HOME=/home/glassfish/glassfish4/glassfish
+ASADMIN=$GF_HOME/bin/asadmin
+
+case $1 in
+start)
+    jar -uf ${PROG_WAR} -C /etc/olog-service WEB-INF/repository.xml
+    jar -uf ${PROG_WAR} -C /etc/olog-service WEB-INF/bootstrap.properties
+    jar -uf ${PROG_WAR} -C /etc/olog-service WEB-INF/glassfish-web.xml
+    ${ASADMIN} deploy ${PROG_WAR}
+    ;;
+stop)
+    ${ASADMIN} undeploy ${PROG}
+    ;;
+status)
+    ${ASADMIN} list-applications --type web
+    ;;
+restart)
+    ${ASADMIN} undeploy ${PROG}
+    ${ASADMIN} deploy ${PROG_WAR}
+    ;;
+configure)
+    . /etc/olog-service/glassfish_config_create
+    ;;
+deconfigure)
+    . /etc/olog-service/glassfish_config_remove
+    ;;
+reconfigure)
+    . /etc/olog-service/glassfish_config_remove
+    . /etc/olog-service/glassfish_config_create
+    ;;
+*)
+    echo $0 "start | stop | status | configure | deconfigure | reconfigure"
+esac

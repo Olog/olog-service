@@ -5,9 +5,6 @@
 
 package edu.msu.nscl.olog;
 
-import java.io.File;
-import java.lang.Boolean;
-import java.lang.String;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,11 +15,8 @@ import javax.jcr.SimpleCredentials;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.servlet.ServletContext;
 import org.apache.jackrabbit.core.RepositoryImpl;
-import org.apache.jackrabbit.core.config.ConfigurationException;
 import org.apache.jackrabbit.core.config.RepositoryConfig;
-import org.apache.jackrabbit.j2ee.RepositoryAccessServlet;
 
 public class JCRUtil extends OlogContextListener {
     private static Repository repository;
@@ -38,13 +32,13 @@ public class JCRUtil extends OlogContextListener {
             String className = url.getFile();
             String filePath = className.substring(0,className.indexOf(WEBINF) + WEBINF.length());
             String xml;
-            Boolean jcrInDb = null;
+            Boolean jcrInDb = Boolean.FALSE;
             try {
                 Context initCtx = new InitialContext();
                 jcrInDb = (Boolean) initCtx.lookup("java:/comp/env/JCR_IN_DB");
             } catch (NamingException e ) {
             }
-            System.out.println(jcrInDb);
+            System.out.println("JCR in DB (java:/comp/env/JCR_IN_DB): "+jcrInDb);
             if (Boolean.TRUE.equals(jcrInDb)) {
                 xml = filePath + "/repository_db.xml";
             } else {
@@ -59,6 +53,7 @@ public class JCRUtil extends OlogContextListener {
             if (dir==null) {
                 dir = "jackrabbit";
             }
+            System.out.println("JCR in Path (java:/comp/env/JCR_REPO_PATH): "+dir);
             RepositoryConfig config = RepositoryConfig.create(xml, dir);
             repository = RepositoryImpl.create(config);
             

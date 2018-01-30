@@ -2,12 +2,29 @@
 <web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
     <servlet>
         <servlet-name>ServletAdaptor</servlet-name>
-        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
-            <param-name>com.sun.jersey.spi.container.ContainerResponseFilters</param-name>
+            <param-name>jersey.config.server.provider.classnames</param-name>
+            <param-value>edu.msu.nscl.olog.ResponseCorsFilter,
+                edu.msu.nscl.olog.MyJAXBContextResolver,
+                org.glassfish.jersey.media.multipart.MultiPartFeature,
+                org.glassfish.jersey.jackson.JacksonFeature,
+                edu.msu.nscl.olog.boundry.AttachmentResource,
+                edu.msu.nscl.olog.boundry.LogbookResource,
+                edu.msu.nscl.olog.boundry.LogResource,
+                edu.msu.nscl.olog.boundry.PropertyResource,
+                edu.msu.nscl.olog.boundry.TagResource
+            </param-value>
+        </init-param>
+        <init-param>
+            <param-name>jersey.config.disableMoxyJson</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>org.glassfish.jersey.servlet.ContainerResponseFilters</param-name>
             <param-value>edu.msu.nscl.olog.ResponseCorsFilter</param-value>
-        </init-param>      
-        <load-on-startup>4</load-on-startup>
+        </init-param>       
+        <load-on-startup>1</load-on-startup>
     </servlet>
     
     <context-param>
@@ -15,7 +32,7 @@
     	<!-- This name of a directory name inside src/main/resources/db -->
 
 		<!-- Default Original Migration Path -->
-    	<param-value>migration</param-value>
+    	<param-value>mysql56\migration</param-value>
     	
     	<!-- Migration Path that works on MySQL 5.6 and later  
     	<param-value>migration_MySQL_5_6</param-value> 
@@ -25,6 +42,11 @@
     <listener>
   	<listener-class>
   		edu.msu.nscl.olog.OlogContextListener
+  	</listener-class>
+    </listener>
+    <listener>
+  	<listener-class>
+  		edu.msu.nscl.olog.OlogServletRequestListener
   	</listener-class>
     </listener>
     <servlet-mapping>
@@ -124,6 +146,26 @@
             <transport-guarantee>CONFIDENTIAL</transport-guarantee>
         </user-data-constraint>
     </security-constraint>
+    <security-constraint>
+        <display-name>Add or Modify Propertites</display-name>
+        <web-resource-collection>
+            <web-resource-name>create / update / delete properties</web-resource-name>
+            <description/>
+            <url-pattern>/resources/properties/*</url-pattern>
+            <http-method>PUT</http-method>
+            <http-method>POST</http-method>
+            <http-method>DELETE</http-method>
+        </web-resource-collection>
+        <auth-constraint>
+            <description/>
+            <role-name>LogMod</role-name>
+            <role-name>Administrator</role-name>
+        </auth-constraint>
+        <user-data-constraint>
+            <description/>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
     <login-config>
         <auth-method>BASIC</auth-method>
         <realm-name>olog</realm-name>
@@ -152,7 +194,7 @@
     <resource-ref>
         <description>Connection Pool jdbc/olog</description>
         <res-ref-name>jdbc/olog</res-ref-name>
-        <res-type>javax.sql.DataSource</res-type>
+        <res-type>javax.sql.ConnectionPoolDataSource</res-type>
         <res-auth>Container</res-auth>
         <res-sharing-scope>Shareable</res-sharing-scope>
     </resource-ref>

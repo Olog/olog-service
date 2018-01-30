@@ -1,0 +1,23 @@
+#!/bin/bash
+
+exec sh -ac '. /etc/default/olog-service
+
+${ASADMIN} create-auth-realm --classname ${CLASSNAME} --property "assign-groups=olog-logs:jaas-context=${JAAS_CONTEXT}:directory=${DIRECTORY}:base-dn=${BASE_DN}:group-base-dn=${GROUP_BASE_DN}:group-search-filter=${GROUP_SEARCH_FILTER}:java.naming.referral=${JAVA_NAMING_REFERRAL}:search-filter=${SEARCH_FILTER}:search-bind-password=${SEARCH_BIND_PASSWORD}:search-bind-dn=${SEARCH_BIND_DN}" olog
+
+${ASADMIN} create-custom-resource --restype javax.naming.directory.Directory --factoryclass com.sun.jndi.ldap.LdapCtxFactory --property "URL=${DIRECTORY}/${BASE_DN}:javax.naming.security.principal=${SEARCH_BIND_DN}:javax.naming.security.credentials=${SEARCH_BIND_PASSWORD}:java.naming.referral=${JAVA_NAMING_REFERRAL}" olog/ldapManagerConnection
+
+${ASADMIN} create-custom-resource --restype java.lang.String --factoryclass org.glassfish.resources.custom.factory.PrimitivesAndStringFactory --property "Value=${USER_MANAGER}" olog/userManager
+
+${ASADMIN} create-jdbc-connection-pool --restype javax.sql.ConnectionPoolDataSource --datasourceclassname ${JDBC_CLASSNAME} --property "user=${JDBC_USER}:password=${JDBC_PASS}:url=${JDBC_URL}:useSSL=${JDBC_SSL}:verifyServerCertificate=${JDBC_CERT}" OlogPool
+
+${ASADMIN} create-jdbc-resource --connectionpoolid OlogPool jdbc/olog
+
+${ASADMIN} ping-connection-pool OlogPool
+
+${ASADMIN} create-jdbc-connection-pool --nontransactionalconnections true --restype javax.sql.ConnectionPoolDataSource --datasourceclassname ${JCR_CLASSNAME} --property "user=${JCR_USER}:password=${JCR_PASS}:url=${JCR_URL}:useSSL=${JCR_SSL}:verifyServerCertificate=${JCR_CERT}" JCRPool
+
+${ASADMIN} create-jdbc-resource --connectionpoolid JCRPool jdbc/jcr
+
+${ASADMIN} ping-connection-pool JCRPool
+
+'
