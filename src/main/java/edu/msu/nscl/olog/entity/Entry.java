@@ -13,15 +13,12 @@ import java.util.Date;
 import java.util.LinkedList;
 import javax.persistence.*;
 import org.joda.time.Interval;
-import org.eclipse.persistence.annotations.Cache;
-import org.eclipse.persistence.annotations.CacheCoordinationType;
 
 /**
  *
  * @author berryman
  */
 @Entity
-@Cache(coordinationType=CacheCoordinationType.SEND_NEW_OBJECTS_WITH_CHANGES)
 @Table(name = "entries")
 public class Entry implements Serializable {
 

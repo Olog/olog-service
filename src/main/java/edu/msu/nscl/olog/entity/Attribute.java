@@ -11,15 +11,12 @@ import javax.persistence.*;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.eclipse.persistence.annotations.Cache;
-import org.eclipse.persistence.annotations.CacheCoordinationType;
 
 /**
  *
  * @author berryman
  */
 @Entity
-@Cache(coordinationType=CacheCoordinationType.SEND_NEW_OBJECTS_WITH_CHANGES)
 @Table(name = "attributes")
 @XmlRootElement(name = "attribute")
 public class Attribute implements Serializable {

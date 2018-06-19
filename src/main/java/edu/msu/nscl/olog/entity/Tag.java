@@ -9,15 +9,12 @@ import java.io.Serializable;
 import java.util.*;
 import javax.persistence.*;
 import javax.xml.bind.annotation.*;
-import org.eclipse.persistence.annotations.Cache;
-import org.eclipse.persistence.annotations.CacheCoordinationType;
 
 /**
  *
  * @author berryman
  */
 @Entity
-@Cache(coordinationType=CacheCoordinationType.SEND_NEW_OBJECTS_WITH_CHANGES)
 @Table(name = "logbooks")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "is_tag", discriminatorType = DiscriminatorType.INTEGER)
