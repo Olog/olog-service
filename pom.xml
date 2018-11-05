@@ -201,9 +201,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.openejb</groupId>
+            <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
-            <version>6.0-5</version>
+            <version>7.0</version>
         </dependency>
         <dependency>
             <groupId>net.coobird</groupId>
@@ -395,7 +395,7 @@
 				<dependency>
 					<groupId>javax.ws.rs</groupId>
 					<artifactId>javax.ws.rs-api</artifactId>
-					<version>2.0</version>
+					<version>2.0.1</version>
 				</dependency>
 				<dependency>
                     <groupId>org.glassfish.jersey.containers</groupId>
@@ -426,6 +426,11 @@
 				    <groupId>org.glassfish.jersey.media</groupId>
 				    <artifactId>jersey-media-json-jackson</artifactId>
 				    <version>2.17</version>
+				</dependency>
+				<dependency>
+					<groupId>javax.enterprise</groupId>
+					<artifactId>cdi-api</artifactId>
+					<version>1.2</version>
 				</dependency>
     		</dependencies>
     	</profile>
