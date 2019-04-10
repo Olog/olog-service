@@ -35,8 +35,8 @@ public class AttachmentManager {
 
     public static List<Long> findAll(String searchTerm) throws OlogException {
         List<Long> ids = new ArrayList<Long>();
+        Session session = JCRUtil.getSession();
         try {
-            Session session = JCRUtil.getSession();
             Workspace workspace = session.getWorkspace();
             QueryManager qm = workspace.getQueryManager();
             Query query = qm.createQuery("//element(*, nt:file)[jcr:contains(jcr:content, '" + searchTerm + "')]", Query.XPATH);
@@ -54,6 +54,8 @@ public class AttachmentManager {
         } catch (RepositoryException e) {
             throw new OlogException(Response.Status.CONFLICT,
                     "Search: " + searchTerm + " could not put item in repository. " + e);
+        } finally {
+        	session.logout();
         }
 
         return ids;
@@ -61,8 +63,8 @@ public class AttachmentManager {
 
     public static XmlAttachments findAll(Long logId) throws OlogException {
         XmlAttachments xmlAttachments = new XmlAttachments();
+        Session session = JCRUtil.getSession();
         try {
-            Session session = JCRUtil.getSession();
             Node rn = session.getRootNode();
             Node folderNode = rn.getNode(logId.toString());
             NodeIterator nodes = folderNode.getNodes();
@@ -89,6 +91,8 @@ public class AttachmentManager {
             //
             //throw new CFException(Response.Status.NOT_FOUND,
             //        "Log entry " + logId.toString() + " could not find item in repository. " + ex);
+        } finally {
+        	session.logout();
         }
     }
 
@@ -96,8 +100,8 @@ public class AttachmentManager {
         InputStream content = null;
         String mimeType = null;
         String[] arrayMimeType = null;
+        Session session = JCRUtil.getSession();
         try {
-            Session session = JCRUtil.getSession();
             Node rn = session.getRootNode();
             Node folderNode = rn.getNode(filePath);
             Node contentNode = folderNode.getNode(fileName).getNode(JcrConstants.JCR_CONTENT);
@@ -117,6 +121,8 @@ public class AttachmentManager {
         } catch (RepositoryException ex) {
             throw new OlogException(Response.Status.NOT_FOUND,
                     filePath + ", could not find item in repository. " + ex);
+        } finally {
+        	session.logout();
         }
         Attachment attachment = new Attachment();
         attachment.setContent(content);
@@ -131,8 +137,8 @@ public class AttachmentManager {
 
     public static XmlAttachment create(Attachment attachment, Long logId) throws OlogException {
         XmlAttachment result = new XmlAttachment();
+        Session session = JCRUtil.getSession();
         try {
-            Session session = JCRUtil.getSession();
             ValueFactory valueFactory = session.getValueFactory();
             Node rn = session.getRootNode();
             MediaType mimeType = attachment.getMimeType();
@@ -222,12 +228,14 @@ public class AttachmentManager {
         } catch (ArrayIndexOutOfBoundsException ex) {
             throw new OlogException(Response.Status.INTERNAL_SERVER_ERROR,
                     "Log entry " + logId.toString() + " could not convert base64 object. " + ex);
+        } finally {
+        	session.logout();
         }
     }
 
     public static void remove(String fileName, Long logId) throws OlogException {
-        try {
-            Session session = JCRUtil.getSession();
+    	Session session = JCRUtil.getSession();
+    	try {
             Node rn = session.getRootNode();
             Node folderNode = rn.getNode(logId.toString());
             Node contentNode = folderNode.getNode(fileName);
@@ -245,6 +253,8 @@ public class AttachmentManager {
         } catch (RepositoryException ex) {
             throw new OlogException(Response.Status.NOT_FOUND,
                     "Log entry " + logId.toString() + " could not find item in repository. " + ex);
+        } finally {
+        	session.logout();
         }
     }
     

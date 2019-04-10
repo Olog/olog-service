@@ -8,6 +8,8 @@ package edu.msu.nscl.olog;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.jcr.LoginException;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -20,7 +22,6 @@ import org.apache.jackrabbit.core.config.RepositoryConfig;
 
 public class JCRUtil extends OlogContextListener {
     private static Repository repository;
-    private static Session session;
     private static final String WEBINF = "WEB-INF";
 
     /**
@@ -57,12 +58,8 @@ public class JCRUtil extends OlogContextListener {
             RepositoryConfig config = RepositoryConfig.create(xml, dir);
             repository = RepositoryImpl.create(config);
             
-            SimpleCredentials adminCred = new 
-            SimpleCredentials("admin", new char[0]); 
-            session = repository.login(adminCred);
-            
         } catch (RepositoryException ex) {
-            Logger.getLogger(JCRUtil.class.getName()).log(Level.SEVERE, null, ex);
+            
         }
     }
     
@@ -72,8 +69,14 @@ public class JCRUtil extends OlogContextListener {
     }
     
     public static Session getSession() {
-
-        return session;
+    		SimpleCredentials adminCred = new 
+    	            SimpleCredentials("admin", new char[0]); 
+    		try {
+				return repository.login(adminCred);
+			} catch (RepositoryException ex) {
+				Logger.getLogger(JCRUtil.class.getName()).log(Level.SEVERE, null, ex);
+			}
+			return null;
     }
     
 
