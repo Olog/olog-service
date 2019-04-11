@@ -4,7 +4,7 @@
         <artifactId>olog</artifactId>
         <groupId>edu.msu.nscl.olog</groupId>
         <relativePath>../../</relativePath>
-        <version>2.2.9-SNAPSHOT</version>
+        <version>2.2.10-SNAPSHOT</version>
     </parent>
     <packaging>war</packaging>
     <artifactId>olog-service</artifactId>
