@@ -37,6 +37,13 @@
                 <role>Architect</role>
             </roles>
         </developer>
+	<developer>
+            <name>Borut Terpinc</name>
+            <organization>ITER</organization>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
     </developers>
     <scm>
         <connection>scm:git:ssh://git@github.com/${github.projectOwner}/${github.projectName}.git</connection>
@@ -78,6 +85,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava-collections</artifactId>
+            <version>r03</version>
+        </dependency>
+        <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
             <version>3.2</version>
@@ -86,20 +98,17 @@
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-server</artifactId>
-            <version>2.10.4</version>
-            <scope>provided</scope> 
+            <version>2.17</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-common</artifactId>
-            <version>2.10.4</version>
-            <scope>provided</scope> 
+            <version>2.17</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
-            <version>2.10.4</version>
-            <scope>provided</scope> 
+            <version>2.17</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
@@ -110,13 +119,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>2.5.1</version>
-            <scope>provided</scope> 
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.5.1</version>
-            <scope>provided</scope> 
         </dependency>
         <dependency>
             <groupId>com.google.collections</groupId>
@@ -131,7 +138,7 @@
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-core</artifactId>
-	    <version>2.6.9</version>
+            <version>2.6.9</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -152,14 +159,14 @@
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-jcr-servlet</artifactId>
-	    <version>2.6.9</version>
+            <version>2.6.9</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>jackrabbit-webapp</artifactId>
-	    <version>2.6.9</version>
+            <version>2.6.9</version>
         </dependency>
-        <dependency>
+	<dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <version>2.4</version>
@@ -192,14 +199,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>9.1-901.jdbc4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.openejb</groupId>
+            <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
-            <version>6.0-5</version>
+            <version>7.0</version>
         </dependency>
         <dependency>
             <groupId>net.coobird</groupId>
@@ -216,6 +218,11 @@
 			<artifactId>ddlutils</artifactId>
 			<version>1.0</version>
 		</dependency>
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.11.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -361,9 +368,9 @@
     		</activation>
     		<dependencies>
 				<dependency> 
-					<groupId>postgresql</groupId>
-					<artifactId>postgresql</artifactId>
-					<version>9.2-1001.jdbc4</version>
+				    <groupId>org.postgresql</groupId>
+				    <artifactId>postgresql</artifactId>
+				    <version>42.2.5</version>
 				</dependency>
     		</dependencies>
     	</profile>
@@ -379,9 +386,49 @@
 					<version>2.1.17</version>
 				</dependency>
 				<dependency>
-					<groupId>com.sun.jersey</groupId>
-					<artifactId>jersey-servlet</artifactId>
-					<version>2.16</version>
+					<groupId>org.glassfish.jersey.containers</groupId>
+					<artifactId>jersey-container-servlet</artifactId>
+					<version>2.17</version>
+				</dependency>
+				<dependency>
+					<groupId>javax.ws.rs</groupId>
+					<artifactId>javax.ws.rs-api</artifactId>
+					<version>2.0.1</version>
+				</dependency>
+				<dependency>
+                    <groupId>org.glassfish.jersey.containers</groupId>
+                    <artifactId>jersey-container-servlet-core</artifactId>
+                    <version>2.17</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.glassfish.hk2.external</groupId>
+                    <artifactId>javax.inject</artifactId>
+                    <version>2.4.0</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.glassfish.jersey.ext.cdi</groupId>
+                    <artifactId>jersey-cdi1x</artifactId>
+                    <version>2.17</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.glassfish.jersey.ext.cdi</groupId>
+                    <artifactId>jersey-cdi1x-servlet</artifactId>
+                    <version>2.17</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.weld.servlet</groupId>
+                    <artifactId>weld-servlet</artifactId>
+                    <version>2.4.8.Final</version>
+				</dependency>
+				<dependency>
+				    <groupId>org.glassfish.jersey.media</groupId>
+				    <artifactId>jersey-media-json-jackson</artifactId>
+				    <version>2.17</version>
+				</dependency>
+				<dependency>
+					<groupId>javax.enterprise</groupId>
+					<artifactId>cdi-api</artifactId>
+					<version>1.2</version>
 				</dependency>
     		</dependencies>
     	</profile>
