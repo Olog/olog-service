@@ -13,6 +13,9 @@ import edu.msu.nscl.olog.entity.XmlAttachments;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.jcr.*;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
@@ -29,6 +32,8 @@ import org.apache.jackrabbit.JcrConstants;
  * @author berryman
  */
 public class AttachmentManager {
+
+    private static final Logger log = Logger.getLogger(AttachmentManager.class.getName());
 
     private AttachmentManager() {
     }
@@ -144,16 +149,14 @@ public class AttachmentManager {
             MediaType mimeType = attachment.getMimeType();
             String fileName = attachment.getFileName();
             Long fileSize = attachment.getFileSize();
+
             InputStream stream;
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             IOUtils.copy(attachment.getContent(), baos);
             byte[] bytes = baos.toByteArray();
             String string = new String(bytes);
-            if (isBase64Encoded(string)) {
-                stream = new ByteArrayInputStream(DatatypeConverter.parseBase64Binary(string));
-            } else {
-                stream = new ByteArrayInputStream(bytes);
-            }
+
+            stream = new ByteArrayInputStream(bytes);
 
             if (mimeType == null) {
                 mimeType = new MediaType("application", "octet-stream");
