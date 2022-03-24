@@ -52,7 +52,12 @@ public class JCRUtil extends OlogContextListener {
             } catch (NamingException e ) {
             }
             if (dir==null) {
-                dir = "jackrabbit";
+                if (System.getProperty("JCR_REPO_PATH") != null && !System.getProperty("JCR_REPO_PATH").isEmpty()) {
+                    dir = System.getProperty("JCR_REPO_PATH");
+                } else {
+                    dir = "jackrabbit";
+                }
+
             }
             System.out.println("JCR in Path (java:/comp/env/JCR_REPO_PATH): "+dir);
             RepositoryConfig config = RepositoryConfig.create(xml, dir);
